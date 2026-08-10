@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import {
   ChevronRight,
+  Compass,
   Download,
   History as HistoryIcon,
   Library,
@@ -12,6 +13,12 @@ import {
 import styles from './MorePage.module.css'
 
 const LINKS = [
+  {
+    to: '/discover',
+    label: 'Discover recipes',
+    description: 'Find something new online',
+    icon: Compass,
+  },
   { to: '/pantry', label: 'Pantry', description: 'Things you usually have', icon: Package },
   {
     to: '/collections',

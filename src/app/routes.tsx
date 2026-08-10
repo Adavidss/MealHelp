@@ -64,6 +64,9 @@ const SettingsPage = lazy(() =>
 const MorePage = lazy(() =>
   import('@/features/settings/MorePage').then((m) => ({ default: m.MorePage })),
 )
+const DiscoverPage = lazy(() =>
+  import('@/features/discover/DiscoverPage').then((m) => ({ default: m.DiscoverPage })),
+)
 const WhatCanIMakePage = lazy(() =>
   import('@/features/recipes/WhatCanIMakePage').then((m) => ({
     default: m.WhatCanIMakePage,
@@ -97,6 +100,7 @@ export function AppRoutes() {
           <Route path="/recipes/:id/cook" element={<CookingModePage />} />
 
           <Route path="/import" element={<ImportPage />} />
+          <Route path="/discover" element={<DiscoverPage />} />
 
           <Route path="/grocery" element={<GroceryPage />} />
           <Route path="/pantry" element={<PantryPage />} />

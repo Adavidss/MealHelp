@@ -4,7 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   BookOpen,
   ChefHat,
-  Download,
+  Compass,
   Plus,
   Refrigerator,
   ShoppingCart,
@@ -254,9 +254,9 @@ export function TodayPage() {
             <Plus size={19} aria-hidden="true" />
             Add recipe
           </Link>
-          <Link to="/import" className={styles.action}>
-            <Download size={19} aria-hidden="true" />
-            Import recipe
+          <Link to="/discover" className={styles.action}>
+            <Compass size={19} aria-hidden="true" />
+            Discover recipes
           </Link>
           <Link to="/recipes" className={styles.action}>
             <BookOpen size={19} aria-hidden="true" />

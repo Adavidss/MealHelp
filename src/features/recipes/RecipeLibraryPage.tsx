@@ -223,8 +223,11 @@ export function RecipeLibraryPage() {
           title="Save your first recipe"
           description="Import one from a website, add your own, or start from a handful MealHelp ships with."
         >
-          <Link to="/import" className="btn btn-primary">
-            Import recipe
+          <Link to="/discover" className="btn btn-primary">
+            Discover recipes
+          </Link>
+          <Link to="/import" className="btn btn-secondary">
+            Import from a link
           </Link>
           <Link to="/recipes/new" className="btn btn-secondary">
             Add manually

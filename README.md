@@ -46,6 +46,10 @@ saved until you do.
 - **Import** — paste a link and MealHelp reads the page's structured recipe
   data. When a site refuses to share its page, it hands over to a paste box that
   parses the text instead. See [Recipe import limitations](#recipe-import-limitations).
+- **Discover** — find recipes you do not have yet. Search by name, ask for a
+  surprise, or tell it what is in the fridge and get recipes ranked by how many
+  of your ingredients they use. Saving one turns it into an ordinary MealHelp
+  recipe, source link and all. See [Discovery](#discovery).
 - **Cooking mode** — full screen, big type, one step at a time, ingredient
   checklist, servings adjustment, one-tap timers detected from the steps
   ("Bake for 25 minutes" → *Start 25 min timer*), and the screen stays awake.
@@ -76,6 +80,7 @@ saved until you do.
 | **Plan** | The week — stacked day cards on a phone, a seven-column grid on a desktop |
 | **Plan my week** | The preferences form and the plan preview, with reasons and locks |
 | **Recipes** | The library, search and filters |
+| **Discover** | Finding recipes you do not have yet |
 | **Recipe** | The one standard layout every recipe gets |
 | **Cooking** | Full-screen, step-by-step, timers |
 | **Grocery** | Aisle-sorted checklist with a pantry check |
@@ -91,8 +96,8 @@ src/
   db/           Dexie database and one repository per domain
   models/       Recipe, MealPlan, Grocery, Pantry, Settings
   features/     One folder per screen (dashboard, recipes, planner, planning,
-                cooking, grocery, pantry, import, collections, history, print,
-                sharing, settings)
+                cooking, grocery, pantry, import, discover, collections,
+                history, print, sharing, settings)
   services/     Pure logic, no React and no database:
                   ingredientParser/    text → structured ingredient
                   unitConversion/      units, safe conversion, formatting
@@ -100,6 +105,7 @@ src/
                   recommendationEngine/  which recipe fits this slot
                   plannerEngine/       how cooking and leftovers fall across a week
                   recipeImport/        adapters, JSON-LD, paste parsing
+                  recipeDiscovery/     providers, pantry-overlap ranking
                   shareCodec/          compressed share payloads
                   backup/              export, validation, restore
   components/   Shared UI
@@ -234,6 +240,39 @@ changing nothing else.
 
 ---
 
+## Discovery
+
+Import assumes you already found a recipe. **Discover** is for when you have not.
+
+Three ways in:
+
+- **From my pantry** — pick from what MealHelp knows you keep around, add
+  anything else, and get results ranked by how many of those ingredients each
+  recipe actually uses. Partial matches are shown, not hidden: a recipe using
+  one of your three is still worth seeing, it just sorts below one using all
+  three. Staples like salt and olive oil are left out of the search, because
+  they match half of everything.
+- **Search** — by name.
+- **Surprise me** — five at random, for when nothing sounds good.
+
+Opening a result shows the same preview screen the importer uses, so a
+discovered recipe is checked over in exactly the same place as a pasted one
+before it is saved. Recipes you already have are marked, so discovery does not
+offer you your own cookbook back.
+
+Results come from [TheMealDB](https://www.themealdb.com), which is free, needs
+no account, and allows browser requests directly — so discovery does not put a
+server of ours, or somebody's CORS proxy, in the path of your recipe box. The
+original publisher's link is kept and shown; saved recipes are yours from then
+on, and nothing about cooking, planning or shopping depends on that service
+being up.
+
+**This is the only part of MealHelp that needs a connection.** When it is
+unavailable you get a plain explanation and a route to the paste importer,
+never a spinner or a raw network error.
+
+---
+
 ## PWA installation
 
 **iPhone/iPad:** open the site in Safari → Share → *Add to Home Screen*.
@@ -256,6 +295,7 @@ Ideas that fit the architecture but are not built:
 - Ingredient substitutions recorded per recipe
 - Recipe edit history
 - A serverless or extension-based importer for sites that block direct fetch
+- More discovery providers behind the existing provider interface
 - Optional AI behind a service interface, for parsing very messy pasted text and
   suggesting tags — never required for anything core
 

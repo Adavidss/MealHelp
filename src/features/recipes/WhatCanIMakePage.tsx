@@ -118,8 +118,11 @@ export function WhatCanIMakePage() {
       ) : matches.length === 0 ? (
         <EmptyState
           title="Nothing close enough"
-          description="None of your recipes use much of that. Try another ingredient, or add a recipe that does."
+          description="None of your recipes use much of that — but MealHelp can look for new ones that do."
         >
+          <Link to="/discover" className="btn btn-primary">
+            Search online instead
+          </Link>
           <Link to="/import" className="btn btn-secondary">
             Import a recipe
           </Link>
