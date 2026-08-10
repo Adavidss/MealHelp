@@ -32,6 +32,17 @@ export function Modal({
     if (!dialog) return
     if (open && !dialog.open) dialog.showModal()
     if (!open && dialog.open) dialog.close()
+
+    // iOS keeps scrolling the page behind an open dialog, so a sheet that is
+    // meant to sit still drifts under your thumb. Freezing the body stops it.
+    if (open) {
+      const previous = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = previous
+      }
+    }
+    return undefined
   }, [open])
 
   useEffect(() => {

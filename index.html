@@ -4,9 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
     <link rel="apple-touch-icon" href="./apple-touch-icon.png" />
+    <!--
+      viewport-fit=cover puts the app under the notch and home indicator, which
+      the CSS then pads around. interactive-widget keeps the layout above the
+      iOS keyboard instead of letting it cover the field being typed into.
+    -->
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
     />
     <meta name="theme-color" content="#b4541f" />
     <meta name="apple-mobile-web-app-capable" content="yes" />

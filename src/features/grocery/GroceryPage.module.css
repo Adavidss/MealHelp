@@ -66,9 +66,14 @@
   flex: none;
 }
 
+/*
+ * Both of these sit at the end of a row that is mostly a big checkbox label, so
+ * they stay visually small and borrow `.tap-target` to claim a thumb-sized hit
+ * area — otherwise ticking an item off would keep deleting it by accident.
+ */
 .sourceToggle {
-  min-width: 26px;
-  min-height: 26px;
+  min-width: 28px;
+  min-height: 28px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--line);
   background: var(--surface-sunk);
@@ -83,8 +88,8 @@
   background: transparent;
   color: var(--ink-faint);
   cursor: pointer;
-  min-width: 36px;
-  min-height: 36px;
+  min-width: 38px;
+  min-height: 38px;
   display: grid;
   place-items: center;
   border-radius: var(--radius-pill);

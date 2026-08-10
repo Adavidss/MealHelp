@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { newId } from '@/utils/id'
+import { buzz, playChime, primeChime } from './chime'
 
 export interface KitchenTimer {
   id: string
@@ -37,12 +38,15 @@ export function useTimers() {
     for (const timer of timers) {
       if (!timer.done || alerted.current.has(timer.id)) continue
       alerted.current.add(timer.id)
-      // A short buzz is enough; a sound would be unwelcome and often muted.
-      navigator.vibrate?.([200, 100, 200])
+      playChime()
+      buzz()
     }
   }, [timers])
 
   const start = useCallback((minutes: number, label: string) => {
+    // Unlocking audio here, inside the tap that starts the timer, is what lets
+    // iOS play the chime when it finishes minutes later.
+    primeChime()
     const totalMs = Math.round(minutes * 60_000)
     setTimers((current) => [
       ...current,

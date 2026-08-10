@@ -87,10 +87,15 @@
 }
 
 .loadSelect {
-  min-height: 34px;
+  min-height: 40px;
   padding: 2px 4px;
   font-size: 0.74rem;
   border-radius: var(--radius-sm);
+  /* Seven of these sit side by side, so the chevron the shared style adds
+     would leave no room for the word itself. */
+  padding-right: 4px;
+  background-image: none;
+  text-align: center;
 }
 
 .footer {

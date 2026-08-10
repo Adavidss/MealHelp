@@ -2,6 +2,7 @@ import { HashRouter } from 'react-router-dom'
 import { SettingsProvider } from './SettingsContext'
 import { ToastProvider } from '@/components/common/Toast'
 import { AppRoutes } from './routes'
+import { ScrollManager } from './ScrollManager'
 
 /**
  * Hash routing, not browser routing: GitHub Pages serves 404 for unknown paths,
@@ -13,6 +14,7 @@ export function App() {
     <HashRouter>
       <SettingsProvider>
         <ToastProvider>
+          <ScrollManager />
           <AppRoutes />
         </ToastProvider>
       </SettingsProvider>

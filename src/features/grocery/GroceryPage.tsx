@@ -276,7 +276,7 @@ function GroceryRow({
         {recipeNames.length ? (
           <button
             type="button"
-            className={styles.sourceToggle}
+            className={`${styles.sourceToggle} tap-target`}
             onClick={() => setShowSources((open) => !open)}
             aria-expanded={showSources}
             aria-label={`Why is ${item.name} on the list?`}
@@ -286,7 +286,7 @@ function GroceryRow({
         ) : null}
         <button
           type="button"
-          className={styles.remove}
+          className={`${styles.remove} tap-target`}
           onClick={onRemove}
           aria-label={`Remove ${item.name}`}
         >

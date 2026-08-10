@@ -73,8 +73,13 @@
   border-color: transparent;
 }
 
+/*
+ * 40px rather than the 34px this used to be. These are the header actions on
+ * the recipe library and the planner — small buttons a thumb still has to hit
+ * first time, which is a different requirement from a mouse pointer.
+ */
 .btn-sm {
-  min-height: 34px;
+  min-height: 40px;
   padding: 0 var(--space-3);
   font-size: 0.85rem;
 }
@@ -151,11 +156,15 @@
   }
 }
 
-/* Selectable chip — used for filters and preference toggles. */
+/*
+ * Selectable chip — filters and, more importantly, every preference in the
+ * planning wizard, which is a screen made almost entirely of these. 40px is
+ * the floor for something tapped that often.
+ */
 .chip-button {
   cursor: pointer;
-  min-height: 36px;
-  padding: 0 var(--space-3);
+  min-height: 40px;
+  padding: 0 var(--space-4);
   border: 1px solid var(--line);
   background: var(--surface);
   transition: background-color 0.15s ease;
@@ -203,8 +212,24 @@
   border-radius: var(--radius-sm);
   background: var(--surface);
   color: var(--ink);
-  /* 16px keeps iOS Safari from zooming when a field is focused. */
+  /* 16px keeps iOS Safari from zooming the page when a field is focused. */
   font-size: 16px;
+  /* Without this iOS paints its own inset shadow and rounded corners over the
+     border above, and no two fields look alike. */
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.select {
+  /* Room for the chevron iOS draws inside the control. */
+  padding-right: var(--space-5);
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink-faint) 50%),
+    linear-gradient(135deg, var(--ink-faint) 50%, transparent 50%);
+  background-position:
+    calc(100% - 16px) calc(50% + 2px),
+    calc(100% - 11px) calc(50% + 2px);
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
 }
 
 .textarea {
@@ -243,6 +268,29 @@
   max-width: var(--content-max);
   margin: 0 auto;
   width: 100%;
+  /* Held clear of the notch and the rounded corners when a phone is on its
+     side, where the safe area moves to the left and right edges. */
+  padding-left: max(var(--space-4), env(safe-area-inset-left));
+  padding-right: max(var(--space-4), env(safe-area-inset-right));
+}
+
+/*
+ * A hit area of at least 44px for controls that are visually small — the
+ * remove buttons and source counters on the grocery list. The button keeps its
+ * size; only the region that responds to a thumb grows.
+ */
+.tap-target {
+  position: relative;
+}
+
+.tap-target::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
 }
 
 .page-header {

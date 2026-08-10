@@ -123,8 +123,10 @@
   position: absolute;
   top: 6px;
   right: 6px;
-  min-width: 36px;
-  min-height: 36px;
+  /* Sits on top of a link that fills the whole card, so it has to be big
+     enough to hit deliberately and not by accident. */
+  min-width: 42px;
+  min-height: 42px;
   display: grid;
   place-items: center;
   border: 0;

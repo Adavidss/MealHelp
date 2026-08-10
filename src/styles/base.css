@@ -8,6 +8,29 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/*
+ * iOS touch behaviour. Safari's default grey flash on every tap, the magnifier
+ * that appears when a thumb rests on a card, and the 300ms wait for a possible
+ * double-tap all make a web app feel like a web page. None of them are wanted
+ * here — text in recipes stays selectable, everything you press does not.
+ */
+button,
+a,
+label,
+summary,
+[role='button'] {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+}
+
+button,
+[role='button'],
+nav a {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
 body {
   margin: 0;
   background: var(--paper);
