@@ -12,7 +12,7 @@ look the same.**
 It is a local-first web app. Everything lives in your browser; there is no
 account, no server, and nothing is uploaded.
 
-**Live:** https://adavidss.github.io/MealHelp/
+**Live:** https://kidsdc.org/MealHelp/
 
 ---
 
