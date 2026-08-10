@@ -12,6 +12,7 @@ import {
   History as HistoryIcon,
   Library,
 } from 'lucide-react'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { UpdatePrompt } from '@/components/common/UpdatePrompt'
 import styles from './AppShell.module.css'
 
@@ -55,7 +56,9 @@ export function AppShell() {
   if (immersive) {
     return (
       <>
-        <Outlet />
+        <ErrorBoundary resetKey={location.pathname}>
+          <Outlet />
+        </ErrorBoundary>
         <UpdatePrompt />
       </>
     )
@@ -95,7 +98,11 @@ export function AppShell() {
       </aside>
 
       <main id="main" className={styles.main}>
-        <Outlet />
+        {/* Scoped to the page so a failing screen keeps the navigation below
+            it usable, instead of taking the whole app down. */}
+        <ErrorBoundary resetKey={location.pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
 
       <nav className={styles.tabBar} aria-label="Main">

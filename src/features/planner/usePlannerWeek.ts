@@ -1,13 +1,14 @@
 import { useMemo } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/database'
-import { getOrCreatePlan } from '@/db/plans'
+import { getPlanByWeek } from '@/db/plans'
 import type { CookEvent, MealPlan, PlannedMeal, Recipe } from '@/models'
 import { weekDates } from '@/utils/date'
 
 export interface PlannerWeek {
   weekStart: string
   dates: string[]
+  /** Undefined until something is actually planned into this week. */
   plan?: MealPlan
   meals: PlannedMeal[]
   mealsByDate: Map<string, PlannedMeal[]>
@@ -20,11 +21,17 @@ export interface PlannerWeek {
  * Everything the planner screens need for one week, read live from IndexedDB so
  * a change made in a dialog shows up on the grid behind it without any manual
  * refetching.
+ *
+ * Strictly read-only. Dexie refuses writes inside a live query, and creating
+ * the week's plan row here used to throw a ReadOnlyError the moment anyone
+ * opened a week that had never been planned — which took the whole app down
+ * with it. An empty week is simply a week with no plan yet; the row is created
+ * by whichever action first puts a meal in it.
  */
 export function usePlannerWeek(weekStart: string): PlannerWeek {
   const dates = useMemo(() => weekDates(weekStart), [weekStart])
 
-  const plan = useLiveQuery(() => getOrCreatePlan(weekStart), [weekStart])
+  const plan = useLiveQuery(() => getPlanByWeek(weekStart), [weekStart])
 
   const meals = useLiveQuery(
     async () => (plan ? db.plannedMeals.where('planId').equals(plan.id).toArray() : []),
@@ -72,6 +79,8 @@ export function usePlannerWeek(weekStart: string): PlannerWeek {
     mealsByDate,
     recipesById,
     leftovers: leftovers ?? [],
-    loading: plan === undefined,
+    // `plan` is undefined both while loading and for a week nobody has planned
+    // yet, so the meals query — which always resolves — is what says we are done.
+    loading: meals === undefined,
   }
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { ChefHat, Refrigerator, Store, Utensils } from 'lucide-react'
-import { addPlannedMeal } from '@/db/plans'
+import { addPlannedMeal, getOrCreatePlan } from '@/db/plans'
 import { consumeLeftovers } from '@/db/cookEvents'
 import type { CookEvent, MealType, Recipe } from '@/models'
 import { MEAL_TYPE_LABELS } from '@/models'
@@ -12,7 +12,8 @@ import styles from './AddMealDialog.module.css'
 
 interface AddMealDialogProps {
   open: boolean
-  planId: string
+  /** The week being planned. Its plan row is created on first use, not on sight. */
+  weekStart: string
   date: string
   mealType: MealType
   leftovers: CookEvent[]
@@ -25,7 +26,7 @@ type Mode = 'choose' | 'recipe' | 'leftovers' | 'custom'
 
 export function AddMealDialog({
   open,
-  planId,
+  weekStart,
   date,
   mealType,
   leftovers,
@@ -44,8 +45,9 @@ export function AddMealDialog({
   }
 
   const addRecipe = async (recipe: Recipe) => {
+    const plan = await getOrCreatePlan(weekStart)
     await addPlannedMeal({
-      planId,
+      planId: plan.id,
       date,
       mealType,
       kind: 'recipe',
@@ -57,8 +59,9 @@ export function AddMealDialog({
   }
 
   const addLeftover = async (event: CookEvent) => {
+    const plan = await getOrCreatePlan(weekStart)
     await addPlannedMeal({
-      planId,
+      planId: plan.id,
       date,
       mealType,
       kind: 'leftover',
@@ -73,8 +76,9 @@ export function AddMealDialog({
   }
 
   const addCustom = async (kind: 'custom' | 'eating-out' | 'skip') => {
+    const plan = await getOrCreatePlan(weekStart)
     await addPlannedMeal({
-      planId,
+      planId: plan.id,
       date,
       mealType,
       kind,

@@ -248,7 +248,7 @@ export function PlannerPage() {
       {adding ? (
         <AddMealDialog
           open
-          planId={week.plan?.id ?? ''}
+          weekStart={weekStart}
           date={adding.date}
           mealType={adding.mealType}
           leftovers={week.leftovers}

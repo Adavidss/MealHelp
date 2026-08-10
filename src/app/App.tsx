@@ -1,6 +1,7 @@
 import { HashRouter } from 'react-router-dom'
 import { SettingsProvider } from './SettingsContext'
 import { ToastProvider } from '@/components/common/Toast'
+import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { AppRoutes } from './routes'
 import { ScrollManager } from './ScrollManager'
 
@@ -11,13 +12,17 @@ import { ScrollManager } from './ScrollManager'
  */
 export function App() {
   return (
-    <HashRouter>
-      <SettingsProvider>
-        <ToastProvider>
-          <ScrollManager />
-          <AppRoutes />
-        </ToastProvider>
-      </SettingsProvider>
-    </HashRouter>
+    // The outer boundary is the last resort: if the shell itself fails there is
+    // no navigation left to keep, so it offers a reload rather than a blank page.
+    <ErrorBoundary fatal>
+      <HashRouter>
+        <SettingsProvider>
+          <ToastProvider>
+            <ScrollManager />
+            <AppRoutes />
+          </ToastProvider>
+        </SettingsProvider>
+      </HashRouter>
+    </ErrorBoundary>
   )
 }
