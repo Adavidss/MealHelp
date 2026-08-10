@@ -1,0 +1,223 @@
+.topBar {
+  margin-bottom: var(--space-2);
+}
+
+.presets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-2);
+}
+
+.preset {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  min-height: 62px;
+}
+
+.preset:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.preset small {
+  color: var(--ink-faint);
+  font-size: 0.76rem;
+}
+
+.preset:hover small {
+  color: inherit;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+}
+
+@media (min-width: 700px) {
+  .days {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+.dayColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dayToggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2);
+  min-height: 54px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.dayOn {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.dayToggle small {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}
+
+.dayOn small {
+  color: inherit;
+}
+
+.loadSelect {
+  min-height: 34px;
+  padding: 2px 4px;
+  font-size: 0.74rem;
+  border-radius: var(--radius-sm);
+}
+
+.footer {
+  position: sticky;
+  bottom: calc(var(--nav-height) + var(--space-2));
+  padding: var(--space-4) 0;
+  background: linear-gradient(to top, var(--paper) 70%, transparent);
+}
+
+@media (min-width: 900px) {
+  .footer {
+    bottom: var(--space-4);
+  }
+}
+
+.summary {
+  padding: var(--space-3) var(--space-4);
+  background: var(--sage-soft);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-4);
+}
+
+.summary p {
+  margin: 0;
+}
+
+.warning {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--honey-soft);
+  color: #7a5308;
+  font-size: 0.88rem;
+  margin-bottom: var(--space-3);
+}
+
+@media (prefers-color-scheme: dark) {
+  .warning {
+    color: var(--honey);
+  }
+}
+
+.slots {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.previewActions,
+.slots {
+  /* Clears the sticky Accept button so the last row is never stuck under it. */
+  scroll-margin-bottom: 96px;
+}
+
+.slot {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.leftoverSlot {
+  border-left-color: var(--sage);
+  background: var(--sage-soft);
+}
+
+.slotDay {
+  flex: none;
+  /* Wide enough for "Wednesday" so a long day name never runs into the title. */
+  width: 92px;
+  display: flex;
+  flex-direction: column;
+}
+
+.slotDay strong {
+  font-size: 0.92rem;
+}
+
+.slotDay small {
+  font-size: 0.74rem;
+  color: var(--ink-faint);
+}
+
+.slotBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.slotTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.slotMeta {
+  margin: 2px 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.reasons {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-4);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.unfilled {
+  margin: 0;
+  color: var(--ink-faint);
+  font-style: italic;
+}
+
+.slotActions {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.previewActions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}

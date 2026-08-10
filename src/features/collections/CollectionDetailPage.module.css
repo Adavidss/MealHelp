@@ -1,0 +1,47 @@
+.topBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.titleField {
+  flex: 1;
+  min-width: 0;
+}
+
+.titleInput {
+  width: 100%;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  background: transparent;
+  font-family: var(--font-serif);
+  font-size: 1.7rem;
+  font-weight: 600;
+  padding: 0 0 2px;
+  color: var(--ink);
+}
+
+.titleInput:hover,
+.titleInput:focus {
+  border-bottom-color: var(--line-strong);
+  outline: none;
+}
+
+.list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.row > *:first-child {
+  flex: 1;
+  min-width: 0;
+}

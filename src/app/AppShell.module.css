@@ -1,0 +1,138 @@
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.skipLink {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: var(--space-3);
+  background: var(--surface);
+}
+
+.skipLink:focus {
+  left: var(--space-3);
+  top: var(--space-3);
+}
+
+.main {
+  flex: 1;
+  /* Room for the tab bar, which is fixed over the content. */
+  padding-bottom: calc(var(--nav-height) + var(--space-4));
+}
+
+/* ---------- Mobile tab bar ---------- */
+
+.tabBar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.tabList {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  list-style: none;
+}
+
+.tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 56px;
+  padding: 6px 2px;
+  color: var(--ink-faint);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tabActive {
+  color: var(--accent);
+}
+
+/* ---------- Desktop sidebar ---------- */
+
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 900px) {
+  .shell {
+    flex-direction: row;
+  }
+
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    width: var(--sidebar-width);
+    flex: none;
+    padding: var(--space-5) var(--space-3);
+    border-right: 1px solid var(--line);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    height: 100dvh;
+    overflow-y: auto;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: 0 var(--space-3);
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  .sidebarList {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    list-style: none;
+  }
+
+  .sidebarLink {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 42px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--ink-soft);
+    font-size: 0.93rem;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .sidebarLink:hover {
+    background: var(--surface-sunk);
+    color: var(--ink);
+  }
+
+  .active {
+    background: var(--accent-soft);
+    color: var(--accent-ink);
+  }
+
+  .main {
+    padding-bottom: var(--space-6);
+    min-width: 0;
+  }
+
+  .tabBar {
+    display: none;
+  }
+}

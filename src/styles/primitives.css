@@ -1,0 +1,325 @@
+/*
+ * Shared building blocks. Feature-specific layout lives in CSS modules; these
+ * are the pieces that must look identical on every screen — a button in the
+ * planner and a button in the grocery list are the same button.
+ */
+
+/* ---------- Buttons ---------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap);
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.1s ease;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-sunk);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-soft);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-sunk);
+  color: var(--ink);
+}
+
+.btn-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: transparent;
+}
+
+.btn-sm {
+  min-height: 34px;
+  padding: 0 var(--space-3);
+  font-size: 0.85rem;
+}
+
+.btn-lg {
+  min-height: 52px;
+  padding: 0 var(--space-5);
+  font-size: 1.05rem;
+}
+
+.btn-block {
+  width: 100%;
+}
+
+.btn-icon {
+  min-height: var(--tap);
+  min-width: var(--tap);
+  padding: 0;
+  border-radius: var(--radius-pill);
+}
+
+/* ---------- Surfaces ---------- */
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.card-pad {
+  padding: var(--space-4);
+}
+
+/* ---------- Chips and badges ---------- */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  border: 1px solid transparent;
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.chip-accent {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.chip-sage {
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+}
+
+.chip-honey {
+  background: var(--honey-soft);
+  color: #8a5c08;
+}
+
+.chip-plum {
+  background: var(--plum-soft);
+  color: var(--plum);
+}
+
+@media (prefers-color-scheme: dark) {
+  .chip-honey {
+    color: var(--honey);
+  }
+}
+
+/* Selectable chip — used for filters and preference toggles. */
+.chip-button {
+  cursor: pointer;
+  min-height: 36px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  transition: background-color 0.15s ease;
+}
+
+.chip-button:hover {
+  background: var(--surface-sunk);
+}
+
+.chip-button[aria-pressed='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* ---------- Forms ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: var(--space-4);
+}
+
+.field-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.field-hint {
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  min-height: var(--tap);
+  padding: 10px var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  /* 16px keeps iOS Safari from zooming when a field is focused. */
+  font-size: 16px;
+}
+
+.textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--ink-faint);
+}
+
+.row {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.row-tight {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ---------- Page furniture ---------- */
+
+.page {
+  padding: var(--space-4);
+  max-width: var(--content-max);
+  margin: 0 auto;
+  width: 100%;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  /* On a narrow screen the actions drop to their own row rather than squeezing
+     the heading into two words per line. */
+  flex-wrap: wrap;
+}
+
+.page-header > :first-child {
+  flex: 1 1 60%;
+  min-width: 0;
+}
+
+.page-title {
+  font-size: 1.7rem;
+}
+
+.page-subtitle {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  margin-top: 2px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 var(--space-3);
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.muted {
+  color: var(--ink-soft);
+}
+
+.faint {
+  color: var(--ink-faint);
+}
+
+.text-sm {
+  font-size: 0.85rem;
+}
+
+.divider {
+  height: 1px;
+  background: var(--line);
+  border: 0;
+  margin: var(--space-4) 0;
+}
+
+/* ---------- Empty states ---------- */
+
+.empty {
+  text-align: center;
+  padding: var(--space-6) var(--space-4);
+  color: var(--ink-soft);
+}
+
+.empty-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--ink);
+  margin-bottom: var(--space-2);
+}
+
+.empty-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+}

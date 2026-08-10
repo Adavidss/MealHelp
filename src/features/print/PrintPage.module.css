@@ -1,0 +1,207 @@
+.controls {
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sheet {
+  max-width: 8.5in;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.sheetHeader {
+  text-align: center;
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: var(--space-4);
+}
+
+.brand {
+  font-size: 1.5rem;
+  letter-spacing: 0.02em;
+}
+
+.week {
+  margin: 4px 0 0;
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+}
+
+.days {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+}
+
+@media (min-width: 640px) {
+  .days {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+}
+
+.day {
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+
+.dayHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-bottom: var(--space-2);
+  margin-bottom: var(--space-2);
+  border-bottom: 1px solid var(--line);
+}
+
+.dayHead h2 {
+  font-size: 1rem;
+}
+
+.dayHead span {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.meal {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-1) 0;
+}
+
+.mealText {
+  min-width: 0;
+}
+
+.mealType {
+  margin: 0;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+
+.mealTitle {
+  margin: 0;
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.mealMeta,
+.mealNote {
+  margin: 2px 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.blank {
+  color: var(--ink-faint);
+  margin: 0;
+}
+
+.grocery {
+  display: flex;
+  gap: var(--space-5);
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 2px solid var(--ink);
+}
+
+.groceryTitle {
+  font-size: 1.1rem;
+  margin-bottom: var(--space-2);
+}
+
+.groceryList {
+  list-style: none;
+  columns: 2;
+  column-gap: var(--space-5);
+  font-size: 0.85rem;
+  line-height: 1.7;
+}
+
+.groceryList li {
+  break-inside: avoid;
+}
+
+.groceryQr {
+  flex: none;
+  text-align: center;
+}
+
+.groceryQr p {
+  margin: var(--space-2) 0 0;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  max-width: 14ch;
+}
+
+.compact .sheet,
+.compact.sheet {
+  padding-top: var(--space-3);
+}
+
+.compact .day {
+  padding: var(--space-2);
+}
+
+.compact .mealTitle {
+  font-size: 0.9rem;
+}
+
+.large {
+  font-size: 1.15rem;
+}
+
+.large .mealTitle {
+  font-size: 1.2rem;
+}
+
+.large .groceryList {
+  font-size: 1rem;
+  columns: 1;
+}
+
+@media print {
+  .sheet {
+    max-width: none;
+    padding: 0;
+    background: #fff;
+  }
+
+  .days {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .day {
+    border-color: #999;
+  }
+
+  .sheetHeader,
+  .grocery {
+    border-color: #000;
+  }
+}

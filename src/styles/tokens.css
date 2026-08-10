@@ -1,0 +1,120 @@
+/*
+ * MealHelp's palette is built around warm paper and a paprika accent so the app
+ * reads like a cookbook rather than a dashboard. Fonts are system-only: the app
+ * has to work with no network at all, and downloading a typeface would be the
+ * one thing that fails in an offline kitchen.
+ */
+:root {
+  --font-sans:
+    ui-sans-serif, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-serif:
+    ui-serif, Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Warm neutrals */
+  --paper: #fdf8f3;
+  --surface: #ffffff;
+  --surface-sunk: #f6efe6;
+  --surface-raised: #ffffff;
+  --line: #e7dbcc;
+  --line-strong: #d6c5b0;
+
+  --ink: #2f2723;
+  --ink-soft: #6b5c50;
+  --ink-faint: #91806f;
+
+  /* Paprika — primary action */
+  --accent: #b4541f;
+  --accent-hover: #9a4517;
+  --accent-soft: #fbeade;
+  --accent-ink: #8c3f14;
+
+  /* Sage — planning and leftovers */
+  --sage: #4e7a5b;
+  --sage-soft: #e6f0e7;
+  --sage-ink: #3b5f46;
+
+  /* Honey — highlights, favorites */
+  --honey: #c98a1b;
+  --honey-soft: #fdf1d9;
+
+  /* Plum — cooking mode and timers */
+  --plum: #7a4a70;
+  --plum-soft: #f5e9f3;
+
+  --danger: #b3261e;
+  --danger-soft: #fdeceb;
+
+  --radius-sm: 8px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-pill: 999px;
+
+  --shadow-sm: 0 1px 2px rgb(66 44 26 / 8%);
+  --shadow: 0 2px 10px rgb(66 44 26 / 8%);
+  --shadow-lg: 0 12px 32px rgb(66 44 26 / 14%);
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --tap: 44px;
+
+  --nav-height: calc(56px + env(safe-area-inset-bottom));
+  --sidebar-width: 232px;
+  --content-max: 1180px;
+
+  --focus-ring: 0 0 0 3px rgb(180 84 31 / 35%);
+
+  color-scheme: light;
+}
+
+/*
+ * Dark mode is a kitchen-at-night concern, not a fashion one: the same warm
+ * hues, dimmed, so a phone propped by the stove is not a floodlight.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1a1613;
+    --surface: #241f1b;
+    --surface-sunk: #1f1a17;
+    --surface-raised: #2b2521;
+    --line: #3a322c;
+    --line-strong: #4c423a;
+
+    --ink: #f3ece4;
+    --ink-soft: #c3b5a8;
+    --ink-faint: #9b8b7c;
+
+    --accent: #e8813f;
+    --accent-hover: #f19a5d;
+    --accent-soft: #3a2317;
+    --accent-ink: #f0a877;
+
+    --sage: #7fb08d;
+    --sage-soft: #223026;
+    --sage-ink: #a2c9ad;
+
+    --honey: #e0aa4d;
+    --honey-soft: #33280f;
+
+    --plum: #c093b8;
+    --plum-soft: #2f2130;
+
+    --danger: #f0857c;
+    --danger-soft: #3a1e1c;
+
+    --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+    --shadow: 0 2px 10px rgb(0 0 0 / 40%);
+    --shadow-lg: 0 12px 32px rgb(0 0 0 / 50%);
+
+    --focus-ring: 0 0 0 3px rgb(232 129 63 / 45%);
+
+    color-scheme: dark;
+  }
+}

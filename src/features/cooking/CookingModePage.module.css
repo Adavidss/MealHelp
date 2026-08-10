@@ -1,0 +1,209 @@
+.screen {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.title {
+  font-size: 1.3rem;
+  margin-top: 2px;
+}
+
+.progress {
+  height: 4px;
+  background: var(--surface-sunk);
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.2s ease;
+}
+
+.body {
+  flex: 1;
+  padding: var(--space-5) var(--space-4);
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  overflow-y: auto;
+}
+
+/* Everything in cooking mode is a size up: this is read from arm's length. */
+.stepHeading {
+  font-size: 1.5rem;
+  margin-bottom: var(--space-4);
+}
+
+.subHeading {
+  font-size: 1.05rem;
+  color: var(--accent-ink);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.stepCount {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--space-3);
+}
+
+.stepText {
+  font-size: 1.45rem;
+  line-height: 1.45;
+  margin-bottom: var(--space-5);
+}
+
+.ingredients {
+  list-style: none;
+}
+
+.ingredient {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-2);
+  font-size: 1.15rem;
+  line-height: 1.4;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  min-height: 56px;
+}
+
+.ingredient:hover {
+  background: var(--surface-sunk);
+}
+
+.checkbox {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.struck {
+  text-decoration: line-through;
+  color: var(--ink-faint);
+}
+
+.preparation {
+  color: var(--ink-faint);
+}
+
+.servingsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  margin-bottom: var(--space-5);
+  flex-wrap: wrap;
+}
+
+.servingsLabel {
+  color: var(--ink-soft);
+  font-size: 0.95rem;
+}
+
+.servingsValue {
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 700;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.finish {
+  text-align: center;
+  padding-top: var(--space-6);
+}
+
+.finishText {
+  color: var(--ink-soft);
+  margin-bottom: var(--space-5);
+}
+
+.footer {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--line);
+  background: var(--surface);
+  position: sticky;
+  bottom: 0;
+}
+
+.footer .btn {
+  min-height: 60px;
+}
+
+.timers {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--plum-soft);
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--plum-soft);
+  color: var(--plum);
+  font-weight: 600;
+}
+
+.timerLabel {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.88rem;
+}
+
+.timerValue {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.timerDone {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.55;
+  }
+}

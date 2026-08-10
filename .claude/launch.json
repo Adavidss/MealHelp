@@ -1,0 +1,19 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "mealhelp",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "autoPort": false,
+      "port": 3140
+    },
+    {
+      "name": "mealhelp-static",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview"],
+      "autoPort": false,
+      "port": 3140
+    }
+  ]
+}

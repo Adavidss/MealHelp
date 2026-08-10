@@ -1,0 +1,25 @@
+.row {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.button {
+  border: 0;
+  background: transparent;
+  padding: 6px 2px;
+  cursor: pointer;
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-sm);
+}
+
+.filled {
+  color: var(--honey);
+  fill: var(--honey);
+}
+
+.empty {
+  color: var(--line-strong);
+}

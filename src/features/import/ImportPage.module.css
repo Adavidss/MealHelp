@@ -1,0 +1,67 @@
+.topBar {
+  margin-bottom: var(--space-2);
+}
+
+.failure {
+  margin-top: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--honey-soft);
+  border-left: 3px solid var(--honey);
+}
+
+.failureMessage {
+  margin: 0;
+  font-weight: 600;
+}
+
+.failureHint {
+  margin: var(--space-1) 0 0;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0;
+  color: var(--ink-faint);
+  font-size: 0.82rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+.pasteBox {
+  min-height: 220px;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.explainer {
+  margin-top: var(--space-6);
+  padding: var(--space-4);
+  border-radius: var(--radius);
+  background: var(--surface-sunk);
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+}
+
+.explainerTitle {
+  font-size: 0.95rem;
+  color: var(--ink);
+  margin-bottom: var(--space-2);
+}
+
+.manual {
+  margin-top: var(--space-4);
+  display: flex;
+  justify-content: center;
+}

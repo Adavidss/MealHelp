@@ -1,0 +1,78 @@
+.error {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--honey-soft);
+  margin-bottom: var(--space-4);
+}
+
+.category {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+  margin: var(--space-5) 0 var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--line);
+}
+
+.list {
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-1);
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  min-height: var(--tap);
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--accent);
+  flex: none;
+}
+
+.struck {
+  text-decoration: line-through;
+  color: var(--ink-faint);
+}
+
+.plainList {
+  list-style: none;
+}
+
+.plainList li {
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.steps {
+  padding-left: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.planList {
+  list-style: none;
+}
+
+.planRow {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.planDay {
+  flex: none;
+  width: 100px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  font-size: 0.88rem;
+}

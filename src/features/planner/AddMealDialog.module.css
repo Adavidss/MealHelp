@@ -1,0 +1,77 @@
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  min-height: 60px;
+}
+
+.option:hover:not(:disabled) {
+  background: var(--surface-sunk);
+  border-color: var(--line-strong);
+}
+
+.option:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.option svg {
+  flex: none;
+  color: var(--accent);
+}
+
+.option span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.option small {
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+}
+
+.leftovers {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.leftover {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--sage);
+  border-radius: var(--radius-sm);
+  background: var(--sage-soft);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  min-height: var(--tap);
+}
+
+.leftover small {
+  color: var(--sage-ink);
+  font-size: 0.8rem;
+}

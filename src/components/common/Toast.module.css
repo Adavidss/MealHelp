@@ -1,0 +1,63 @@
+.stack {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  /* Sits above the mobile tab bar so a confirmation never hides a nav item. */
+  bottom: calc(var(--nav-height) + var(--space-3));
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: min(440px, calc(100vw - 2 * var(--space-4)));
+  pointer-events: none;
+}
+
+@media (min-width: 900px) {
+  .stack {
+    bottom: var(--space-5);
+  }
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: var(--paper);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.92rem;
+  pointer-events: auto;
+  animation: toast-in 0.18s ease-out;
+}
+
+.success {
+  background: var(--sage-ink);
+  color: #fff;
+}
+
+.error {
+  background: var(--danger);
+  color: #fff;
+}
+
+.action {
+  flex: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+  min-height: 32px;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}

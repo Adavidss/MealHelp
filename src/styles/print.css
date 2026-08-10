@@ -1,0 +1,47 @@
+/*
+ * Printing targets US Letter and a refrigerator door. Anything interactive is
+ * meaningless on paper, so navigation, buttons and inputs are removed globally
+ * and each printable view opts its own content back in.
+ */
+@media print {
+  @page {
+    size: letter portrait;
+    margin: 0.5in;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+
+  nav,
+  .no-print,
+  button:not(.print-keep),
+  input,
+  select,
+  textarea,
+  [role='dialog'],
+  [data-print='hide'] {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  a {
+    color: #000 !important;
+    text-decoration: none !important;
+  }
+
+  .card,
+  [class*='card'] {
+    box-shadow: none !important;
+  }
+
+  /* Keep a day, a recipe, or a grocery category from splitting across pages. */
+  .print-block {
+    break-inside: avoid;
+  }
+}

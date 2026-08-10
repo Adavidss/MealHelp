@@ -1,0 +1,32 @@
+.narrow {
+  max-width: 120px;
+}
+
+.dataActions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+
+.counts {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.counts li {
+  padding: 2px 8px;
+  background: var(--surface-sunk);
+  border-radius: var(--radius-pill);
+}
+
+.restoreChoice {
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}

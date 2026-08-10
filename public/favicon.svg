@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MealHelp">
+  <rect width="512" height="512" rx="112" fill="#b4541f" />
+  <!-- Steam: three strokes that read as "something is cooking" even at 32px. -->
+  <g stroke="#fdf8f3" stroke-width="20" stroke-linecap="round" fill="none" opacity="0.9">
+    <path d="M186 152c0-26 22-26 22-52s-22-26-22-52" />
+    <path d="M256 152c0-26 22-26 22-52s-22-26-22-52" />
+    <path d="M326 152c0-26 22-26 22-52s-22-26-22-52" />
+  </g>
+  <!-- Pot -->
+  <rect x="72" y="196" width="368" height="42" rx="21" fill="#fdf8f3" />
+  <path
+    d="M108 250h296l-22 138a56 56 0 0 1-55 46H185a56 56 0 0 1-55-46z"
+    fill="#fdf8f3"
+  />
+  <!-- Handles -->
+  <path
+    d="M96 268c-26 6-38 26-30 50s32 32 54 24"
+    stroke="#fdf8f3"
+    stroke-width="26"
+    stroke-linecap="round"
+    fill="none"
+  />
+  <path
+    d="M416 268c26 6 38 26 30 50s-32 32-54 24"
+    stroke="#fdf8f3"
+    stroke-width="26"
+    stroke-linecap="round"
+    fill="none"
+  />
+</svg>

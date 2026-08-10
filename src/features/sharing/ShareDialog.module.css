@@ -1,0 +1,36 @@
+.qrWrap {
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  margin: var(--space-4) 0;
+  background: var(--surface-sunk);
+  border-radius: var(--radius);
+  min-height: 160px;
+}
+
+.tooBig {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  max-width: 34ch;
+}
+
+.tooBig p {
+  margin-bottom: var(--space-3);
+}
+
+.warning {
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  text-align: center;
+  margin-bottom: var(--space-3);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.actions > * {
+  flex: 1;
+}

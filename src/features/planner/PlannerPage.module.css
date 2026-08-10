@@ -1,0 +1,151 @@
+.weekNav {
+  display: flex;
+  gap: var(--space-1);
+  flex: none;
+}
+
+.actionBar {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-3);
+  scrollbar-width: none;
+}
+
+.actionBar::-webkit-scrollbar {
+  display: none;
+}
+
+.actionBar > * {
+  flex: none;
+}
+
+/*
+ * Phone: a column of day cards. Seven columns squeezed onto a 375px screen is
+ * unreadable, so the week only becomes a grid when there is room for one.
+ */
+.week {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.day {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.today {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+}
+
+.dayHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-sunk);
+  border-bottom: 1px solid var(--line);
+}
+
+.dayName {
+  font-size: 0.95rem;
+}
+
+.dayShort {
+  display: none;
+}
+
+.dayDate {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.dayBody {
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mealGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mealTypeLabel {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 40px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-faint);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@media (min-width: 1000px) {
+  .week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: var(--space-2);
+    align-items: start;
+  }
+
+  .day {
+    min-height: 180px;
+  }
+
+  .dayLong {
+    display: none;
+  }
+
+  .dayShort {
+    display: inline;
+  }
+
+  .dayHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+  }
+}
+
+@media print {
+  .week {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  .actionBar,
+  .weekNav,
+  .addButton {
+    display: none !important;
+  }
+}

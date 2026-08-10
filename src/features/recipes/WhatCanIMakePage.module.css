@@ -1,0 +1,33 @@
+.topBar {
+  margin-bottom: var(--space-2);
+}
+
+.addRow {
+  display: flex;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.addRow .input {
+  border-radius: var(--radius-pill);
+}
+
+.results {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+}
+
+.coverage {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--sage-ink);
+  font-weight: 600;
+}
+
+.missing {
+  color: var(--ink-faint);
+  font-weight: 400;
+}
