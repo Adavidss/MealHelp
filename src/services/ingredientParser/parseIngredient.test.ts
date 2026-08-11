@@ -81,6 +81,16 @@ describe('parseIngredient', () => {
     expect(parseIngredient('1 tsp cumin').groceryCategory).toBe('Spices & Seasonings')
   })
 
+  it("drops a blog's per-ingredient price from the name", () => {
+    // Budget Bytes and friends annotate every line with what it cost them.
+    const result = parseIngredient('1.5 Tbsp garam masala ($0.45)')
+    expect(result.ingredientName).toBe('garam masala')
+    expect(result.quantity).toBe(1.5)
+    expect(result.unit).toBe('tbsp')
+    // The line is still stored exactly as the recipe wrote it.
+    expect(result.originalText).toBe('1.5 Tbsp garam masala ($0.45)')
+  })
+
   it('strips list markers copied from a webpage', () => {
     const result = parseIngredient('▢ 1 lb ground beef')
     expect(result.quantity).toBe(1)

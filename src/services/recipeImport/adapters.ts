@@ -1,11 +1,24 @@
+import type { ImportSettings } from '@/models'
+import { PageFetchError, fetchRecipePage } from './fetchPage'
 import { hostnameOf, parseRecipeFromHtml } from './jsonLd'
 import { parseRecipeText } from './parseText'
 import {
-  PASTE_FALLBACK_MESSAGE,
   RecipeImportError,
   type RecipeImportAdapter,
   type RecipeImportResult,
 } from './types'
+
+/**
+ * Import settings for the current run. The adapter interface takes a string and
+ * nothing else, so the screen hands these over before starting rather than
+ * threading a second argument through every adapter that does not need one.
+ */
+let activeImportSettings: ImportSettings = { useSharedFetchers: true }
+
+/** Not a React hook — a plain setter the screen calls before importing. */
+export function configureImportFetching(settings: ImportSettings): void {
+  activeImportSettings = settings
+}
 
 function looksLikeUrl(input: string): boolean {
   const trimmed = input.trim()
@@ -26,49 +39,51 @@ export function normalizeUrl(input: string): string {
 }
 
 /**
- * Reads the page straight from the browser.
+ * Reads the page by whatever route will actually work — see fetchPage for the
+ * order it tries and why.
  *
- * This works for sites that send permissive CORS headers and fails for the many
- * that do not. That failure is expected, not exceptional: it hands over to the
- * paste flow with an explanation instead of showing a network error.
+ * When every route fails, the error distinguishes *which* failure it was:
+ * "this site turns away robots" and "this page has no recipe on it" need
+ * completely different things from the user, and telling them apart is the
+ * difference between a useful message and a shrug.
  */
-export const directFetchAdapter: RecipeImportAdapter = {
-  id: 'direct-fetch',
+export const urlAdapter: RecipeImportAdapter = {
+  id: 'url',
   label: 'Recipe website',
   canHandle: looksLikeUrl,
   async import(input: string): Promise<RecipeImportResult> {
     const url = normalizeUrl(input)
 
-    let response: Response
+    let html: string
     try {
-      response = await fetch(url, {
-        headers: { Accept: 'text/html,application/xhtml+xml' },
-        redirect: 'follow',
-      })
-    } catch {
-      throw new RecipeImportError('blocked', PASTE_FALLBACK_MESSAGE, `Blocked by ${hostnameOf(url) ?? 'the site'}.`)
+      html = (await fetchRecipePage(url, activeImportSettings)).html
+    } catch (error) {
+      if (error instanceof PageFetchError) {
+        throw new RecipeImportError(
+          error.botBlocked ? 'blocked' : 'network',
+          error.message,
+          error.botBlocked
+            ? 'Open the recipe in your browser and tap the MealHelp button — that reads the page you are already looking at, which no site can refuse.'
+            : 'Paste the recipe text below instead.',
+        )
+      }
+      throw new RecipeImportError('blocked', 'That page could not be read.')
     }
 
-    if (!response.ok) {
-      throw new RecipeImportError(
-        'network',
-        `${hostnameOf(url) ?? 'That site'} answered with an error (${response.status}).`,
-        'Check the link, or paste the recipe text instead.',
-      )
-    }
-
-    const html = await response.text()
     const parsed = parseRecipeFromHtml(html, url)
 
     if (!parsed) {
+      // Either the page genuinely has no recipe markup, or what came back was a
+      // wall dressed as a page. Both are fixed by reading it in your own
+      // browser, so that is what gets offered first.
       throw new RecipeImportError(
         'no-recipe',
         `MealHelp reached ${hostnameOf(url) ?? 'the page'} but couldn't find a recipe on it.`,
-        'Paste the recipe text below and MealHelp will convert it.',
+        'Open it in your browser and tap the MealHelp button, or paste the recipe text below.',
       )
     }
 
-    return { recipe: parsed.draft, warnings: parsed.warnings, adapterId: 'direct-fetch' }
+    return { recipe: parsed.draft, warnings: parsed.warnings, adapterId: 'url' }
   },
 }
 
@@ -122,7 +137,7 @@ function htmlToText(html: string): string {
 }
 
 export const IMPORT_ADAPTERS: RecipeImportAdapter[] = [
-  directFetchAdapter,
+  urlAdapter,
   htmlPasteAdapter,
   textPasteAdapter,
 ]

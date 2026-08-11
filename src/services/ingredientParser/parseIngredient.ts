@@ -241,8 +241,16 @@ function splitNameAndPreparation(text: string): {
   return { name: trimmed }
 }
 
+/**
+ * Recipe blogs often price each line — "garam masala ($0.45)". That is the
+ * writer's cost breakdown, not part of what you buy, and left in place it makes
+ * the priced spice a different grocery item from the unpriced one.
+ */
+const INLINE_PRICE = /\s*\(\s*[$£€]\s*\d[\d.,]*\s*\)/g
+
 function cleanName(name: string): string {
   return name
+    .replace(INLINE_PRICE, '')
     .replace(/^of\s+/i, '')
     .replace(/[,;]+$/, '')
     .replace(/\s+/g, ' ')

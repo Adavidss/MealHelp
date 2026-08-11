@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft, ClipboardPaste, Link2, Loader2 } from 'lucide-react'
+import { useSettings } from '@/app/SettingsContext'
 import { saveRecipe } from '@/db/recipes'
 import type { RecipeDraft } from '@/models'
 import {
   RecipeImportError,
+  configureImportFetching,
   importRecipe,
   parseRecipeText,
   type RecipeImportResult,
 } from '@/services/recipeImport'
 import { useToast } from '@/components/common/Toast'
+import { CaptureSetup } from './CaptureSetup'
 import { ImportPreview } from './ImportPreview'
 import styles from './ImportPage.module.css'
 
@@ -18,6 +21,7 @@ type Stage = 'input' | 'preview'
 export function ImportPage() {
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { settings } = useSettings()
 
   const [url, setUrl] = useState('')
   const [pasted, setPasted] = useState('')
@@ -34,6 +38,9 @@ export function ImportPage() {
     setBusy(true)
     setFailure(undefined)
     try {
+      // Whose fetcher to use is the user's choice, so it is handed over here
+      // rather than read from storage deep inside the adapter.
+      configureImportFetching(settings.importSettings)
       const imported = await importRecipe(url)
       setResult(imported)
       setStage('preview')
@@ -185,17 +192,22 @@ export function ImportPage() {
         </button>
       )}
 
+      <CaptureSetup />
+
       <section className={styles.explainer}>
         <h2 className={styles.explainerTitle}>Why some links don't work</h2>
         <p>
-          MealHelp runs entirely in your browser with no server behind it, and many
-          recipe sites refuse to share their pages with other sites' code. When that
-          happens there is nothing to fix on your end — copy the recipe text and
-          paste it here, and you will end up with exactly the same result.
+          MealHelp runs entirely in your browser with no server behind it. Many
+          recipe sites refuse to share their pages with another site's code, and
+          the largest ones turn away anything that is not a person with a
+          browser — so a link alone cannot always be enough.
         </p>
-        <p className="text-sm faint">
-          Everything you import stays on this device.
+        <p>
+          That is what the button above is for: it reads the page you are already
+          looking at, which no site can refuse. Pasting the recipe text works just
+          as well and needs no setup at all.
         </p>
+        <p className="text-sm faint">Everything you import stays on this device.</p>
       </section>
 
       <div className={styles.manual}>

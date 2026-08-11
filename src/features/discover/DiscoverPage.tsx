@@ -8,12 +8,15 @@ import type { Recipe, RecipeDraft } from '@/models'
 import {
   DiscoveryError,
   MAX_INGREDIENTS_PER_SEARCH,
+  createSpoonacularProvider,
   discoverByIngredients,
   markAlreadySaved,
+  spoonacularByIngredients,
   suggestedSearchIngredients,
   theMealDbProvider,
   type RankedDiscovery,
 } from '@/services/recipeDiscovery'
+import { useSettings } from '@/app/SettingsContext'
 import { EmptyState } from '@/components/common/EmptyState'
 import { useToast } from '@/components/common/Toast'
 import { ImportPreview } from '@/features/import/ImportPreview'
@@ -21,13 +24,20 @@ import styles from './DiscoverPage.module.css'
 
 type Mode = 'pantry' | 'search' | 'surprise'
 
-const provider = theMealDbProvider
-
 export function DiscoverPage() {
   const { toast } = useToast()
+  const { settings } = useSettings()
 
   const pantry = useLiveQuery(() => db.pantryItems.toArray(), [], [])
   const library = useLiveQuery(() => db.recipes.toArray(), [], [] as Recipe[])
+
+  // A key of the user's own opens a far larger database; without one the free
+  // one is still there. The choice is theirs and is remembered in Settings.
+  const spoonacularKey = settings.spoonacularKey?.trim()
+  const provider = useMemo(
+    () => (spoonacularKey ? createSpoonacularProvider(spoonacularKey) : theMealDbProvider),
+    [spoonacularKey],
+  )
 
   const [mode, setMode] = useState<Mode>('pantry')
   const [selected, setSelected] = useState<string[]>([])
@@ -79,12 +89,17 @@ export function DiscoverPage() {
   }
 
   const searchPantry = () =>
-    run((signal) =>
+    run(async (signal) => {
+      // Spoonacular can rank several ingredients in one request; the free
+      // provider needs one request per ingredient and the overlap counted here.
+      if (spoonacularKey) {
+        return spoonacularByIngredients(spoonacularKey, selected, signal)
+      }
       // Deliberately unfiltered: a recipe using one of your three ingredients
       // is still worth seeing, it just sorts below one that uses all three.
       // Requiring full coverage is how "what can I make" returns nothing.
-      discoverByIngredients(provider, selected, { signal, library: library ?? [] }),
-    )
+      return discoverByIngredients(provider, selected, { signal, library: library ?? [] })
+    })
 
   const searchText = () =>
     run(async (signal) => {
@@ -169,6 +184,14 @@ export function DiscoverPage() {
           </p>
         </div>
       </header>
+
+      {!spoonacularKey ? (
+        <p className={styles.sourceNote}>
+          Searching a small free database of a few hundred recipes.{' '}
+          <Link to="/settings">Add a free Spoonacular key</Link> to search
+          hundreds of thousands instead.
+        </p>
+      ) : null}
 
       <div className={styles.modes} role="tablist" aria-label="How to search">
         <button

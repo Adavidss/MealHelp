@@ -1,3 +1,12 @@
+.sourceNote {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunk);
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+  margin-bottom: var(--space-4);
+}
+
 .modes {
   display: flex;
   gap: var(--space-2);

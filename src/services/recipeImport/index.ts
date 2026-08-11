@@ -1,5 +1,7 @@
 export * from './types'
 export * from './adapters'
+export * from './capture'
+export * from './fetchPage'
 export * from './jsonLd'
 export * from './parseText'
 export * from './normalizeDraft'

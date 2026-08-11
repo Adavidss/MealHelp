@@ -1,0 +1,8 @@
+name = "mealhelp-fetch"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+
+[vars]
+# Who may use this Worker. Leave your MealHelp URL here so it does not become
+# an open proxy for anyone who finds the address. Comma-separated.
+ALLOWED_ORIGINS = "https://kidsdc.org,https://www.kidsdc.org,http://localhost:3140"

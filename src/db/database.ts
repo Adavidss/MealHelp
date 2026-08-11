@@ -82,6 +82,10 @@ export async function loadSettings(): Promise<Settings> {
       ...stored.planningDefaults,
     },
     printOptions: { ...DEFAULT_SETTINGS.printOptions, ...stored.printOptions },
+    importSettings: {
+      ...DEFAULT_SETTINGS.importSettings,
+      ...stored.importSettings,
+    },
   }
 }
 

@@ -53,8 +53,35 @@ export interface Settings {
 
   keepScreenAwakeWhileCooking: boolean
 
+  /**
+   * Reading a recipe page from another website needs someone to fetch it, and
+   * a static site cannot. These control who.
+   */
+  importSettings: ImportSettings
+
+  /**
+   * A key the user brings themselves. Nothing is shipped with the app, and the
+   * key never leaves this device except to the service it belongs to.
+   */
+  spoonacularKey?: string
+
   onboardedAt?: string
   updatedAt: string
+}
+
+export interface ImportSettings {
+  /**
+   * The user's own fetcher, e.g. a Cloudflare Worker. Tried before anything
+   * public, because it is theirs: no stranger sees the pages they read.
+   */
+  proxyUrl?: string
+
+  /**
+   * Fall back to shared public fetchers when there is no proxy of their own.
+   * Convenient, and the honest cost is that a third party sees the URL — which
+   * is why it can be turned off.
+   */
+  useSharedFetchers: boolean
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -87,5 +114,8 @@ export const DEFAULT_SETTINGS: Settings = {
   recentlyCookedHardDays: 7,
   recentlyCookedSoftDays: 30,
   keepScreenAwakeWhileCooking: true,
+  importSettings: {
+    useSharedFetchers: true,
+  },
   updatedAt: new Date(0).toISOString(),
 }

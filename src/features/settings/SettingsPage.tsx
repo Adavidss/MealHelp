@@ -243,6 +243,89 @@ export function SettingsPage() {
       </section>
 
       <section>
+        <h2 className="section-title">Finding recipes online</h2>
+
+        <div className="field">
+          <label className="field-label" htmlFor="spoonacular">
+            Spoonacular key
+          </label>
+          <input
+            id="spoonacular"
+            className="input"
+            type="password"
+            autoComplete="off"
+            spellCheck={false}
+            defaultValue={settings.spoonacularKey ?? ''}
+            placeholder="Paste a free key to search far more recipes"
+            onBlur={(event) =>
+              void update({ spoonacularKey: event.target.value.trim() || undefined })
+            }
+          />
+          <span className="field-hint">
+            Without one, Discover searches a free database of a few hundred
+            recipes. A free key from{' '}
+            <a href="https://spoonacular.com/food-api" target="_blank" rel="noreferrer">
+              spoonacular.com
+            </a>{' '}
+            opens hundreds of thousands, with proper ingredient search. The key
+            stays on this device and is only ever sent to Spoonacular.
+          </span>
+        </div>
+
+        <div className="field">
+          <label className="field-label" htmlFor="proxy">
+            Your own page fetcher
+          </label>
+          <input
+            id="proxy"
+            className="input"
+            type="url"
+            autoComplete="off"
+            spellCheck={false}
+            defaultValue={settings.importSettings.proxyUrl ?? ''}
+            placeholder="https://your-worker.workers.dev/?url={url}"
+            onBlur={(event) =>
+              void update({
+                importSettings: {
+                  ...settings.importSettings,
+                  proxyUrl: event.target.value.trim() || undefined,
+                },
+              })
+            }
+          />
+          <span className="field-hint">
+            Optional. If you run your own fetcher, MealHelp tries it first and
+            nobody else sees the recipes you read. There is a ready-made one in
+            the project's <code>worker/</code> folder.
+          </span>
+        </div>
+
+        <div className="field">
+          <span className="field-label">When importing a link</span>
+          <button
+            type="button"
+            className="chip chip-button"
+            aria-pressed={settings.importSettings.useSharedFetchers}
+            onClick={() =>
+              void update({
+                importSettings: {
+                  ...settings.importSettings,
+                  useSharedFetchers: !settings.importSettings.useSharedFetchers,
+                },
+              })
+            }
+          >
+            Use shared public fetchers
+          </button>
+          <span className="field-hint">
+            These make many more sites work without any setup. The trade is that
+            the address of the recipe passes through a third party — turn this
+            off to keep every request between you and the recipe site.
+          </span>
+        </div>
+      </section>
+
+      <section>
         <h2 className="section-title">Your data</h2>
         <p className="text-sm muted">
           MealHelp stores everything in this browser. Nothing is uploaded, which

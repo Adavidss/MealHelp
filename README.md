@@ -212,31 +212,59 @@ The file is plain JSON on purpose: it can be read, diffed and salvaged by hand.
 
 ---
 
-## Recipe import limitations
+## Recipe import
 
-MealHelp has no server, so importing a recipe means your browser asking another
-site for its page. **Most recipe sites refuse cross-origin requests**, and no
-amount of client-side cleverness changes that. MealHelp deliberately does not
-route around it through a public CORS proxy — that would make a stranger's
-server a load-bearing part of your recipe box.
+MealHelp has no server, so importing a recipe means getting somebody else's page
+somehow. Two separate obstacles stand in the way:
 
-So import is built as a set of adapters:
+1. Browsers refuse to read another site's page unless that site opts in, and
+   almost no recipe site does.
+2. The largest sites — Allrecipes, Serious Eats, Simply Recipes — refuse
+   anything that is not a person with a browser, whoever is asking.
 
-| Adapter | What it handles |
-| --- | --- |
-| Direct fetch | Sites that allow it — reads Schema.org JSON-LD, falls back to microdata |
-| Pasted page source | HTML copied from a page, including its JSON-LD |
-| Pasted text | The recipe as words, parsed by heuristics |
+No single trick beats both, so import is a ladder. Each rung is tried in turn,
+and the last one always works:
 
-When a link cannot be read you get this, not a network error:
+| Route | Reaches | Setup |
+| --- | --- | --- |
+| The site directly | The few that allow it | None |
+| **Your own fetcher** | Most sites | Deploy `worker/` (optional) |
+| **Shared public fetchers** | Most sites | None; can be turned off |
+| **The MealHelp button** | **Everything** | One-time, ~2 minutes |
+| Pasted text | Everything | None |
 
-> MealHelp couldn't directly access this recipe website. Paste the recipe text
-> below and MealHelp will convert it into the standard format.
+### The MealHelp button
 
-The paste route produces the same result, and every import is previewed and
-editable before it is saved. Adding a future adapter — a serverless importer, a
-browser extension, a share-sheet target — means implementing one interface and
-changing nothing else.
+This is the one that always works, because it sidesteps the problem rather than
+fighting it: **the page is already open in your browser**, so there is no
+cross-origin request to refuse and no robot to turn away. A small script reads
+the recipe out of the page and hands it to MealHelp in a link.
+
+- **iPhone/iPad** — a Shortcut with *Run JavaScript on Web Page*, shown in the
+  Share sheet. Open a recipe in Safari, tap Share, tap **Add to MealHelp**.
+- **Computer** — the same script as a bookmark on the bookmarks bar.
+
+Both are generated for you, with copy buttons, on the Import screen. Only the
+recipe fields travel, which is what keeps a 700 KB page down to a link of a few
+thousand characters — a real Budget Bytes recipe comes to about 6 KB.
+
+### Your own fetcher
+
+`worker/` holds a ~40-line Cloudflare Worker that fetches a page and returns it
+with CORS headers. Deploy it, paste its URL into Settings, and MealHelp tries it
+before anything public — so no third party learns which recipes you read. It is
+optional, and it cannot get past the sites in (2) either; nothing on a server
+can.
+
+### Shared fetchers
+
+Without a fetcher of your own, MealHelp falls back to shared public ones. There
+are several, tried in turn, precisely so that none of them can take import down
+by disappearing. The honest cost is that the *address* of the recipe passes
+through a third party, which is why there is a switch for it in Settings.
+
+Every import — whichever route it came by — is previewed and editable before it
+is saved, and the original line of every ingredient is kept exactly as written.
 
 ---
 
@@ -260,12 +288,22 @@ discovered recipe is checked over in exactly the same place as a pasted one
 before it is saved. Recipes you already have are marked, so discovery does not
 offer you your own cookbook back.
 
-Results come from [TheMealDB](https://www.themealdb.com), which is free, needs
-no account, and allows browser requests directly — so discovery does not put a
-server of ours, or somebody's CORS proxy, in the path of your recipe box. The
-original publisher's link is kept and shown; saved recipes are yours from then
-on, and nothing about cooking, planning or shopping depends on that service
-being up.
+### Where results come from
+
+By default, [TheMealDB](https://www.themealdb.com) — free, no account, and it
+allows browser requests directly. It holds a few hundred recipes, which is fine
+for browsing and thin for searching.
+
+For real breadth, paste a free [Spoonacular](https://spoonacular.com/food-api)
+key into Settings. That opens hundreds of thousands of recipes and a proper
+ingredient search that ranks by how few things you are missing. The key is
+yours, stays on your device, and is only ever sent to Spoonacular — nothing is
+shipped in the app, because a key baked into a static site is a key given away
+to everyone who views source.
+
+Either way the original publisher's link is kept and shown; saved recipes are
+yours from then on, and nothing about cooking, planning or shopping depends on
+any of it being up.
 
 **This is the only part of MealHelp that needs a connection.** When it is
 unavailable you get a plain explanation and a route to the paste importer,

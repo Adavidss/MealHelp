@@ -26,6 +26,9 @@ const CookingModePage = lazy(() =>
 const ImportPage = lazy(() =>
   import('@/features/import/ImportPage').then((m) => ({ default: m.ImportPage })),
 )
+const CapturePage = lazy(() =>
+  import('@/features/import/CapturePage').then((m) => ({ default: m.CapturePage })),
+)
 const PlanWizardPage = lazy(() =>
   import('@/features/planning/PlanWizardPage').then((m) => ({
     default: m.PlanWizardPage,
@@ -100,6 +103,7 @@ export function AppRoutes() {
           <Route path="/recipes/:id/cook" element={<CookingModePage />} />
 
           <Route path="/import" element={<ImportPage />} />
+          <Route path="/capture/:payload" element={<CapturePage />} />
           <Route path="/discover" element={<DiscoverPage />} />
 
           <Route path="/grocery" element={<GroceryPage />} />
