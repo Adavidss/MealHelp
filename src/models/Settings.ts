@@ -54,6 +54,13 @@ export interface Settings {
   keepScreenAwakeWhileCooking: boolean
 
   /**
+   * Whether the picture gallery also shows recipes with no photograph. They are
+   * never hidden outright — only folded into a section with a visible count —
+   * and this remembers whether you keep it open.
+   */
+  showRecipesWithoutPhotos: boolean
+
+  /**
    * Reading a recipe page from another website needs someone to fetch it, and
    * a static site cannot. These control who.
    */
@@ -114,6 +121,7 @@ export const DEFAULT_SETTINGS: Settings = {
   recentlyCookedHardDays: 7,
   recentlyCookedSoftDays: 30,
   keepScreenAwakeWhileCooking: true,
+  showRecipesWithoutPhotos: false,
   importSettings: {
     useSharedFetchers: true,
   },

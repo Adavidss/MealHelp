@@ -1,7 +1,17 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { LayoutGrid, List, Plus, Search, SlidersHorizontal, X } from 'lucide-react'
+import {
+  ChevronDown,
+  ChevronUp,
+  LayoutGrid,
+  List,
+  Plus,
+  Search,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react'
+import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
 import { toggleFavorite } from '@/db/recipes'
 import { COOKING_METHODS, COOKING_METHOD_LABELS } from '@/models'
@@ -11,6 +21,7 @@ import { Modal } from '@/components/common/Modal'
 import { AddToPlanDialog } from '@/features/planner/AddToPlanDialog'
 import { CharacteristicFilters } from './CharacteristicFilters'
 import { filterByCharacteristics } from './characteristics'
+import { partitionByPhoto, useBrokenImageVersion } from './photoAvailability'
 import { RecipeCard } from './RecipeCard'
 import { RecipeTile } from './RecipeTile'
 import {
@@ -25,6 +36,7 @@ import { StarterRecipesButton } from './StarterRecipesButton'
 import styles from './RecipeLibraryPage.module.css'
 
 export function RecipeLibraryPage() {
+  const { settings, update } = useSettings()
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], undefined)
   const [query, setQuery] = useState('')
   const [characteristics, setCharacteristics] = useState<string[]>([])
@@ -48,6 +60,15 @@ export function RecipeLibraryPage() {
     () => filterByCharacteristics(searched, characteristics),
     [searched, characteristics],
   )
+
+  // Re-runs the split when an image turns out to be broken, so a rotted link
+  // moves itself out of the picture wall instead of leaving a hole in it.
+  const brokenVersion = useBrokenImageVersion()
+  const { withPhotos, withoutPhotos } = useMemo(
+    () => partitionByPhoto(results),
+    [results, brokenVersion],
+  )
+  const showAll = settings.showRecipesWithoutPhotos
 
   const methodCount = filters.methods?.length ?? 0
   const tagCount = filters.tags?.length ?? 0
@@ -202,17 +223,58 @@ export function RecipeLibraryPage() {
               </button>
             </EmptyState>
           ) : view === 'gallery' ? (
-            <ul className={styles.gallery}>
-              {results.map((recipe: Recipe) => (
-                <li key={recipe.id}>
-                  <RecipeTile
-                    recipe={recipe}
-                    onToggleFavorite={(r) => void toggleFavorite(r.id)}
-                    onAddToPlan={setPlanFor}
-                  />
-                </li>
-              ))}
-            </ul>
+            <>
+              {withPhotos.length ? (
+                <ul className={styles.gallery}>
+                  {withPhotos.map((recipe: Recipe) => (
+                    <li key={recipe.id}>
+                      <RecipeTile
+                        recipe={recipe}
+                        onToggleFavorite={(r) => void toggleFavorite(r.id)}
+                        onAddToPlan={setPlanFor}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+
+              {withoutPhotos.length ? (
+                <section className={styles.withoutPhotos}>
+                  <button
+                    type="button"
+                    className={styles.sectionToggle}
+                    aria-expanded={showAll}
+                    onClick={() =>
+                      void update({ showRecipesWithoutPhotos: !showAll })
+                    }
+                  >
+                    <span>
+                      {withoutPhotos.length} without a photo
+                      {withPhotos.length === 0 ? ' — everything matching' : ''}
+                    </span>
+                    {showAll ? (
+                      <ChevronUp size={17} aria-hidden="true" />
+                    ) : (
+                      <ChevronDown size={17} aria-hidden="true" />
+                    )}
+                  </button>
+
+                  {showAll ? (
+                    <ul className={styles.gallery}>
+                      {withoutPhotos.map((recipe: Recipe) => (
+                        <li key={recipe.id}>
+                          <RecipeTile
+                            recipe={recipe}
+                            onToggleFavorite={(r) => void toggleFavorite(r.id)}
+                            onAddToPlan={setPlanFor}
+                          />
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </section>
+              ) : null}
+            </>
           ) : (
             <ul className={styles.list}>
               {results.map((recipe: Recipe) => (

@@ -15,6 +15,7 @@ import type { CookingMethod, Recipe } from '@/models'
 import { formatMinutes } from '@/utils/date'
 import { activeMinutes } from '@/services/recipeMetrics'
 import { badgesFor, tilePalette } from './characteristics'
+import { isImageBroken, markImageBroken, useBrokenImageVersion } from './photoAvailability'
 import styles from './RecipeTile.module.css'
 
 /** A picture for a recipe that has none: the method it uses, drawn large. */
@@ -50,14 +51,26 @@ export function RecipeTile({ recipe, onToggleFavorite, onAddToPlan }: RecipeTile
   const active = Math.round(activeMinutes(recipe))
   const Icon = METHOD_ICON[recipe.cookingMethods[0]] ?? UtensilsCrossed
 
+  // A link that has rotted is treated as no picture at all, rather than left as
+  // an empty frame — see photoAvailability. Reading the version subscribes this
+  // tile, so it redraws the moment its own image gives up.
+  void useBrokenImageVersion()
+  const showPhoto = Boolean(recipe.image) && !isImageBroken(recipe.image)
+
   return (
     <article className={styles.tile}>
       <Link to={`/recipes/${recipe.id}`} className={styles.link}>
         <div
-          className={`${styles.art} ${recipe.image ? '' : styles[`palette${tilePalette(recipe)}`]}`}
+          className={`${styles.art} ${showPhoto ? '' : styles[`palette${tilePalette(recipe)}`]}`}
         >
-          {recipe.image ? (
-            <img src={recipe.image} alt="" loading="lazy" className={styles.image} />
+          {showPhoto ? (
+            <img
+              src={recipe.image}
+              alt=""
+              loading="lazy"
+              className={styles.image}
+              onError={() => markImageBroken(recipe.image as string)}
+            />
           ) : (
             <Icon size={44} aria-hidden="true" className={styles.icon} />
           )}

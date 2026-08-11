@@ -40,9 +40,10 @@ saved until you do.
 - **Recipe library** — a wall of picture tiles you can skim and pick from, each
   card saying what the recipe *is*: Crock-Pot, Simple, Hands off, Big batch,
   Great leftovers. Filter by those same words, with a live count on every one so
-  a dead end is visible before you tap it. Plus instant search across titles,
-  ingredients, tags, notes and cooking methods, and a compact list view when you
-  would rather scan names.
+  a dead end is visible before you tap it. Photographs lead; recipes without one
+  fold into a section below with a visible count. Plus instant search across
+  titles, ingredients, tags, notes and cooking methods, and a compact list view
+  when you would rather scan names.
 - **One standard recipe view** — once a recipe is in MealHelp you should never
   need the original page again. Scaling (½× to 2×), ingredient checkboxes,
   numbered directions, notes, equipment, and a link back to the source.
@@ -126,6 +127,26 @@ them is how you end up recommending five unrelated meals for five nights.
 React state is deliberately unremarkable: IndexedDB is the source of truth, read
 live through `dexie-react-hooks`, with React context for settings and toasts.
 There is no store library because nothing here has needed one.
+
+### Recipes without a photograph
+
+Most recipes people type in have no picture, so the gallery has to have an
+answer for that. Three prior art approaches, and what MealHelp took from each:
+
+- **Mealie** listens for the image's own `error` event and swaps in an icon.
+  This is the important one: a URL is not proof of a picture, and imported
+  recipes point at somebody else's server whose links rot. MealHelp does the
+  same, and a recipe whose image fails moves itself out of the photo section.
+- **Tandoor** ships one static placeholder SVG. Simple, but a wall of identical
+  placeholders is not browsable, so MealHelp generates artwork instead — a warm
+  wash picked deterministically from the title, with the cooking method drawn
+  large.
+- **Paprika** never hides a recipe; it offers a photo grid and a condensed list
+  and lets you switch. MealHelp keeps that principle: the ones without photos
+  are folded, never hidden, and their count is always on screen.
+
+The approaches were read and reimplemented, not copied — those projects are
+Vue, Django and closed-source respectively, and none of their code is here.
 
 ---
 

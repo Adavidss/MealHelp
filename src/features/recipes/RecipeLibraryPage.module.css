@@ -127,6 +127,41 @@
   list-style: none;
 }
 
+/*
+ * Recipes with no photograph are folded away rather than hidden: the count is
+ * always on screen, so it is obvious they exist and one tap brings them back.
+ * Paprika's answer to the same problem is a second view mode; this keeps the
+ * picture wall clean without ever making a recipe look lost.
+ */
+.withoutPhotos {
+  margin-top: var(--space-5);
+}
+
+.sectionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: var(--tap);
+  padding: var(--space-3) var(--space-4);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: var(--space-3);
+}
+
+.sectionToggle:hover {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
 @media (min-width: 700px) {
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
