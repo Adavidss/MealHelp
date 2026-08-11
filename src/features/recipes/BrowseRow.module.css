@@ -1,0 +1,81 @@
+.row {
+  margin-bottom: var(--space-5);
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.headingText {
+  min-width: 0;
+}
+
+.title {
+  font-size: 1.15rem;
+  line-height: 1.2;
+}
+
+.blurb {
+  margin: 2px 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+  min-height: 40px;
+  padding: 0 var(--space-2);
+  border: 0;
+  background: transparent;
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/*
+ * A shelf you push sideways. Snapping makes it land on a tile rather than
+ * halfway across one, which is the difference between a shelf and a smear.
+ */
+.scroller {
+  display: flex;
+  gap: var(--space-3);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* Room for the tiles' hover lift, which would otherwise be clipped. */
+  padding: 4px 4px var(--space-2);
+  margin: -4px -4px 0;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  flex: 0 0 auto;
+  width: 158px;
+  scroll-snap-align: start;
+}
+
+@media (min-width: 700px) {
+  .item {
+    width: 200px;
+  }
+}
+
+@media print {
+  .row {
+    display: none;
+  }
+}

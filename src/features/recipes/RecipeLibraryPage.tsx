@@ -19,6 +19,8 @@ import type { CookingMethod, Recipe } from '@/models'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Modal } from '@/components/common/Modal'
 import { AddToPlanDialog } from '@/features/planner/AddToPlanDialog'
+import { BrowseRow } from './BrowseRow'
+import { buildBrowseSections, sectionTotal } from './browseSections'
 import { CharacteristicFilters } from './CharacteristicFilters'
 import { filterByCharacteristics } from './characteristics'
 import { partitionByPhoto, useBrokenImageVersion } from './photoAvailability'
@@ -73,6 +75,19 @@ export function RecipeLibraryPage() {
   const methodCount = filters.methods?.length ?? 0
   const tagCount = filters.tags?.length ?? 0
   const advancedCount = methodCount + tagCount
+
+  /*
+   * Shelves are for browsing, and browsing is what you are doing when you have
+   * not asked for anything specific yet. The moment there is a search or a
+   * filter the question has become "show me these", so they step aside.
+   */
+  const isBrowsing =
+    !query.trim() && characteristics.length === 0 && advancedCount === 0
+
+  const shelves = useMemo(
+    () => (isBrowsing && view === 'gallery' ? buildBrowseSections(results) : []),
+    [isBrowsing, view, results],
+  )
 
   const toggleMethod = (method: CookingMethod) => {
     setFilters((current) => {
@@ -224,6 +239,21 @@ export function RecipeLibraryPage() {
             </EmptyState>
           ) : view === 'gallery' ? (
             <>
+              {shelves.map((shelf) => (
+                <BrowseRow
+                  key={shelf.id}
+                  section={shelf}
+                  total={sectionTotal(results, shelf)}
+                  onSeeAll={() => setCharacteristics(shelf.characteristics)}
+                  onToggleFavorite={(r) => void toggleFavorite(r.id)}
+                  onAddToPlan={setPlanFor}
+                />
+              ))}
+
+              {shelves.length ? (
+                <h2 className={styles.everythingHeading}>Everything</h2>
+              ) : null}
+
               {withPhotos.length ? (
                 <ul className={styles.gallery}>
                   {withPhotos.map((recipe: Recipe) => (

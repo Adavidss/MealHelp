@@ -37,13 +37,14 @@ saved until you do.
 
 ### Everything else
 
-- **Recipe library** — a wall of picture tiles you can skim and pick from, each
-  card saying what the recipe *is*: Crock-Pot, Simple, Hands off, Big batch,
-  Great leftovers. Filter by those same words, with a live count on every one so
-  a dead end is visible before you tap it. Photographs lead; recipes without one
-  fold into a section below with a visible count. Plus instant search across
-  titles, ingredients, tags, notes and cooking methods, and a compact list view
-  when you would rather scan names.
+- **Recipe library** — opens on shelves worth browsing: *Easy Crock-Pot meals*,
+  *Easy Instant Pot meals*, *One pot meals*. Below them, a wall of picture tiles
+  where each card says what the recipe *is*: Crock-Pot, Simple, Hands off, Big
+  batch, Great leftovers. Filter by those same words, with a live count on every
+  one so a dead end is visible before you tap it. Photographs lead; recipes
+  without one fold into a section with a visible count. Plus instant search
+  across titles, ingredients, tags, notes and cooking methods, and a compact
+  list view when you would rather scan names.
 - **One standard recipe view** — once a recipe is in MealHelp you should never
   need the original page again. Scaling (½× to 2×), ingredient checkboxes,
   numbered directions, notes, equipment, and a link back to the source.

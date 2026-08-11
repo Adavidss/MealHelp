@@ -133,6 +133,14 @@
  * Paprika's answer to the same problem is a second view mode; this keeps the
  * picture wall clean without ever making a recipe look lost.
  */
+/* Separates the curated shelves from the full library below them. */
+.everythingHeading {
+  font-size: 1.15rem;
+  margin: var(--space-5) 0 var(--space-3);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--line);
+}
+
 .withoutPhotos {
   margin-top: var(--space-5);
 }
