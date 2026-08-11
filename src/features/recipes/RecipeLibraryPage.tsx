@@ -8,11 +8,14 @@ import { COOKING_METHODS, COOKING_METHOD_LABELS } from '@/models'
 import type { CookingMethod, Recipe } from '@/models'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Modal } from '@/components/common/Modal'
+import { AddToPlanDialog } from '@/features/planner/AddToPlanDialog'
+import { CharacteristicFilters } from './CharacteristicFilters'
+import { filterByCharacteristics } from './characteristics'
 import { RecipeCard } from './RecipeCard'
+import { RecipeTile } from './RecipeTile'
 import {
   RECIPE_SORTS,
   RECIPE_SORT_LABELS,
-  activeFilterCount,
   collectTags,
   filterRecipes,
   type RecipeFilters,
@@ -21,37 +24,34 @@ import {
 import { StarterRecipesButton } from './StarterRecipesButton'
 import styles from './RecipeLibraryPage.module.css'
 
-const QUICK_FILTERS: Array<{ key: keyof RecipeFilters; label: string }> = [
-  { key: 'favoritesOnly', label: 'Favorites' },
-  { key: 'quickOnly', label: 'Quick' },
-  { key: 'bulkOnly', label: 'Big batch' },
-  { key: 'leftoverFriendly', label: 'Great leftovers' },
-  { key: 'neverCooked', label: 'Never cooked' },
-  { key: 'highlyRated', label: 'Highly rated' },
-  { key: 'freezerFriendly', label: 'Freezer' },
-  { key: 'mealPrepFriendly', label: 'Meal prep' },
-]
-
 export function RecipeLibraryPage() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], undefined)
   const [query, setQuery] = useState('')
+  const [characteristics, setCharacteristics] = useState<string[]>([])
   const [filters, setFilters] = useState<RecipeFilters>({})
   const [sort, setSort] = useState<RecipeSort>('recent')
-  const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [view, setView] = useState<'gallery' | 'list'>('gallery')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [planFor, setPlanFor] = useState<Recipe>()
 
   const tags = useMemo(() => collectTags(recipes ?? []), [recipes])
 
-  const results = useMemo(
+  // The search and the method/tag filters narrow first; the characteristic
+  // counts are then taken against what is left, so they describe what tapping
+  // one would actually do right now rather than the library as a whole.
+  const searched = useMemo(
     () => filterRecipes(recipes ?? [], { ...filters, query }, sort),
     [recipes, filters, query, sort],
   )
 
-  const filterCount = activeFilterCount(filters)
+  const results = useMemo(
+    () => filterByCharacteristics(searched, characteristics),
+    [searched, characteristics],
+  )
 
-  const toggleFilter = (key: keyof RecipeFilters) => {
-    setFilters((current) => ({ ...current, [key]: !current[key] }))
-  }
+  const methodCount = filters.methods?.length ?? 0
+  const tagCount = filters.tags?.length ?? 0
+  const advancedCount = methodCount + tagCount
 
   const toggleMethod = (method: CookingMethod) => {
     setFilters((current) => {
@@ -97,8 +97,8 @@ export function RecipeLibraryPage() {
           </p>
         </div>
         <div className="row-tight">
-          <Link to="/import" className="btn btn-secondary btn-sm">
-            Import
+          <Link to="/discover" className="btn btn-secondary btn-sm">
+            Discover
           </Link>
           <Link to="/recipes/new" className="btn btn-primary btn-sm">
             <Plus size={16} aria-hidden="true" />
@@ -135,18 +135,22 @@ export function RecipeLibraryPage() {
               type="button"
               className="btn btn-secondary btn-icon"
               onClick={() => setFiltersOpen(true)}
-              aria-label={`Filters${filterCount ? `, ${filterCount} active` : ''}`}
+              aria-label={`More filters${advancedCount ? `, ${advancedCount} active` : ''}`}
             >
               <SlidersHorizontal size={18} aria-hidden="true" />
-              {filterCount ? <span className={styles.badge}>{filterCount}</span> : null}
+              {advancedCount ? (
+                <span className={styles.badge}>{advancedCount}</span>
+              ) : null}
             </button>
             <button
               type="button"
               className="btn btn-secondary btn-icon"
-              onClick={() => setView(view === 'grid' ? 'list' : 'grid')}
-              aria-label={view === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
+              onClick={() => setView(view === 'gallery' ? 'list' : 'gallery')}
+              aria-label={
+                view === 'gallery' ? 'Switch to compact list' : 'Switch to picture view'
+              }
             >
-              {view === 'grid' ? (
+              {view === 'gallery' ? (
                 <List size={18} aria-hidden="true" />
               ) : (
                 <LayoutGrid size={18} aria-hidden="true" />
@@ -154,19 +158,11 @@ export function RecipeLibraryPage() {
             </button>
           </div>
 
-          <div className={styles.chipRow}>
-            {QUICK_FILTERS.map((filter) => (
-              <button
-                key={filter.key}
-                type="button"
-                className="chip chip-button"
-                aria-pressed={Boolean(filters[filter.key])}
-                onClick={() => toggleFilter(filter.key)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
+          <CharacteristicFilters
+            recipes={searched}
+            selected={characteristics}
+            onChange={setCharacteristics}
+          />
 
           <div className={styles.resultsBar}>
             <p className="text-sm muted">
@@ -191,7 +187,7 @@ export function RecipeLibraryPage() {
           {results.length === 0 ? (
             <EmptyState
               title="Nothing matched"
-              description="Try a different word, or clear the filters."
+              description="Try a different word, or turn some filters off."
             >
               <button
                 type="button"
@@ -199,18 +195,31 @@ export function RecipeLibraryPage() {
                 onClick={() => {
                   setQuery('')
                   setFilters({})
+                  setCharacteristics([])
                 }}
               >
-                Clear search and filters
+                Clear everything
               </button>
             </EmptyState>
+          ) : view === 'gallery' ? (
+            <ul className={styles.gallery}>
+              {results.map((recipe: Recipe) => (
+                <li key={recipe.id}>
+                  <RecipeTile
+                    recipe={recipe}
+                    onToggleFavorite={(r) => void toggleFavorite(r.id)}
+                    onAddToPlan={setPlanFor}
+                  />
+                </li>
+              ))}
+            </ul>
           ) : (
-            <ul className={view === 'grid' ? styles.grid : styles.list}>
+            <ul className={styles.list}>
               {results.map((recipe: Recipe) => (
                 <li key={recipe.id}>
                   <RecipeCard
                     recipe={recipe}
-                    view={view}
+                    view="list"
                     onToggleFavorite={(r) => void toggleFavorite(r.id)}
                   />
                 </li>
@@ -221,7 +230,7 @@ export function RecipeLibraryPage() {
       ) : (
         <EmptyState
           title="Save your first recipe"
-          description="Import one from a website, add your own, or start from a handful MealHelp ships with."
+          description="Find one online, import from a link, add your own, or start from a handful MealHelp ships with."
         >
           <Link to="/discover" className="btn btn-primary">
             Discover recipes
@@ -238,7 +247,7 @@ export function RecipeLibraryPage() {
 
       <Modal
         open={filtersOpen}
-        title="Filters"
+        title="More filters"
         onClose={() => setFiltersOpen(false)}
         footer={
           <>
@@ -247,7 +256,7 @@ export function RecipeLibraryPage() {
               className="btn btn-ghost"
               onClick={() => setFilters({})}
             >
-              Clear all
+              Clear
             </button>
             <button
               type="button"
@@ -278,7 +287,7 @@ export function RecipeLibraryPage() {
 
         {tags.length ? (
           <div className="field">
-            <span className="field-label">Tags</span>
+            <span className="field-label">Your tags</span>
             <div className="row-tight">
               {tags.map((tag) => (
                 <button
@@ -294,24 +303,15 @@ export function RecipeLibraryPage() {
             </div>
           </div>
         ) : null}
-
-        <div className="field">
-          <span className="field-label">Good for</span>
-          <div className="row-tight">
-            {QUICK_FILTERS.map((filter) => (
-              <button
-                key={filter.key}
-                type="button"
-                className="chip chip-button"
-                aria-pressed={Boolean(filters[filter.key])}
-                onClick={() => toggleFilter(filter.key)}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </div>
       </Modal>
+
+      {planFor ? (
+        <AddToPlanDialog
+          open
+          recipe={planFor}
+          onClose={() => setPlanFor(undefined)}
+        />
+      ) : null}
     </div>
   )
 }

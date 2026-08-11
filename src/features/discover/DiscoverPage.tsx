@@ -478,8 +478,11 @@ export function DiscoverPage() {
                       {entry.result.image ? (
                         <img src={entry.result.image} alt="" loading="lazy" />
                       ) : (
-                        <UtensilsCrossed size={20} aria-hidden="true" />
+                        <UtensilsCrossed size={30} aria-hidden="true" />
                       )}
+                      {opening === entry.result.externalId ? (
+                        <Loader2 size={17} aria-hidden="true" className={styles.spinner} />
+                      ) : null}
                     </span>
                     <span className={styles.cardBody}>
                       <span className={styles.cardTitle}>{entry.result.title}</span>
@@ -505,9 +508,6 @@ export function DiscoverPage() {
                         </span>
                       ) : null}
                     </span>
-                    {opening === entry.result.externalId ? (
-                      <Loader2 size={17} aria-hidden="true" className={styles.spinner} />
-                    ) : null}
                   </button>
                 </li>
               ))}

@@ -96,11 +96,28 @@
   font-size: 0.85rem;
 }
 
-.grid {
+/*
+ * Two across on a phone, more as the screen allows. Big enough that the picture
+ * and the badges do the choosing, rather than the title alone.
+ */
+.gallery {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: var(--space-3);
   list-style: none;
+}
+
+@media (min-width: 560px) {
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  }
+}
+
+@media (min-width: 1000px) {
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-4);
+  }
 }
 
 .list {

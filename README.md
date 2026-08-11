@@ -37,9 +37,12 @@ saved until you do.
 
 ### Everything else
 
-- **Recipe library** — grid or list, instant search across titles, ingredients,
-  tags, notes and cooking methods. Filter by quick, big-batch, freezer-friendly,
-  slow cooker, never cooked, highly rated, and so on.
+- **Recipe library** — a wall of picture tiles you can skim and pick from, each
+  card saying what the recipe *is*: Crock-Pot, Simple, Hands off, Big batch,
+  Great leftovers. Filter by those same words, with a live count on every one so
+  a dead end is visible before you tap it. Plus instant search across titles,
+  ingredients, tags, notes and cooking methods, and a compact list view when you
+  would rather scan names.
 - **One standard recipe view** — once a recipe is in MealHelp you should never
   need the original page again. Scaling (½× to 2×), ingredient checkboxes,
   numbered directions, notes, equipment, and a link back to the source.
