@@ -95,15 +95,33 @@ describe('fetchRecipePage', () => {
     })
   })
 
-  it('spots a captcha wall even behind a 200', async () => {
+  it('spots a wall served behind a cheerful 200', async () => {
     mockNetwork(() => ({
       status: 200,
-      body: '<!doctype html><html><body>Please complete the CAPTCHA to continue</body></html>',
+      body: '<!doctype html><html><head><title>Attention Required!</title></head><body>Please verify you are human.</body></html>',
     }))
 
     await expect(fetchRecipePage('https://example.com/recipe')).rejects.toMatchObject({
       botBlocked: true,
     })
+  })
+
+  /**
+   * A real BBC Good Food recipe carries the word "captcha" in a consent script.
+   * Reading the raw markup for block-page words flagged it as a wall and broke
+   * a site that had been importing fine, so only the page's visible words count.
+   */
+  it('does not mistake a script mentioning captcha for a block page', async () => {
+    mockNetwork(() => ({
+      status: 200,
+      body: `<!doctype html><html><head><title>Easy classic lasagne recipe | Good Food</title>
+        <script>window.recaptchaSettings={captcha:'v3'}</script>
+        <script type="application/ld+json">{"@type":"Recipe","name":"Lasagne"}</script>
+        </head><body><article>A proper recipe page.</article></body></html>`,
+    }))
+
+    const page = await fetchRecipePage('https://example.com/recipe')
+    expect(page.via).toBe('direct')
   })
 
   it('does not mistake a JSON error page for a recipe page', async () => {

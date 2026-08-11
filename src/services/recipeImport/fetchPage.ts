@@ -61,28 +61,39 @@ const TIMEOUT_MS = 12_000
  * challenge page back as a perfectly cheerful 200, and calling that "no recipe
  * found" sends the user off to fix the wrong thing.
  */
+const WALL_PHRASES = [
+  'access denied',
+  'attention required',
+  'are you a robot',
+  'just a moment',
+  'checking your browser',
+  'verify you are human',
+  'request unsuccessful',
+  'security check',
+]
+
 export function looksBotBlocked(status: number, html: string): boolean {
   if (status === 403 || status === 429 || status === 401) return true
 
-  const sample = html.slice(0, 20_000).toLowerCase()
-  const walls = [
-    'captcha',
-    'are you a robot',
-    'access denied',
-    'attention required',
-    'enable javascript and cookies',
-    'cf-browser-verification',
-    'checking your browser',
-    'request unsuccessful',
-    'incapsula',
-    'perimeterx',
-    'simple challenge',
-  ]
-  // Nothing beyond these markers: guessing from page size or shape would
-  // misread a small honest recipe page as a wall, and a wrong "this site
-  // blocks robots" is worse than no verdict. A challenge page that slips
-  // through simply parses as "no recipe found", which offers the same fix.
-  return walls.some((marker) => sample.includes(marker))
+  /*
+   * Only the page's own words count, and only its title and opening copy.
+   *
+   * Scanning raw markup does not work: a perfectly good BBC Good Food recipe
+   * has the word "captcha" inside a consent script, and treating that as a
+   * wall broke a site that had been importing fine. Scripts and markup are
+   * stripped first, and the search stops after the opening lines — which is
+   * all a genuine block page consists of.
+   */
+  const title = /<title[^>]*>([^<]*)/i.exec(html)?.[1]?.toLowerCase() ?? ''
+  if (WALL_PHRASES.some((phrase) => title.includes(phrase))) return true
+
+  const visible = html
+    .replace(/<(script|style|noscript)[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .slice(0, 1500)
+    .toLowerCase()
+
+  return WALL_PHRASES.some((phrase) => visible.includes(phrase))
 }
 
 function looksLikeHtml(text: string): boolean {
