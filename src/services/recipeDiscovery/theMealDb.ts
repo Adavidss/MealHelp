@@ -191,6 +191,88 @@ export function toIngredientQuery(ingredient: string): string {
   return ingredient.trim().toLowerCase().replace(/\s+/g, '_')
 }
 
+/**
+ * Browsing, rather than searching.
+ *
+ * This database is small but it is *organised* — every recipe carries a
+ * category and a cuisine — which makes "show me Japanese food" a better way
+ * into a few hundred recipes than typing guesses into a search box.
+ */
+export async function listCategories(signal?: AbortSignal): Promise<string[]> {
+  const data = await getJson<{ meals: Array<{ strCategory: string }> | null }>(
+    '/list.php?c=list',
+    signal,
+  )
+  return (data.meals ?? []).map((entry) => entry.strCategory).filter(Boolean)
+}
+
+/**
+ * The cuisines this database actually holds recipes for.
+ *
+ * Its own list endpoint returns 195 countries, most of which have nothing —
+ * tapping "French" or "Andorran" would open an empty screen. Checking them at
+ * runtime is not an option either: it is 195 requests against a free service
+ * that rate-limits, which is both rude and unreliable. So the list is fixed,
+ * measured once against the live API.
+ *
+ * The cost of it being out of date is a cuisine not offered, never a dead end.
+ */
+const CUISINES_WITH_RECIPES = [
+  'Algerian',
+  'Australian',
+  'British',
+  'Canadian',
+  'Chinese',
+  'Croatian',
+  'Egyptian',
+  'Filipino',
+  'Greek',
+  'Irish',
+  'Italian',
+  'Jamaican',
+  'Japanese',
+  'Kenyan',
+  'Malaysian',
+  'Mexican',
+  'Moroccan',
+  'Polish',
+  'Portuguese',
+  'Russian',
+  'Spanish',
+  'Thai',
+  'Tunisian',
+  'Turkish',
+  'Ukrainian',
+  'Uruguayan',
+  'Vietnamese',
+]
+
+export function listCuisines(): string[] {
+  return CUISINES_WITH_RECIPES
+}
+
+export async function browseByCategory(
+  category: string,
+  signal?: AbortSignal,
+): Promise<DiscoveryResult[]> {
+  const data = await getJson<{ meals: MealSummary[] | null }>(
+    `/filter.php?c=${encodeURIComponent(category)}`,
+    signal,
+  )
+  return (data.meals ?? []).map(toResult)
+}
+
+export async function browseByCuisine(
+  cuisine: string,
+  signal?: AbortSignal,
+): Promise<DiscoveryResult[]> {
+  const data = await getJson<{ meals: MealSummary[] | null }>(
+    `/filter.php?a=${encodeURIComponent(cuisine)}`,
+    signal,
+  )
+  return (data.meals ?? []).map(toResult)
+}
+
 export const theMealDbProvider: DiscoveryProvider = {
   id: PROVIDER_ID,
   label: 'TheMealDB',

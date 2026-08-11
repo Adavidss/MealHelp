@@ -30,6 +30,8 @@ export interface RankedDiscovery {
   matched: string[]
   /** True when a recipe with this title is already saved. */
   alreadySaved?: boolean
+  /** Which source it came from, once more than one is being searched. */
+  sourceLabel?: string
 }
 
 export interface DiscoveryProvider {

@@ -272,7 +272,7 @@ is saved, and the original line of every ingredient is kept exactly as written.
 
 Import assumes you already found a recipe. **Discover** is for when you have not.
 
-Three ways in:
+Four ways in:
 
 - **From my pantry** — pick from what MealHelp knows you keep around, add
   anything else, and get results ranked by how many of those ingredients each
@@ -280,8 +280,10 @@ Three ways in:
   one of your three is still worth seeing, it just sorts below one using all
   three. Staples like salt and olive oil are left out of the search, because
   they match half of everything.
-- **Search** — by name.
-- **Surprise me** — five at random, for when nothing sounds good.
+- **Search** — by name, across every source at once.
+- **Browse** — by kind of dish or by cuisine, for when you would rather look
+  than type.
+- **Surprise me** — a handful at random, for when nothing sounds good.
 
 Opening a result shows the same preview screen the importer uses, so a
 discovered recipe is checked over in exactly the same place as a pasted one
@@ -290,16 +292,29 @@ offer you your own cookbook back.
 
 ### Where results come from
 
-By default, [TheMealDB](https://www.themealdb.com) — free, no account, and it
-allows browser requests directly. It holds a few hundred recipes, which is fine
-for browsing and thin for searching.
+Searches run across every source at once and the results are interleaved and
+labelled, so one source being slow or down never empties the screen.
 
-For real breadth, paste a free [Spoonacular](https://spoonacular.com/food-api)
-key into Settings. That opens hundreds of thousands of recipes and a proper
-ingredient search that ranks by how few things you are missing. The key is
-yours, stays on your device, and is only ever sent to Spoonacular — nothing is
-shipped in the app, because a key baked into a static site is a key given away
-to everyone who views source.
+| Source | What it adds | Needs |
+| --- | --- | --- |
+| [TheMealDB](https://www.themealdb.com) | A few hundred well-organised recipes, browsable by dish type and cuisine | Nothing |
+| [Wikibooks Cookbook](https://en.wikibooks.org/wiki/Cookbook:Table_of_Contents) | Thousands more, CC BY-SA, run by the Wikimedia Foundation | Nothing |
+| [Spoonacular](https://spoonacular.com/food-api) | Hundreds of thousands, plus ingredient search that ranks by what you are missing | A free key of your own |
+
+The bar for being in that list: no account, no key baked into the app, the data
+is offered for this sort of use, and whoever runs it is unlikely to vanish or
+start charging without warning.
+
+A Spoonacular key is yours, stays on your device, and is only ever sent to
+Spoonacular. Nothing is shipped with the app, because a key baked into a static
+site is a key given away to everyone who views source.
+
+Two details worth knowing about the free sources. The Wikibooks search is
+restricted to its Recipes category — a plain search for "lasagne" otherwise
+offers you Basil and the Manual of Style, because those pages mention it. And
+TheMealDB's cuisine list is fixed in the code rather than fetched: its own
+endpoint returns 195 countries, most of which hold nothing, and checking them
+at runtime would mean 195 requests against a free service that rate-limits.
 
 Either way the original publisher's link is kept and shown; saved recipes are
 yours from then on, and nothing about cooking, planning or shopping depends on

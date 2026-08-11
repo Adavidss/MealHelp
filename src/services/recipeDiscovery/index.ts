@@ -1,4 +1,6 @@
 export * from './types'
 export * from './discover'
+export * from './registry'
 export * from './theMealDb'
+export * from './wikibooks'
 export * from './spoonacular'

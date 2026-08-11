@@ -8,12 +8,19 @@ import type { Recipe, RecipeDraft } from '@/models'
 import {
   DiscoveryError,
   MAX_INGREDIENTS_PER_SEARCH,
-  createSpoonacularProvider,
+  activeProviders,
+  browseByCategory,
+  browseByCuisine,
   discoverByIngredients,
+  listCategories,
+  listCuisines,
   markAlreadySaved,
+  providerById,
+  searchAllProviders,
   spoonacularByIngredients,
   suggestedSearchIngredients,
   theMealDbProvider,
+  withSourceLabels,
   type RankedDiscovery,
 } from '@/services/recipeDiscovery'
 import { useSettings } from '@/app/SettingsContext'
@@ -22,7 +29,7 @@ import { useToast } from '@/components/common/Toast'
 import { ImportPreview } from '@/features/import/ImportPreview'
 import styles from './DiscoverPage.module.css'
 
-type Mode = 'pantry' | 'search' | 'surprise'
+type Mode = 'pantry' | 'search' | 'browse' | 'surprise'
 
 export function DiscoverPage() {
   const { toast } = useToast()
@@ -31,13 +38,11 @@ export function DiscoverPage() {
   const pantry = useLiveQuery(() => db.pantryItems.toArray(), [], [])
   const library = useLiveQuery(() => db.recipes.toArray(), [], [] as Recipe[])
 
-  // A key of the user's own opens a far larger database; without one the free
-  // one is still there. The choice is theirs and is remembered in Settings.
+  // Every source that needs nothing from the user, plus their own key if they
+  // added one. Searching is done across all of them at once.
   const spoonacularKey = settings.spoonacularKey?.trim()
-  const provider = useMemo(
-    () => (spoonacularKey ? createSpoonacularProvider(spoonacularKey) : theMealDbProvider),
-    [spoonacularKey],
-  )
+  const providerOptions = useMemo(() => ({ spoonacularKey }), [spoonacularKey])
+  const providers = useMemo(() => activeProviders(providerOptions), [providerOptions])
 
   const [mode, setMode] = useState<Mode>('pantry')
   const [selected, setSelected] = useState<string[]>([])
@@ -50,6 +55,27 @@ export function DiscoverPage() {
   const [opening, setOpening] = useState<string>()
 
   const inFlight = useRef<AbortController>(null)
+
+  // The browse lists are fixed; fetched once when that tab is first opened.
+  const [catalogue, setCatalogue] = useState<{
+    categories: string[]
+    cuisines: string[]
+  }>()
+
+  useEffect(() => {
+    if (mode !== 'browse' || catalogue) return
+    let cancelled = false
+    void listCategories()
+      .then((categories) => {
+        if (!cancelled) setCatalogue({ categories, cuisines: listCuisines() })
+      })
+      .catch(() => {
+        if (!cancelled) setCatalogue({ categories: [], cuisines: listCuisines() })
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [mode, catalogue])
 
   // Whatever the user has told MealHelp they keep around, minus the staples
   // that would match half the database on their own.
@@ -71,7 +97,9 @@ export function DiscoverPage() {
     setFailure(undefined)
     try {
       const found = await fn(controller.signal)
-      setResults(markAlreadySaved(found, library ?? []))
+      setResults(
+        withSourceLabels(markAlreadySaved(found, library ?? []), providerOptions),
+      )
     } catch (error) {
       if (controller.signal.aborted) return
       if (error instanceof DiscoveryError) {
@@ -98,32 +126,48 @@ export function DiscoverPage() {
       // Deliberately unfiltered: a recipe using one of your three ingredients
       // is still worth seeing, it just sorts below one that uses all three.
       // Requiring full coverage is how "what can I make" returns nothing.
-      return discoverByIngredients(provider, selected, { signal, library: library ?? [] })
+      return discoverByIngredients(theMealDbProvider, selected, {
+        signal,
+        library: library ?? [],
+      })
     })
 
   const searchText = () =>
     run(async (signal) => {
-      const found = await provider.searchByText(query, signal)
+      const { results: found, failures } = await searchAllProviders(providers, (p) =>
+        p.searchByText(query, signal),
+      )
+      // Only a total washout is worth an error; one source being down is not.
+      if (!found.length && failures.length === providers.length) throw failures[0]
+      return found.map((result) => ({ result, matched: [] }))
+    })
+
+  const browse = (kind: 'category' | 'cuisine', value: string) =>
+    run(async (signal) => {
+      const found =
+        kind === 'category'
+          ? await browseByCategory(value, signal)
+          : await browseByCuisine(value, signal)
       return found.map((result) => ({ result, matched: [] }))
     })
 
   const surprise = () =>
     run(async (signal) => {
-      // One request per card, because the API hands out a single random meal.
-      const picks = await Promise.all(
-        Array.from({ length: 5 }, () => provider.random(signal)),
+      const { results: found, failures } = await searchAllProviders(providers, (p) =>
+        p.random(signal),
       )
-      const seen = new Set<string>()
-      return picks
-        .flat()
-        .filter((result) => !seen.has(result.externalId) && seen.add(result.externalId))
-        .map((result) => ({ result, matched: [] }))
+      if (!found.length && failures.length === providers.length) throw failures[0]
+      return found.slice(0, 8).map((result) => ({ result, matched: [] }))
     })
 
   const open = async (entry: RankedDiscovery) => {
     setOpening(entry.result.externalId)
     try {
-      const draft = await provider.fetchRecipe(entry.result.externalId)
+      // Results come from several sources, so the one that produced this hit is
+      // the one asked for the full recipe.
+      const source =
+        providerById(entry.result.providerId, providerOptions) ?? theMealDbProvider
+      const draft = await source.fetchRecipe(entry.result.externalId)
       setPreview(draft)
     } catch (error) {
       toast(
@@ -166,7 +210,7 @@ export function DiscoverPage() {
   if (preview) {
     return (
       <ImportPreview
-        result={{ recipe: preview, warnings: [], adapterId: provider.id }}
+        result={{ recipe: preview, warnings: [], adapterId: 'discover' }}
         onBack={() => setPreview(undefined)}
         onSave={(draft) => void save(draft)}
         onEdit={(draft) => void save(draft)}
@@ -187,9 +231,10 @@ export function DiscoverPage() {
 
       {!spoonacularKey ? (
         <p className={styles.sourceNote}>
-          Searching a small free database of a few hundred recipes.{' '}
+          Searching TheMealDB and the Wikibooks Cookbook — a few thousand
+          recipes, free and no account needed.{' '}
           <Link to="/settings">Add a free Spoonacular key</Link> to search
-          hundreds of thousands instead.
+          hundreds of thousands more.
         </p>
       ) : null}
 
@@ -211,6 +256,15 @@ export function DiscoverPage() {
           onClick={() => setMode('search')}
         >
           Search
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={mode === 'browse'}
+          className="chip chip-button"
+          onClick={() => setMode('browse')}
+        >
+          Browse
         </button>
         <button
           type="button"
@@ -325,10 +379,45 @@ export function DiscoverPage() {
         </section>
       ) : null}
 
+      {mode === 'browse' ? (
+        <section className={styles.panel}>
+          <p className="field-label">By kind of dish</p>
+          <div className="row-tight">
+            {(catalogue?.categories ?? []).map((category) => (
+              <button
+                key={category}
+                type="button"
+                className="chip chip-button"
+                onClick={() => void browse('category', category)}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          <p className="field-label" style={{ marginTop: 'var(--space-4)' }}>
+            By cuisine
+          </p>
+          <div className={styles.cuisineRow}>
+            {(catalogue?.cuisines ?? []).map((cuisine) => (
+              <button
+                key={cuisine}
+                type="button"
+                className="chip chip-button"
+                onClick={() => void browse('cuisine', cuisine)}
+              >
+                {cuisine}
+              </button>
+            ))}
+          </div>
+          {!catalogue ? <p className="text-sm muted">Loading the list…</p> : null}
+        </section>
+      ) : null}
+
       {mode === 'surprise' ? (
         <section className={styles.panel}>
           <p className="text-sm muted">
-            Five recipes at random, for when nothing sounds good.
+            A handful at random from every source, for when nothing sounds good.
           </p>
           <button
             type="button"
@@ -406,6 +495,9 @@ export function DiscoverPage() {
                             .join(' · ')
                         )}
                       </span>
+                      {entry.sourceLabel ? (
+                        <span className={styles.source}>{entry.sourceLabel}</span>
+                      ) : null}
                       {entry.alreadySaved ? (
                         <span className={styles.saved}>
                           <Check size={12} aria-hidden="true" />
@@ -421,10 +513,15 @@ export function DiscoverPage() {
               ))}
             </ul>
             <p className={styles.attribution}>
-              {provider.attribution} ·{' '}
-              <a href={provider.attributionUrl} target="_blank" rel="noreferrer">
-                themealdb.com
-              </a>
+              Searching{' '}
+              {providers.map((source, index) => (
+                <span key={source.id}>
+                  {index > 0 ? ' · ' : ''}
+                  <a href={source.attributionUrl} target="_blank" rel="noreferrer">
+                    {source.label}
+                  </a>
+                </span>
+              ))}
             </p>
           </>
         )

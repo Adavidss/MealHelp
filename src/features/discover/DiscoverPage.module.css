@@ -151,6 +151,24 @@
   font-weight: 600;
 }
 
+.source {
+  font-size: 0.72rem;
+  color: var(--ink-faint);
+}
+
+/* 195 cuisines is a lot of chips; give them their own scrolling box. */
+.cuisineRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  max-height: 190px;
+  overflow-y: auto;
+  padding: var(--space-1);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunk);
+}
+
 .saved {
   display: inline-flex;
   align-items: center;
