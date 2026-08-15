@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { parseRecipeFromHtml } from './jsonLd'
 import { parseRecipeText } from './parseText'
 import { detectTimerMinutes, parseISODuration, parseServings } from './normalizeDraft'
-import { normalizeUrl } from './adapters'
+import { looksLikeAddress, normalizeUrl } from './adapters'
 
 const JSON_LD_PAGE = `<!doctype html><html><head><title>Curry</title>
 <script type="application/ld+json">
@@ -170,5 +170,17 @@ describe('normalizeUrl', () => {
     expect(normalizeUrl('example.com/curry?utm_source=pinterest')).toBe(
       'https://example.com/curry',
     )
+  })
+})
+
+describe('looksLikeAddress', () => {
+  it('treats a bare hostname as somewhere to go, and words as something to search for', () => {
+    expect(looksLikeAddress('budgetbytes.com')).toBe(true)
+    expect(looksLikeAddress('www.bbcgoodfood.com/recipes')).toBe(true)
+    expect(looksLikeAddress('https://smittenkitchen.com/')).toBe(true)
+    expect(looksLikeAddress('chicken tikka masala')).toBe(false)
+    expect(looksLikeAddress('lasagne')).toBe(false)
+    // A full stop in a sentence is not a domain.
+    expect(looksLikeAddress('soup. easy')).toBe(false)
   })
 })

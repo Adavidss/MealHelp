@@ -8,6 +8,11 @@ public fetchers, and the page-capture button handles anything neither can
 reach. Run it if you would rather no third party saw which recipes you look up,
 or if the shared fetchers are being unreliable.
 
+The built-in browser and its web search go through the same fetcher, so with
+this deployed, every page you browse inside MealHelp comes through your own
+Worker too — and pages over the shared fetchers' size limit (about 1 MB; some
+magazine sites are bigger) open here when they would not otherwise.
+
 ## Deploy
 
 ```bash

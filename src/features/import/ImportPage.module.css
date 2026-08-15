@@ -38,6 +38,40 @@
   background: var(--line);
 }
 
+.browseLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.browseLink:hover {
+  border-color: var(--line-strong);
+}
+
+.browseLink > svg {
+  flex: none;
+  color: var(--accent);
+}
+
+.browseText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.browseText small {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
 .pasteBox {
   min-height: 220px;
   font-family: var(--font-mono);

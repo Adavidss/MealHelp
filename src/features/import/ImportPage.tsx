@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, ClipboardPaste, Link2, Loader2 } from 'lucide-react'
+import { ArrowLeft, ClipboardPaste, Globe, Link2, Loader2 } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
 import { saveRecipe } from '@/db/recipes'
 import type { RecipeDraft } from '@/models'
@@ -150,6 +150,17 @@ export function ImportPage() {
       <div className={styles.divider}>
         <span>or</span>
       </div>
+
+      <Link to="/browser" className={styles.browseLink}>
+        <Globe size={20} aria-hidden="true" />
+        <span className={styles.browseText}>
+          <strong>Find one without leaving</strong>
+          <small>
+            Search the web or open a recipe site right here, and add the recipe with
+            one tap.
+          </small>
+        </span>
+      </Link>
 
       {showPaste ? (
         <div>

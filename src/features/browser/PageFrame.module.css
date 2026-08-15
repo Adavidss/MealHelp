@@ -1,0 +1,9 @@
+.frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  /* Pages are almost always white; the frame keeps that even at night, since
+     recolouring somebody else's page is not something a browser should do. */
+  background: #fff;
+}

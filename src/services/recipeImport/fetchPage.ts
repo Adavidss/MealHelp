@@ -17,16 +17,28 @@ import type { ImportSettings } from '@/models'
  * Even all three together do not cover everything — the larger recipe sites
  * block datacentre traffic outright, and a fetcher of any kind looks exactly
  * like that. Those sites are what the page capture and the paste box are for.
+ *
+ * The same ladder carries the built-in browser and its web search, which is why
+ * the general form below accepts any text and not only HTML.
  */
+
+export type FetchRoute = 'direct' | 'own-proxy' | 'shared'
+
+export interface FetchedText {
+  text: string
+  /** Which tier actually produced it, for honest messaging. */
+  via: FetchRoute
+  finalUrl: string
+}
 
 export interface FetchedPage {
   html: string
   /** Which tier actually produced it, for honest messaging. */
-  via: 'direct' | 'own-proxy' | 'shared'
+  via: FetchRoute
   finalUrl: string
 }
 
-export type FetchFailureReason = 'blocked' | 'refused' | 'network' | 'not-html'
+export type FetchFailureReason = 'blocked' | 'refused' | 'network' | 'not-html' | 'cancelled'
 
 export class PageFetchError extends Error {
   reason: FetchFailureReason
@@ -96,14 +108,52 @@ export function looksBotBlocked(status: number, html: string): boolean {
   return WALL_PHRASES.some((phrase) => visible.includes(phrase))
 }
 
-function looksLikeHtml(text: string): boolean {
+export function looksLikeHtml(text: string): boolean {
   const head = text.slice(0, 400).toLowerCase()
   return head.includes('<html') || head.includes('<!doctype') || head.includes('<head')
 }
 
-async function attempt(requestUrl: string): Promise<{ ok: true; html: string } | { ok: false; botBlocked: boolean }> {
+/** RSS, Atom or any other XML document — what a web search comes back as. */
+export function looksLikeXml(text: string): boolean {
+  const head = text.slice(0, 400).trimStart().toLowerCase()
+  return head.startsWith('<?xml') || head.startsWith('<rss') || head.startsWith('<feed')
+}
+
+export interface FetchOptions {
+  /**
+   * What counts as a usable answer. A shared fetcher that is down often
+   * replies with a JSON error and a 200, and that must not be mistaken for
+   * the page.
+   */
+  accept?: (text: string) => boolean
+  /** Lets the caller give up — the built-in browser cancels a load when you tap elsewhere. */
+  signal?: AbortSignal
+  /**
+   * Stop as soon as any route reports a bot wall. A site that turns away one
+   * datacentre turns them all away, and while trying every route is fine for
+   * a one-off import, it is a long wait for someone browsing.
+   */
+  stopAtBotWall?: boolean
+  timeoutMs?: number
+}
+
+type Attempt =
+  | { ok: true; text: string }
+  | { ok: false; botBlocked: boolean; cancelled?: boolean }
+
+async function attempt(
+  requestUrl: string,
+  accept: (text: string) => boolean,
+  timeoutMs: number,
+  signal?: AbortSignal,
+): Promise<Attempt> {
+  if (signal?.aborted) return { ok: false, botBlocked: false, cancelled: true }
+
   const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
+  const timer = setTimeout(() => controller.abort(), timeoutMs)
+  const onOuterAbort = () => controller.abort()
+  signal?.addEventListener('abort', onOuterAbort, { once: true })
+
   try {
     const response = await fetch(requestUrl, {
       signal: controller.signal,
@@ -114,41 +164,56 @@ async function attempt(requestUrl: string): Promise<{ ok: true; html: string } |
     if (!response.ok || looksBotBlocked(response.status, text)) {
       return { ok: false, botBlocked: looksBotBlocked(response.status, text) }
     }
-    if (!looksLikeHtml(text)) return { ok: false, botBlocked: false }
-    return { ok: true, html: text }
+    if (!accept(text)) return { ok: false, botBlocked: false }
+    return { ok: true, text }
   } catch {
-    return { ok: false, botBlocked: false }
+    return { ok: false, botBlocked: false, cancelled: signal?.aborted ?? false }
   } finally {
     clearTimeout(timer)
+    signal?.removeEventListener('abort', onOuterAbort)
   }
 }
 
-export async function fetchRecipePage(
+/** Where the user's own fetcher wants the address: in place of {url}, or appended. */
+export function ownFetcherUrl(template: string, url: string): string {
+  return template.includes('{url}')
+    ? template.replace('{url}', encodeURIComponent(url))
+    : `${template}${template.includes('?') ? '&' : '?'}url=${encodeURIComponent(url)}`
+}
+
+/**
+ * Fetches any text resource through the ladder: the site itself, then the
+ * user's own fetcher, then the shared ones. Throws a PageFetchError that says
+ * *why* nothing worked, because "turned away as a robot" and "could not be
+ * reached" need different things from the user.
+ */
+export async function fetchThroughFetchers(
   url: string,
   settings: ImportSettings = { useSharedFetchers: true },
-): Promise<FetchedPage> {
+  options: FetchOptions = {},
+): Promise<FetchedText> {
+  const accept = options.accept ?? (() => true)
+  const timeoutMs = options.timeoutMs ?? TIMEOUT_MS
+  const { signal } = options
   let sawBotBlock = false
 
-  const direct = await attempt(url)
-  if (direct.ok) return { html: direct.html, via: 'direct', finalUrl: url }
-  sawBotBlock ||= direct.botBlocked
-
+  const routes: Array<{ via: FetchRoute; requestUrl: string }> = [
+    { via: 'direct', requestUrl: url },
+  ]
   const own = settings.proxyUrl?.trim()
-  if (own) {
-    const target = own.includes('{url}')
-      ? own.replace('{url}', encodeURIComponent(url))
-      : `${own}${own.includes('?') ? '&' : '?'}url=${encodeURIComponent(url)}`
-    const viaOwn = await attempt(target)
-    if (viaOwn.ok) return { html: viaOwn.html, via: 'own-proxy', finalUrl: url }
-    sawBotBlock ||= viaOwn.botBlocked
+  if (own) routes.push({ via: 'own-proxy', requestUrl: ownFetcherUrl(own, url) })
+  if (settings.useSharedFetchers) {
+    for (const build of SHARED_FETCHERS) routes.push({ via: 'shared', requestUrl: build(url) })
   }
 
-  if (settings.useSharedFetchers) {
-    for (const build of SHARED_FETCHERS) {
-      const viaShared = await attempt(build(url))
-      if (viaShared.ok) return { html: viaShared.html, via: 'shared', finalUrl: url }
-      sawBotBlock ||= viaShared.botBlocked
+  for (const route of routes) {
+    const result = await attempt(route.requestUrl, accept, timeoutMs, signal)
+    if (result.ok) return { text: result.text, via: route.via, finalUrl: url }
+    if (result.cancelled) {
+      throw new PageFetchError('cancelled', 'That page load was cancelled.')
     }
+    sawBotBlock ||= result.botBlocked
+    if (result.botBlocked && options.stopAtBotWall) break
   }
 
   if (sawBotBlock) {
@@ -159,8 +224,14 @@ export async function fetchRecipePage(
     )
   }
 
-  throw new PageFetchError(
-    'refused',
-    "That site would not share its page with MealHelp.",
-  )
+  throw new PageFetchError('refused', 'That site would not share its page with MealHelp.')
+}
+
+export async function fetchRecipePage(
+  url: string,
+  settings: ImportSettings = { useSharedFetchers: true },
+  options: Omit<FetchOptions, 'accept'> = {},
+): Promise<FetchedPage> {
+  const fetched = await fetchThroughFetchers(url, settings, { ...options, accept: looksLikeHtml })
+  return { html: fetched.text, via: fetched.via, finalUrl: fetched.finalUrl }
 }

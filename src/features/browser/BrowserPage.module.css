@@ -1,0 +1,201 @@
+/*
+ * The browser fills the space between the top of the screen and the tab bar,
+ * and does not scroll as a page: the frame scrolls inside it, like a browser.
+ * The negative bottom margin swallows the shell's own bottom padding so the
+ * frame reaches the tab bar exactly.
+ */
+.screen {
+  display: flex;
+  flex-direction: column;
+  height: calc(100dvh - var(--nav-height));
+  margin-bottom: calc(-1 * var(--space-4));
+  background: var(--paper);
+  padding-top: env(safe-area-inset-top);
+}
+
+@media (min-width: 900px) {
+  .screen {
+    height: 100dvh;
+    margin-bottom: calc(-1 * var(--space-6));
+    max-width: var(--content-max);
+    margin-left: auto;
+    margin-right: auto;
+    border-left: 1px solid var(--line);
+    border-right: 1px solid var(--line);
+  }
+}
+
+.progress {
+  height: 3px;
+  background: transparent;
+  flex: none;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  width: 40%;
+  background: var(--accent);
+  border-radius: 2px;
+  animation: slide 1.1s ease-in-out infinite;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(260%);
+  }
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.scroller {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- The Add button ---------- */
+
+.dock {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--space-3);
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-3);
+  pointer-events: none;
+}
+
+.pill {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  min-height: 46px;
+  padding: 0 var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-lg);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pillText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pillAdd {
+  background: var(--accent);
+  color: #fff;
+}
+
+.pillAdd:hover {
+  background: var(--accent-hover);
+}
+
+.pillSaved {
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+  border-color: var(--sage);
+}
+
+.pillGhost {
+  min-height: 38px;
+  padding: 0 var(--space-3);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(10px);
+  color: var(--ink-soft);
+  border-color: var(--line);
+  font-size: 0.82rem;
+  box-shadow: var(--shadow);
+}
+
+/* ---------- Loading, errors, preview ---------- */
+
+.panel {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4);
+}
+
+.panelIcon {
+  color: var(--honey);
+}
+
+.spinner {
+  color: var(--accent);
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.panelTitle {
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 0;
+  max-width: 34ch;
+}
+
+.panelText {
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  max-width: 44ch;
+  margin: 0;
+}
+
+.panelActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.panelFoot {
+  margin-top: var(--space-4);
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+  max-width: 44ch;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--paper);
+  z-index: 2;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

@@ -376,6 +376,14 @@ export function DiscoverPage() {
               <Search size={19} aria-hidden="true" />
             </button>
           </form>
+          <p className="field-hint">
+            These sources are curated and free. For the whole web — blogs, magazines,
+            everything —{' '}
+            <Link to={query.trim() ? `/browser?q=${encodeURIComponent(query.trim())}` : '/browser'}>
+              search in the Browser
+            </Link>{' '}
+            and add recipes from the pages themselves.
+          </p>
         </section>
       ) : null}
 

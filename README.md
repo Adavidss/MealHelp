@@ -55,6 +55,10 @@ saved until you do.
   surprise, or tell it what is in the fridge and get recipes ranked by how many
   of your ingredients they use. Saving one turns it into an ordinary MealHelp
   recipe, source link and all. See [Discovery](#discovery).
+- **Browser** — a web browser inside MealHelp, the way Mela has one. Search the
+  web or open a recipe site, read the page as itself, and when the page has a
+  recipe on it an **Add** button appears. Nothing to set up, nothing leaves the
+  device but the page request. See [The built-in browser](#the-built-in-browser).
 - **Cooking mode** — full screen, big type, one step at a time, ingredient
   checklist, servings adjustment, one-tap timers detected from the steps
   ("Bake for 25 minutes" → *Start 25 min timer*), and the screen stays awake.
@@ -86,6 +90,7 @@ saved until you do.
 | **Plan my week** | The preferences form and the plan preview, with reasons and locks |
 | **Recipes** | The library, search and filters |
 | **Discover** | Finding recipes you do not have yet |
+| **Browser** | The web, inside MealHelp — search, read the page, tap Add |
 | **Recipe** | The one standard layout every recipe gets |
 | **Cooking** | Full-screen, step-by-step, timers |
 | **Grocery** | Aisle-sorted checklist with a pantry check |
@@ -101,16 +106,17 @@ src/
   db/           Dexie database and one repository per domain
   models/       Recipe, MealPlan, Grocery, Pantry, Settings
   features/     One folder per screen (dashboard, recipes, planner, planning,
-                cooking, grocery, pantry, import, discover, collections,
-                history, print, sharing, settings)
+                cooking, grocery, pantry, import, discover, browser,
+                collections, history, print, sharing, settings)
   services/     Pure logic, no React and no database:
                   ingredientParser/    text → structured ingredient
                   unitConversion/      units, safe conversion, formatting
                   groceryAggregator/   many recipes → one list
                   recommendationEngine/  which recipe fits this slot
                   plannerEngine/       how cooking and leftovers fall across a week
-                  recipeImport/        adapters, JSON-LD, paste parsing
+                  recipeImport/        adapters, JSON-LD, paste parsing, the fetch ladder
                   recipeDiscovery/     providers, pantry-overlap ranking
+                  pageBrowser/         page preparation for the frame, web search, known sites
                   shareCodec/          compressed share payloads
                   backup/              export, validation, restore
   components/   Shared UI
@@ -351,6 +357,76 @@ never a spinner or a raw network error.
 
 ---
 
+## The built-in browser
+
+Import assumes you have a link. Discover searches a few curated databases. The
+**Browser** is for the rest of the web: the blog you like, the magazine site,
+the thing a friend mentioned. It works the way the browser in Mela does — you
+search or type an address, you read the page as itself, and when the page has a
+recipe on it an **Add** button appears. Add shows the same preview screen as
+Import, and saving keeps you on the page so you can carry on browsing.
+
+Three things make it a browser rather than a picture of a page:
+
+- **It searches.** Type words instead of an address and MealHelp searches the
+  web — Brave Search first, with "recipe" added to what you typed, and Bing's
+  results feed as a fallback — and draws the results itself. Results from sites
+  that open inside MealHelp come first; the ones that only answer a real
+  browser are grouped after and marked. Videos and social posts are left out,
+  since neither can be read here. (Bing has a habit of answering a multi-word
+  query with results for its first word alone — "slow cooker chili" comes back
+  as dictionary entries for *slow* — so its answers are checked against the
+  words asked for, and asked again fresh when they do not match.)
+- **Links work, and so do site search boxes.** Every link on the page and every
+  ordinary search form is routed back through MealHelp's own loader, so you can
+  wander a site the way you would in Safari. Back and forward work, and coming
+  back from a recipe to the results you found it in is instant.
+- **Nothing on the page can act.** Pages are shown in a sandboxed frame with
+  scripts off. You get the words, the pictures and the site's own styling — and
+  no pop-ups, cookie walls, autoplaying video or ads, because those are drawn by
+  the scripts that are not running. Lazily loaded photographs are given their
+  real addresses before the page is shown, since the script that would have
+  done it is not coming.
+
+### How a page gets in
+
+The frame cannot load a site directly: almost every site forbids being framed,
+and even a site that allowed it would be a sealed box MealHelp could not read
+the recipe out of. So the browser fetches the page's HTML through the same
+ladder Import uses — the site itself, then your own fetcher, then the shared
+ones — prepares it (a `<base>` for the page's own address, scripts and preload
+hints removed, lazy images fixed, a meta refresh that would carry the frame off
+dropped), and hands the result to the frame as `srcdoc`.
+
+That has one honest consequence: **the browser can open exactly the sites that
+Import can import, and no others.** The largest publishers — Allrecipes,
+Serious Eats, Simply Recipes and the rest of that family, NYT Cooking, The
+Kitchn — turn away anything that is not a person with a browser, and a fetcher
+of any kind is not one. Those sites are known from the start (and any site that
+answers with a wall is remembered for a fortnight), so tapping one does not
+make you wait through every route failing: it says so at once and offers to
+open the page in your real browser, where the MealHelp button still works. You
+can also insist on trying it here.
+
+Pages with a recipe in the words but not in the markup — older blogs, mostly —
+get a quieter offer to read the visible text instead, the same way the MealHelp
+button falls back when a page has no structured data.
+
+Where you were is kept for the session, so switching to the grocery list and
+back does not lose the recipe you were reading. Recently viewed pages and the
+learned list of walled sites live in localStorage; nothing else about the
+browser is stored anywhere.
+
+### What it does not do
+
+It does not run the site's JavaScript, so anything that only exists once a
+script has drawn it — a comment form, a filter that rebuilds the page, a video
+player — is not there. Fonts a site serves without CORS headers fall back to
+system ones. And it is not a place to sign in to anything: no cookies, no
+forms that post, no way for a page to reach outside its frame.
+
+---
+
 ## PWA installation
 
 **iPhone/iPad:** open the site in Safari → Share → *Add to Home Screen*.
@@ -372,7 +448,8 @@ Ideas that fit the architecture but are not built:
 - Approximate pantry quantities, freezer inventory and expiry reminders
 - Ingredient substitutions recorded per recipe
 - Recipe edit history
-- A serverless or extension-based importer for sites that block direct fetch
+- An extension-based importer for the sites that block every fetcher (the
+  built-in browser covers everything else)
 - More discovery providers behind the existing provider interface
 - Optional AI behind a service interface, for parsing very messy pasted text and
   suggesting tags — never required for anything core

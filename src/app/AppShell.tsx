@@ -5,6 +5,7 @@ import {
   ChefHat,
   Compass,
   Ellipsis,
+  Globe,
   Home,
   Package,
   Printer,
@@ -36,6 +37,7 @@ const PRIMARY_NAV: NavItem[] = [
 /** Desktop has room to show everything, so nothing hides behind "More". */
 const SECONDARY_NAV: NavItem[] = [
   { to: '/discover', label: 'Discover', icon: Compass },
+  { to: '/browser', label: 'Browser', icon: Globe },
   { to: '/pantry', label: 'Pantry', icon: Package },
   { to: '/collections', label: 'Collections', icon: Library },
   { to: '/history', label: 'History', icon: HistoryIcon },

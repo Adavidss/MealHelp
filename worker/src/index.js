@@ -56,7 +56,9 @@ export default {
       const upstream = await fetch(parsed.toString(), {
         headers: {
           'User-Agent': BROWSER_UA,
-          Accept: 'text/html,application/xhtml+xml',
+          // What a browser sends. XML is in there for the built-in browser's
+          // web search, which reads a results feed rather than a page.
+          Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
           'Accept-Language': 'en-US,en;q=0.9',
         },
         redirect: 'follow',

@@ -10,6 +10,8 @@ interface ImportPreviewProps {
   onBack: () => void
   onSave: (draft: RecipeDraft) => void
   onEdit: (draft: RecipeDraft) => void
+  /** What going back means here: "Try again" after a paste, "Back to page" in the browser. */
+  backLabel?: string
 }
 
 /**
@@ -17,7 +19,13 @@ interface ImportPreviewProps {
  * the guess, along with what the parser was unsure about, is what keeps a bad
  * parse from quietly becoming a bad recipe.
  */
-export function ImportPreview({ result, onBack, onSave, onEdit }: ImportPreviewProps) {
+export function ImportPreview({
+  result,
+  onBack,
+  onSave,
+  onEdit,
+  backLabel = 'Try again',
+}: ImportPreviewProps) {
   const { recipe, warnings } = result
 
   return (
@@ -25,7 +33,7 @@ export function ImportPreview({ result, onBack, onSave, onEdit }: ImportPreviewP
       <div className={styles.topBar}>
         <button type="button" className="btn btn-ghost btn-sm" onClick={onBack}>
           <ArrowLeft size={16} aria-hidden="true" />
-          Try again
+          {backLabel}
         </button>
       </div>
 

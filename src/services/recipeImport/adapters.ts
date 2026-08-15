@@ -20,10 +20,23 @@ export function configureImportFetching(settings: ImportSettings): void {
   activeImportSettings = settings
 }
 
-function looksLikeUrl(input: string): boolean {
+/** A web address rather than words: has a scheme, or looks like host.tld/… */
+export function looksLikeUrl(input: string): boolean {
   const trimmed = input.trim()
   if (/\s/.test(trimmed)) return false
   return /^https?:\/\/\S+$/i.test(trimmed) || /^[\w-]+(\.[\w-]+)+\/\S*/.test(trimmed)
+}
+
+/**
+ * The built-in browser's address bar has to decide between "go there" and
+ * "search for that", and people type bare hostnames — budgetbytes.com — which
+ * the stricter check above (written for pasted links) does not accept.
+ */
+export function looksLikeAddress(input: string): boolean {
+  const trimmed = input.trim()
+  if (looksLikeUrl(trimmed)) return true
+  if (/\s/.test(trimmed)) return false
+  return /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(trimmed) && /\.[a-z]{2,}(\/|$)/i.test(trimmed)
 }
 
 export function normalizeUrl(input: string): string {

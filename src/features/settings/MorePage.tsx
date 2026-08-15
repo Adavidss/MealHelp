@@ -3,6 +3,7 @@ import {
   ChevronRight,
   Compass,
   Download,
+  Globe,
   History as HistoryIcon,
   Library,
   Package,
@@ -18,6 +19,12 @@ const LINKS = [
     label: 'Discover recipes',
     description: 'Find something new online',
     icon: Compass,
+  },
+  {
+    to: '/browser',
+    label: 'Browser',
+    description: 'Search the web and add recipes without leaving',
+    icon: Globe,
   },
   { to: '/pantry', label: 'Pantry', description: 'Things you usually have', icon: Package },
   {

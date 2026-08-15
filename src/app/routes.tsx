@@ -70,6 +70,9 @@ const MorePage = lazy(() =>
 const DiscoverPage = lazy(() =>
   import('@/features/discover/DiscoverPage').then((m) => ({ default: m.DiscoverPage })),
 )
+const BrowserPage = lazy(() =>
+  import('@/features/browser/BrowserPage').then((m) => ({ default: m.BrowserPage })),
+)
 const WhatCanIMakePage = lazy(() =>
   import('@/features/recipes/WhatCanIMakePage').then((m) => ({
     default: m.WhatCanIMakePage,
@@ -105,6 +108,7 @@ export function AppRoutes() {
           <Route path="/import" element={<ImportPage />} />
           <Route path="/capture/:payload" element={<CapturePage />} />
           <Route path="/discover" element={<DiscoverPage />} />
+          <Route path="/browser" element={<BrowserPage />} />
 
           <Route path="/grocery" element={<GroceryPage />} />
           <Route path="/pantry" element={<PantryPage />} />
