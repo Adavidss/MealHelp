@@ -214,3 +214,10 @@
   display: flex;
   justify-content: center;
 }
+
+/* The overflow of actions that do not earn a button of their own. */
+.moreMenu {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}

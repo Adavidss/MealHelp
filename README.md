@@ -47,7 +47,12 @@ saved until you do.
   list view when you would rather scan names.
 - **One standard recipe view** — once a recipe is in MealHelp you should never
   need the original page again. Scaling (½× to 2×), ingredient checkboxes,
-  numbered directions, notes, equipment, and a link back to the source.
+  numbered directions, notes, equipment, and a link back to the source. And
+  everything you would want to *do* with a recipe is a tap away: start cooking,
+  add it to a day, **add its ingredients to the grocery list** (pick the
+  servings, untick what you already have), put it in a collection, rate it,
+  log that you cooked it, favourite, share, duplicate, copy the ingredients as
+  text, open the original in the built-in browser, edit, delete.
 - **Import** — paste a link and MealHelp reads the page's structured recipe
   data. When a site refuses to share its page, it hands over to a paste box that
   parses the text instead. See [Recipe import limitations](#recipe-import-limitations).
@@ -69,7 +74,10 @@ saved until you do.
   across recipes (1 onion + 2 onions = 3 onions; 1 tbsp + 2 tbsp olive oil =
   3 tbsp), incompatible quantities stay apart (1 bunch cilantro *and* 20 g
   cilantro), everything is sorted by aisle, and each item remembers which
-  recipes wanted it. Add anything by hand — paper towels included.
+  recipes wanted it. Add anything by hand — paper towels included — or add a
+  whole recipe from its page without planning it: it shows up as "also
+  shopping for", its quantities merge with the plan's, and it survives the
+  list being rebuilt.
 - **Pantry** — the things you always have are pulled into a short "check the
   pantry" list instead of being assumed or silently dropped.
 - **Ratings and history** — say how a meal went and it changes what gets

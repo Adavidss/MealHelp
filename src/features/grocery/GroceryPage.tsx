@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Plus, RefreshCw, Share2, Trash2 } from 'lucide-react'
+import { Plus, RefreshCw, Share2, Trash2, X } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
 import {
@@ -10,6 +10,7 @@ import {
   generateGroceryList,
   getGroceryList,
   removeGroceryItem,
+  removeRecipeFromGroceryList,
   setPantryDecision,
   toggleGroceryItem,
 } from '@/db/grocery'
@@ -75,13 +76,20 @@ export function GroceryPage() {
     )
   }, [toBuy, list?.categoryOrder])
 
+  const extras = list?.extras ?? []
+
   const regenerate = async () => {
-    if (!meals?.length) {
+    if (!meals?.length && !extras.length) {
       toast('Plan some meals first, then MealHelp can build the list.')
       return
     }
-    await generateGroceryList(weekStart, meals, { planId: plan?.id })
-    toast('Grocery list updated from your plan.', { tone: 'success' })
+    await generateGroceryList(weekStart, meals ?? [], { planId: plan?.id })
+    toast(
+      extras.length
+        ? 'Grocery list updated from your plan and the recipes you added.'
+        : 'Grocery list updated from your plan.',
+      { tone: 'success' },
+    )
   }
 
   const addItem = async (event: React.FormEvent) => {
@@ -135,10 +143,36 @@ export function GroceryPage() {
         </button>
       </form>
 
+      {extras.length ? (
+        <section className={styles.extras} aria-label="Recipes added to this list">
+          <span className={styles.extrasLabel}>Also shopping for</span>
+          <ul className={styles.extrasList}>
+            {extras.map((extra) => (
+              <li key={extra.recipeId} className={styles.extraChip}>
+                <Link to={`/recipes/${extra.recipeId}`} className={styles.extraName}>
+                  {extra.recipeTitle}
+                  {extra.servings ? (
+                    <span className="faint"> · {extra.servings} servings</span>
+                  ) : null}
+                </Link>
+                <button
+                  type="button"
+                  className={styles.extraRemove}
+                  onClick={() => void removeRecipeFromGroceryList(weekStart, extra.recipeId)}
+                  aria-label={`Take ${extra.recipeTitle} off the list`}
+                >
+                  <X size={14} aria-hidden="true" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       {items.length === 0 ? (
         <EmptyState
           title="No list yet"
-          description="Plan the week's meals and MealHelp will turn them into one list — or start adding items by hand above."
+          description="Plan the week's meals and MealHelp will turn them into one list. Any recipe's page can add its ingredients here too, and anything else goes in by hand above."
         >
           <Link to={`/plan/${weekStart}`} className="btn btn-primary">
             Open the planner

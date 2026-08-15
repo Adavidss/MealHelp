@@ -5,37 +5,53 @@ import {
   ArrowLeft,
   CalendarPlus,
   ChefHat,
+  CheckCircle2,
   Clock,
+  Copy,
+  CopyPlus,
+  Ellipsis,
   ExternalLink,
+  Globe,
   Heart,
   Library,
   Pencil,
   Share2,
+  ShoppingCart,
   Trash2,
   Users,
   Utensils,
 } from 'lucide-react'
+import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
-import { deleteRecipe, toggleFavorite } from '@/db/recipes'
+import { deleteRecipe, duplicateRecipe, toggleFavorite, updateRecipe } from '@/db/recipes'
 import { pruneRecipeFromCollections } from '@/db/collections'
 import { COOKING_METHOD_LABELS } from '@/models'
 import { formatMinutes, humanAgo, daysSince } from '@/utils/date'
 import { totalMinutes } from '@/services/recipeMetrics'
 import { findAlternatives } from '@/services/recommendationEngine'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
+import { Modal } from '@/components/common/Modal'
 import { StarRating } from '@/components/common/StarRating'
 import { useToast } from '@/components/common/Toast'
 import { AddToPlanDialog } from '@/features/planner/AddToPlanDialog'
+import { AddToGroceryDialog } from '@/features/grocery/AddToGroceryDialog'
 import { CollectionPickerDialog } from '@/features/collections/CollectionPickerDialog'
+import { FinishCookingDialog } from '@/features/cooking/FinishCookingDialog'
 import { ShareRecipeDialog } from '@/features/sharing/ShareRecipeDialog'
 import { RecipeCard } from './RecipeCard'
-import { SCALE_OPTIONS, displayIngredientSections, scaleLabel } from './ingredientDisplay'
+import {
+  SCALE_OPTIONS,
+  displayIngredientSections,
+  ingredientsAsText,
+  scaleLabel,
+} from './ingredientDisplay'
 import styles from './RecipeDetailPage.module.css'
 
 export function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { settings } = useSettings()
 
   const recipe = useLiveQuery(() => (id ? db.recipes.get(id) : undefined), [id])
   const library = useLiveQuery(() => db.recipes.toArray(), [], [])
@@ -44,8 +60,11 @@ export function RecipeDetailPage() {
   const [checked, setChecked] = useState<Set<string>>(new Set())
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [planOpen, setPlanOpen] = useState(false)
+  const [groceryOpen, setGroceryOpen] = useState(false)
   const [collectionsOpen, setCollectionsOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
+  const [cookedOpen, setCookedOpen] = useState(false)
 
   const sections = useMemo(
     () => (recipe ? displayIngredientSections(recipe.ingredients, scale) : []),
@@ -98,6 +117,34 @@ export function RecipeDetailPage() {
     navigate('/recipes')
   }
 
+  const duplicate = async () => {
+    setMoreOpen(false)
+    const copy = await duplicateRecipe(recipe.id)
+    if (!copy) return
+    toast(`Made a copy of ${recipe.title}.`, { tone: 'success' })
+    navigate(`/recipes/${copy.id}/edit`)
+  }
+
+  /** The ingredient list as plain text, at the scale on screen — for a note or a message. */
+  const copyIngredients = async () => {
+    setMoreOpen(false)
+    try {
+      await navigator.clipboard.writeText(ingredientsAsText(recipe, scale))
+      toast('Ingredients copied.', { tone: 'success' })
+    } catch {
+      toast('Your browser blocked the clipboard.', { tone: 'error' })
+    }
+  }
+
+  const rate = async (value: number | undefined) => {
+    await updateRecipe(recipe.id, { rating: value })
+  }
+
+  const defaultCookServings = Math.max(
+    1,
+    Math.round((recipe.servings ?? settings.defaultServings) * scale),
+  )
+
   return (
     <div className="page">
       <div className={styles.topBar}>
@@ -138,6 +185,14 @@ export function RecipeDetailPage() {
           >
             <Pencil size={18} aria-hidden="true" />
           </Link>
+          <button
+            type="button"
+            className="btn btn-ghost btn-icon"
+            onClick={() => setMoreOpen(true)}
+            aria-label="More actions"
+          >
+            <Ellipsis size={19} aria-hidden="true" />
+          </button>
         </div>
       </div>
 
@@ -208,6 +263,15 @@ export function RecipeDetailPage() {
           >
             <CalendarPlus size={17} aria-hidden="true" />
             Add to plan
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={() => setGroceryOpen(true)}
+            disabled={recipe.ingredients.length === 0}
+          >
+            <ShoppingCart size={17} aria-hidden="true" />
+            Grocery list
           </button>
           <button
             type="button"
@@ -308,13 +372,26 @@ export function RecipeDetailPage() {
       <section className={styles.historyCard}>
         <h2 className={styles.historyTitle}>Your history</h2>
         <div className={styles.historyRow}>
-          <StarRating value={recipe.rating} size={18} />
+          <StarRating
+            value={recipe.rating}
+            size={22}
+            label="Rate this recipe"
+            onChange={(value) => void rate(value)}
+          />
           <span className="text-sm muted">
             {recipe.timesCooked > 0
               ? `Cooked ${recipe.timesCooked} time${recipe.timesCooked === 1 ? '' : 's'}`
               : 'Never cooked'}
             {cookedAgo != null ? ` · last ${humanAgo(cookedAgo)}` : ''}
           </span>
+          <button
+            type="button"
+            className="btn btn-ghost btn-sm"
+            onClick={() => setCookedOpen(true)}
+          >
+            <CheckCircle2 size={16} aria-hidden="true" />
+            I cooked this
+          </button>
         </div>
       </section>
 
@@ -327,6 +404,13 @@ export function RecipeDetailPage() {
           {recipe.sourceName ? (
             <span className="faint text-sm"> · {recipe.sourceName}</span>
           ) : null}
+          <span className="faint text-sm"> · </span>
+          <Link
+            to={`/browser?url=${encodeURIComponent(recipe.sourceUrl)}`}
+            className="text-sm"
+          >
+            open in MealHelp's browser
+          </Link>
         </p>
       ) : recipe.sourceName ? (
         <p className={`${styles.source} faint text-sm`}>From {recipe.sourceName}</p>
@@ -374,6 +458,66 @@ export function RecipeDetailPage() {
         recipe={recipe}
         onClose={() => setPlanOpen(false)}
       />
+
+      <AddToGroceryDialog
+        open={groceryOpen}
+        recipe={recipe}
+        defaultServings={recipe.servings ? Math.max(1, Math.round(recipe.servings * scale)) : undefined}
+        onClose={() => setGroceryOpen(false)}
+      />
+
+      <FinishCookingDialog
+        open={cookedOpen}
+        recipe={recipe}
+        defaultServings={defaultCookServings}
+        onClose={() => setCookedOpen(false)}
+        onDone={() => setCookedOpen(false)}
+      />
+
+      <Modal open={moreOpen} title={recipe.title} onClose={() => setMoreOpen(false)}>
+        <div className={styles.moreMenu}>
+          <button type="button" className="btn btn-secondary btn-block" onClick={() => void copyIngredients()}>
+            <Copy size={17} aria-hidden="true" />
+            Copy ingredients as text
+          </button>
+          <button type="button" className="btn btn-secondary btn-block" onClick={() => void duplicate()}>
+            <CopyPlus size={17} aria-hidden="true" />
+            Duplicate and edit the copy
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-block"
+            onClick={() => {
+              setMoreOpen(false)
+              setShareOpen(true)
+            }}
+          >
+            <Share2 size={17} aria-hidden="true" />
+            Share
+          </button>
+          {recipe.sourceUrl ? (
+            <button
+              type="button"
+              className="btn btn-secondary btn-block"
+              onClick={() => navigate(`/browser?url=${encodeURIComponent(recipe.sourceUrl ?? '')}`)}
+            >
+              <Globe size={17} aria-hidden="true" />
+              Open the original in MealHelp's browser
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="btn btn-danger btn-block"
+            onClick={() => {
+              setMoreOpen(false)
+              setConfirmDelete(true)
+            }}
+          >
+            <Trash2 size={17} aria-hidden="true" />
+            Delete recipe
+          </button>
+        </div>
+      </Modal>
 
       <CollectionPickerDialog
         open={collectionsOpen}

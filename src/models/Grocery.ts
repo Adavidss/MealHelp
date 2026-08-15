@@ -51,11 +51,30 @@ export interface GroceryItem {
   note?: string
 }
 
+/**
+ * A recipe shopped for on its own, outside the week's plan — "I want to make
+ * this too". Kept on the list rather than flattened into items so that
+ * rebuilding the list from the plan keeps it, and so its quantities merge
+ * with the plan's ("1 onion + 2 onions") instead of sitting beside them.
+ */
+export interface GroceryExtra {
+  recipeId: string
+  /** The title as it was when added, in case the recipe is later deleted. */
+  recipeTitle: string
+  /** Servings to shop for; scales the recipe when it differs from its own. */
+  servings?: number
+  /** Ingredients left off on purpose — already in the cupboard. */
+  excludedIngredientIds?: string[]
+  addedAt: string
+}
+
 export interface GroceryList {
   id: string
   planId?: string
   weekStart: string
   items: GroceryItem[]
+  /** Recipes added to this week's shopping by hand, beyond the plan. */
+  extras?: GroceryExtra[]
   /** Custom store order; falls back to the default category order. */
   categoryOrder?: string[]
   generatedAt?: string

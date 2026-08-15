@@ -110,6 +110,16 @@ describe('aggregateGroceries', () => {
     expect(find(items, 'rice').quantities).toEqual([{ amount: 4, unit: 'cup' }])
   })
 
+  it('leaves out the ingredients an entry says the cook already has', () => {
+    const recipe = makeRecipe({
+      ingredients: ingredientsFrom(['2 cups rice', '1 tbsp olive oil', '1 lime']),
+    })
+    const items = aggregateGroceries({
+      entries: [{ recipe, excludeIngredientIds: new Set([recipe.ingredients[1].id]) }],
+    })
+    expect(items.map((item) => item.key).sort()).toEqual(['lime', 'rice'])
+  })
+
   it('records which recipes need an ingredient', () => {
     const items = aggregateGroceries({
       entries: [

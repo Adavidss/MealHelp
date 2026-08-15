@@ -1,4 +1,4 @@
-import type { RecipeIngredient } from '@/models'
+import type { Recipe, RecipeIngredient } from '@/models'
 import { formatQuantityRange, scaleAmount } from '@/services/unitConversion'
 
 /**
@@ -75,6 +75,30 @@ export function displayIngredientSections(
     }
   }
   return sections
+}
+
+/**
+ * The ingredient list as plain text, for pasting into a note or a message.
+ * Scaled the way the screen is, with section headings kept.
+ */
+export function ingredientsAsText(
+  recipe: Pick<Recipe, 'title' | 'servings' | 'ingredients'>,
+  scale = 1,
+): string {
+  const lines: string[] = [recipe.title]
+  const servings = recipe.servings ? Math.round(recipe.servings * scale * 10) / 10 : undefined
+  if (servings) lines.push(`Serves ${servings}`)
+  lines.push('')
+  for (const section of displayIngredientSections(recipe.ingredients, scale)) {
+    if (section.title) lines.push(`${section.title}:`)
+    for (const item of section.items) {
+      const quantity = item.quantityText ? `${item.quantityText} ` : ''
+      const preparation = item.preparation ? `, ${item.preparation}` : ''
+      const optional = item.optional ? ' (optional)' : ''
+      lines.push(`- ${quantity}${item.name}${preparation}${optional}`)
+    }
+  }
+  return lines.join('\n').trim()
 }
 
 export const SCALE_OPTIONS = [0.5, 1, 1.5, 2] as const

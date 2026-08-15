@@ -1,5 +1,12 @@
 import { db } from './database'
-import type { GroceryCategory, GroceryItem, GroceryList, PlannedMeal } from '@/models'
+import type {
+  GroceryCategory,
+  GroceryExtra,
+  GroceryItem,
+  GroceryList,
+  PlannedMeal,
+  Recipe,
+} from '@/models'
 import {
   aggregateGroceries,
   mergeGroceryLists,
@@ -36,34 +43,61 @@ export async function getOrCreateGroceryList(weekStart: string): Promise<Grocery
 }
 
 /**
- * Builds the week's list from the meals that actually involve cooking.
+ * The cooking sessions on the plan, as aggregator entries.
  *
  * Leftover slots are filtered out here rather than in the aggregator, so the
  * rule that leftovers are never shopped for twice lives next to the planner
  * data it depends on.
  */
-export async function generateGroceryList(
-  weekStart: string,
-  meals: PlannedMeal[],
-  options: { planId?: string; keepChecked?: boolean } = {},
-): Promise<GroceryList> {
+async function entriesFromMeals(meals: PlannedMeal[]): Promise<GroceryEntry[]> {
   const cookingMeals = meals.filter(
     (meal) => meal.kind === 'recipe' && Boolean(meal.recipeId),
   )
-
   const recipes = await db.recipes.bulkGet(
     cookingMeals.map((meal) => meal.recipeId as string),
   )
-
   const entries: GroceryEntry[] = []
   cookingMeals.forEach((meal, index) => {
     const recipe = recipes[index]
     if (!recipe) return
     entries.push({ recipe, servings: meal.servings, date: meal.date })
   })
+  return entries
+}
 
-  const pantry = await db.pantryItems.toArray()
+/** The recipes added by hand, as aggregator entries. A deleted recipe simply drops out. */
+async function entriesFromExtras(extras: GroceryExtra[] = []): Promise<GroceryEntry[]> {
+  if (!extras.length) return []
+  const recipes = await db.recipes.bulkGet(extras.map((extra) => extra.recipeId))
+  const entries: GroceryEntry[] = []
+  extras.forEach((extra, index) => {
+    const recipe = recipes[index]
+    if (!recipe) return
+    entries.push({
+      recipe,
+      servings: extra.servings,
+      excludeIngredientIds: extra.excludedIngredientIds?.length
+        ? new Set(extra.excludedIngredientIds)
+        : undefined,
+    })
+  })
+  return entries
+}
+
+/**
+ * Builds the week's list from the meals that actually involve cooking, plus
+ * any recipes added to the week's shopping by hand.
+ */
+export async function generateGroceryList(
+  weekStart: string,
+  meals: PlannedMeal[],
+  options: { planId?: string; keepChecked?: boolean; extras?: GroceryExtra[] } = {},
+): Promise<GroceryList> {
   const existing = await getGroceryList(weekStart)
+  const extras = options.extras ?? existing?.extras ?? []
+
+  const entries = [...(await entriesFromMeals(meals)), ...(await entriesFromExtras(extras))]
+  const pantry = await db.pantryItems.toArray()
 
   const generated = aggregateGroceries({ entries, pantry })
   const items =
@@ -77,6 +111,7 @@ export async function generateGroceryList(
     planId: options.planId ?? existing?.planId,
     weekStart,
     items,
+    extras: extras.length ? extras : undefined,
     categoryOrder: existing?.categoryOrder,
     generatedAt: now,
     createdAt: existing?.createdAt ?? now,
@@ -85,6 +120,60 @@ export async function generateGroceryList(
 
   await db.groceryLists.put(list)
   return list
+}
+
+/** The week's planned meals, for rebuilding the list without the caller having them to hand. */
+async function mealsForWeek(weekStart: string): Promise<{ planId?: string; meals: PlannedMeal[] }> {
+  const plan = await db.mealPlans.where('weekStart').equals(weekStart).first()
+  if (!plan) return { meals: [] }
+  const meals = await db.plannedMeals.where('planId').equals(plan.id).toArray()
+  return { planId: plan.id, meals }
+}
+
+export interface AddRecipeOptions {
+  servings?: number
+  excludedIngredientIds?: string[]
+}
+
+/**
+ * Puts a recipe's ingredients on the week's list — the "I want to make this
+ * too" case, with nothing planned. Adding the same recipe again replaces its
+ * earlier entry rather than doubling it, and the whole list is rebuilt so its
+ * quantities merge with what the plan already needs. Ticks survive, as always.
+ */
+export async function addRecipeToGroceryList(
+  weekStart: string,
+  recipe: Recipe,
+  options: AddRecipeOptions = {},
+): Promise<GroceryList> {
+  const existing = await getGroceryList(weekStart)
+  const extra: GroceryExtra = {
+    recipeId: recipe.id,
+    recipeTitle: recipe.title,
+    servings: options.servings,
+    excludedIngredientIds: options.excludedIngredientIds?.length
+      ? options.excludedIngredientIds
+      : undefined,
+    addedAt: nowISO(),
+  }
+  const extras = [
+    ...(existing?.extras ?? []).filter((entry) => entry.recipeId !== recipe.id),
+    extra,
+  ]
+  const { planId, meals } = await mealsForWeek(weekStart)
+  return generateGroceryList(weekStart, meals, { planId, extras })
+}
+
+/** Takes a hand-added recipe off the week's shopping and rebuilds the list without it. */
+export async function removeRecipeFromGroceryList(
+  weekStart: string,
+  recipeId: string,
+): Promise<GroceryList | undefined> {
+  const existing = await getGroceryList(weekStart)
+  if (!existing?.extras?.some((entry) => entry.recipeId === recipeId)) return existing
+  const extras = existing.extras.filter((entry) => entry.recipeId !== recipeId)
+  const { planId, meals } = await mealsForWeek(weekStart)
+  return generateGroceryList(weekStart, meals, { planId, extras })
 }
 
 async function mutate(

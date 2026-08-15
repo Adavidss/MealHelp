@@ -21,6 +21,8 @@ export interface GroceryEntry {
   /** Servings to actually cook; scales the recipe when it differs. */
   servings?: number
   date?: string
+  /** Ingredients not to shop for — the ones already in the cupboard. */
+  excludeIngredientIds?: ReadonlySet<string>
 }
 
 export interface AggregateOptions {
@@ -58,6 +60,7 @@ export function aggregateGroceries(options: AggregateOptions): GroceryItem[] {
     const factor = servingFactor(recipe, entry.servings)
 
     for (const ingredient of recipe.ingredients) {
+      if (entry.excludeIngredientIds?.has(ingredient.id)) continue
       const name = ingredient.ingredientName?.trim()
       if (!name) continue
 

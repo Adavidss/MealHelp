@@ -1,0 +1,105 @@
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.weekRange {
+  align-self: center;
+  font-size: 0.82rem;
+  color: var(--ink-faint);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.value {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  min-width: 2.5ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepperNote {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.plannedNote {
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+  font-size: 0.85rem;
+  margin-bottom: var(--space-3);
+}
+
+.hint {
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+  margin-bottom: var(--space-2);
+}
+
+.sectionHeading {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin: var(--space-3) 0 var(--space-1);
+}
+
+.list {
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-height: var(--tap);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  line-height: 1.4;
+}
+
+.row > span:first-of-type {
+  flex: 1;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.quantity {
+  color: var(--accent-ink);
+}
+
+.left {
+  color: var(--ink-faint);
+  text-decoration: line-through;
+}
+
+.faint {
+  color: var(--ink-faint);
+}
+
+.staple {
+  flex: none;
+  align-self: center;
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--honey-soft);
+  color: #8a5c08;
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}

@@ -169,3 +169,65 @@
     display: none !important;
   }
 }
+
+/* Recipes added to the week's shopping by hand, beyond the plan. */
+.extras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-4);
+}
+
+.extrasLabel {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.extrasList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.extraChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.extraName {
+  color: inherit;
+  text-decoration: none;
+}
+
+.extraName:hover {
+  text-decoration: underline;
+}
+
+.extraRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.extraRemove:hover {
+  background: color-mix(in srgb, var(--sage) 18%, transparent);
+}
