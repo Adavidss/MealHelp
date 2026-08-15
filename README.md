@@ -35,6 +35,21 @@ leftovers", "only 15 min of hands-on work", "haven't cooked it in 6 weeks"), and
 any meal can be locked, swapped or regenerated before you accept it. Nothing is
 saved until you do.
 
+**And it is one tap.** *Plan it for me* — on Today, on the planner, on an empty
+week — builds the week from your saved defaults the moment your library is in,
+with no form in the way; *Customise* is the same screen with the form open. The
+presets (Easy week, Cheap week, Crock-Pot heavy…) build a week the moment you
+tap them too. On the preview, every cooking night has a **Try another** button:
+the next-best recipe for that night, ranked against the rest of the week as it
+stands, with whatever you have already turned down for that night kept out —
+and if that night feeds the leftover nights after it, they follow, and the batch
+is sized for all of them.
+
+The same brain fills a single night. **Add → Suggest something** on any day of
+the planner ranks your library the way the planner does — your defaults, your
+pantry and equipment, what you cooked lately, what is already on the week — and
+offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
+
 ### Everything else
 
 - **Recipe library** — opens on shelves worth browsing: *Easy Crock-Pot meals*,
@@ -56,6 +71,11 @@ saved until you do.
 - **Import** — paste a link and MealHelp reads the page's structured recipe
   data. When a site refuses to share its page, it hands over to a paste box that
   parses the text instead. See [Recipe import limitations](#recipe-import-limitations).
+- **A recipe editor that reads what you type** — paste a whole recipe from a
+  message or a note and it fills the form (only the fields still empty); as you
+  write, it says how the recipe reads ("Reads like Slow Cooker · One Pot — use
+  those") rather than making you tick appliances; and if you type a name you know
+  from a website, it offers to find it in the built-in browser instead.
 - **Discover** — find recipes you do not have yet. Search by name, ask for a
   surprise, or tell it what is in the fridge and get recipes ranked by how many
   of your ingredients they use. Saving one turns it into an ordinary MealHelp

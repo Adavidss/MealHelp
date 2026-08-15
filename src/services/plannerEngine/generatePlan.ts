@@ -252,12 +252,12 @@ export function generatePlan(options: GenerateOptions): GeneratedPlan {
   return { slots, warnings, cookSessions, leftoverMeals }
 }
 
-interface PickOptions {
+export interface PickOptions {
   minServings?: number
   requiredMethod?: CookingMethod
 }
 
-function pickRecipe(
+export function pickRecipe(
   candidates: ReturnType<typeof rankRecipes>,
   options: PickOptions,
 ): (typeof candidates)[number] | undefined {
@@ -373,7 +373,7 @@ function cookability(request: PlanningRequest, date: string): number {
   return score
 }
 
-function loadLimit(load: DayLoad | undefined): number | undefined {
+export function loadLimit(load: DayLoad | undefined): number | undefined {
   if (!load) return undefined
   const limit = DAY_LOAD_ACTIVE_LIMIT[load]
   return limit >= 999 ? undefined : limit

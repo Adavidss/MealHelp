@@ -196,4 +196,7 @@ export interface PlanningRequest {
   useUpIngredients?: string[]
 
   requiredMethods?: CookingMethod[]
+
+  /** Recipes turned down for this plan — "try another" must not offer them back. */
+  excludeRecipeIds?: string[]
 }

@@ -1,7 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ArrowLeft, Lock, LockOpen, RefreshCw, Replace, Sparkles } from 'lucide-react'
+import {
+  ArrowLeft,
+  Lock,
+  LockOpen,
+  RefreshCw,
+  Replace,
+  Shuffle,
+  Sparkles,
+  Zap,
+} from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
 import { getOrCreatePlan, listPlannedMeals, replacePlanMeals } from '@/db/plans'
@@ -21,7 +30,13 @@ import {
   type Recipe,
   type VarietyMode,
 } from '@/models'
-import { generatePlan, type GeneratedSlot } from '@/services/plannerEngine'
+import {
+  generatePlan,
+  replaceCookSlot,
+  suggestAnother,
+  type GeneratedSlot,
+} from '@/services/plannerEngine'
+import { contextFromRequest } from '@/services/recommendationEngine'
 import {
   dayName,
   dayNameShort,
@@ -36,7 +51,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { useToast } from '@/components/common/Toast'
 import { RecipePicker } from '@/features/planner/RecipePicker'
 import { StarterRecipesButton } from '@/features/recipes/StarterRecipesButton'
-import { PLAN_PRESETS } from './planPresets'
+import { PLAN_PRESETS, type PlanPreset } from './planPresets'
 import styles from './PlanWizardPage.module.css'
 
 interface Preferences {
@@ -57,10 +72,41 @@ interface Preferences {
   budgetPreference?: PlanningRequest['budgetPreference']
 }
 
+/** The saved planning defaults, as a fresh set of preferences for a week. */
+function preferencesFromSettings(
+  defaults: ReturnType<typeof useSettings>['settings']['planningDefaults'],
+  dates: string[],
+): Preferences {
+  return {
+    mealsNeeded: defaults.mealsNeeded,
+    targetCookSessions: defaults.targetCookSessions,
+    preferLeftovers: defaults.preferLeftovers,
+    preferredMethods: defaults.preferredMethods,
+    requiredMethods: [],
+    variety: defaults.variety,
+    usePantryFirst: defaults.usePantryFirst,
+    avoidRecentlyCooked: defaults.avoidRecentlyCooked,
+    servingsPerMeal: defaults.servingsPerMeal,
+    dayLoads: {},
+    selectedDates: dates.slice(0, defaults.mealsNeeded),
+    useUp: '',
+  }
+}
+
+/** A preset only changes the constraints it names; everything else stands. */
+function applyPreset(current: Preferences, preset: PlanPreset): Preferences {
+  return {
+    ...current,
+    ...preset.patch,
+    preferredMethods: preset.patch.preferredMethods ?? current.preferredMethods,
+    requiredMethods: preset.patch.requiredMethods ?? current.requiredMethods,
+  }
+}
+
 export function PlanWizardPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { settings } = useSettings()
+  const { settings, ready: settingsReady } = useSettings()
   const { toast } = useToast()
 
   const weekStart =
@@ -68,28 +114,28 @@ export function PlanWizardPage() {
   const dates = useMemo(() => weekDates(weekStart), [weekStart])
   const mealType = settings.visibleMealTypes[0] ?? 'dinner'
 
-  const recipes = useLiveQuery(() => db.recipes.toArray(), [], [] as Recipe[])
-  const pantry = useLiveQuery(() => pantryKeySet(), [], new Set<string>())
+  // Arriving with ?quick=1 (or ?preset=…) means "just plan it": the week is
+  // built the moment the library is in, and the form is only a tap away.
+  const quick = searchParams.get('quick') === '1'
+  const presetId = searchParams.get('preset')
 
-  const [prefs, setPrefs] = useState<Preferences>(() => ({
-    mealsNeeded: settings.planningDefaults.mealsNeeded,
-    targetCookSessions: settings.planningDefaults.targetCookSessions,
-    preferLeftovers: settings.planningDefaults.preferLeftovers,
-    preferredMethods: settings.planningDefaults.preferredMethods,
-    requiredMethods: [],
-    variety: settings.planningDefaults.variety,
-    usePantryFirst: settings.planningDefaults.usePantryFirst,
-    avoidRecentlyCooked: settings.planningDefaults.avoidRecentlyCooked,
-    servingsPerMeal: settings.planningDefaults.servingsPerMeal,
-    dayLoads: {},
-    selectedDates: dates.slice(0, settings.planningDefaults.mealsNeeded),
-    useUp: '',
-  }))
+  // Undefined until IndexedDB has answered, so a one-tap plan waits for the
+  // real library and pantry rather than planning an empty one.
+  const recipes = useLiveQuery(() => db.recipes.toArray(), [])
+  const pantry = useLiveQuery(() => pantryKeySet(), [])
+
+  const [prefs, setPrefs] = useState<Preferences>(() =>
+    preferencesFromSettings(settings.planningDefaults, dates),
+  )
 
   const [slots, setSlots] = useState<GeneratedSlot[] | null>(null)
   const [warnings, setWarnings] = useState<string[]>([])
   const [swapping, setSwapping] = useState<string | null>(null)
   const [accepting, setAccepting] = useState(false)
+  /** Recipes turned down per night with "try another", so they stay gone. */
+  const [passedOver, setPassedOver] = useState<Record<string, string[]>>({})
+  /** True from arrival until the one-tap plan is on screen. */
+  const [quickPending, setQuickPending] = useState(quick || Boolean(presetId))
 
   // Keep the number of chosen days in step with "how many meals do you need".
   useEffect(() => {
@@ -123,24 +169,27 @@ export function PlanWizardPage() {
         : [...current[list], method],
     }))
 
-  const buildRequest = (lockedSlots: GeneratedSlot[] = []): PlanningRequest => ({
+  const buildRequest = (
+    using: Preferences,
+    lockedSlots: GeneratedSlot[] = [],
+  ): PlanningRequest => ({
     startDate: weekStart,
-    dates: [...prefs.selectedDates].sort(),
+    dates: [...using.selectedDates].sort(),
     mealType,
-    mealsNeeded: prefs.selectedDates.length,
-    targetCookSessions: prefs.targetCookSessions,
-    preferLeftovers: prefs.preferLeftovers,
-    preferredCookingMethods: prefs.preferredMethods,
-    requiredMethods: prefs.requiredMethods,
-    variety: prefs.variety,
-    usePantryFirst: prefs.usePantryFirst,
-    avoidRecentlyCooked: prefs.avoidRecentlyCooked,
-    servingsPerMeal: prefs.servingsPerMeal,
-    dayLoads: prefs.dayLoads,
-    maxActiveTimeMinutes: prefs.maxActiveTimeMinutes,
-    preferredEffort: prefs.preferredEffort,
-    budgetPreference: prefs.budgetPreference,
-    useUpIngredients: prefs.useUp
+    mealsNeeded: using.selectedDates.length,
+    targetCookSessions: using.targetCookSessions,
+    preferLeftovers: using.preferLeftovers,
+    preferredCookingMethods: using.preferredMethods,
+    requiredMethods: using.requiredMethods,
+    variety: using.variety,
+    usePantryFirst: using.usePantryFirst,
+    avoidRecentlyCooked: using.avoidRecentlyCooked,
+    servingsPerMeal: using.servingsPerMeal,
+    dayLoads: using.dayLoads,
+    maxActiveTimeMinutes: using.maxActiveTimeMinutes,
+    preferredEffort: using.preferredEffort,
+    budgetPreference: using.budgetPreference,
+    useUpIngredients: using.useUp
       .split(',')
       .map((entry) => entry.trim())
       .filter(Boolean),
@@ -160,21 +209,48 @@ export function PlanWizardPage() {
       })),
   })
 
-  const generate = (keepLocked = false) => {
-    const request = buildRequest(keepLocked ? (slots ?? []) : [])
-    const result = generatePlan({
-      request,
-      library: recipes ?? [],
-      context: {
-        pantryKeys: pantry,
-        equipmentOwned: settings.equipmentOwned,
-        recentlyCookedHardDays: settings.recentlyCookedHardDays,
-        recentlyCookedSoftDays: settings.recentlyCookedSoftDays,
-      },
-    })
+  const engineContext = {
+    pantryKeys: pantry,
+    equipmentOwned: settings.equipmentOwned,
+    recentlyCookedHardDays: settings.recentlyCookedHardDays,
+    recentlyCookedSoftDays: settings.recentlyCookedSoftDays,
+  }
+
+  /** Builds the week from `using`, keeping locked nights when asked. */
+  const generateWith = (using: Preferences, keepLocked = false) => {
+    const request = buildRequest(using, keepLocked ? (slots ?? []) : [])
+    const result = generatePlan({ request, library: recipes ?? [], context: engineContext })
     setSlots(result.slots)
     setWarnings(result.warnings)
+    setPassedOver({})
   }
+
+  const generate = (keepLocked = false) => generateWith(prefs, keepLocked)
+
+  /** One tap: a preset's constraints on top of your defaults, built at once. */
+  const buildFromPreset = (preset?: PlanPreset) => {
+    const next = preset ? applyPreset(prefs, preset) : prefs
+    setPrefs(next)
+    generateWith(next)
+  }
+
+  // The one-tap path. Waits for the library and pantry to have loaded and for
+  // the saved defaults to be in, then plans exactly once.
+  const autoPlanned = useRef(false)
+  useEffect(() => {
+    if (autoPlanned.current || !(quick || presetId)) return
+    if (!settingsReady || !recipes || !pantry || recipes.length === 0) return
+    autoPlanned.current = true
+    const fresh = preferencesFromSettings(settings.planningDefaults, dates)
+    const preset = PLAN_PRESETS.find((candidate) => candidate.id === presetId)
+    const next = preset ? applyPreset(fresh, preset) : fresh
+    setPrefs(next)
+    generateWith(next)
+    setQuickPending(false)
+    // generateWith closes over the current library and settings by design;
+    // this runs once, when they are first all present.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quick, presetId, settingsReady, recipes, pantry])
 
   const toggleLock = (date: string) => {
     setSlots(
@@ -193,21 +269,40 @@ export function PlanWizardPage() {
         // Turning a suggestion down is a signal worth remembering.
         void recordRejection(replaced.recipeId)
       }
-      return current.map((slot) =>
-        slot.date === date
-          ? {
-              ...slot,
-              kind: 'recipe',
-              recipeId: recipe.id,
-              recipe,
-              servings: recipe.servings ?? prefs.servingsPerMeal,
-              unfilled: false,
-              reasons: ['You picked this one'],
-            }
-          : slot,
-      )
+      return replaceCookSlot(current, date, recipe, prefs.servingsPerMeal, [
+        'You picked this one',
+      ])
     })
     setSwapping(null)
+  }
+
+  /**
+   * "Not that one" — the next-best recipe for that night, ranked against the
+   * rest of the week as it stands, with everything already turned down for
+   * that night kept out of the running.
+   */
+  const tryAnother = (date: string) => {
+    if (!slots) return
+    const current = slots.find((slot) => slot.date === date)
+    const alreadyPassed = passedOver[date] ?? []
+    const suggestion = suggestAnother({
+      slots,
+      date,
+      library: recipes ?? [],
+      context: { ...contextFromRequest(buildRequest(prefs), engineContext) },
+      perMeal: prefs.servingsPerMeal,
+      dayLoad: prefs.dayLoads[date],
+      passedOver: new Set(alreadyPassed),
+    })
+    if (!suggestion) {
+      toast(`Nothing else in your library fits ${dayName(date)}.`)
+      return
+    }
+    if (current?.recipeId) {
+      void recordRejection(current.recipeId)
+      setPassedOver((rest) => ({ ...rest, [date]: [...alreadyPassed, current.recipeId as string] }))
+    }
+    setSlots(suggestion.slots)
   }
 
   const accept = async () => {
@@ -299,26 +394,37 @@ export function PlanWizardPage() {
         </div>
       </header>
 
-      {!slots ? (
+      {quickPending && !slots ? (
+        <div className={styles.building} role="status">
+          <Sparkles size={28} aria-hidden="true" />
+          <p>Building your week from your recipes…</p>
+        </div>
+      ) : !slots ? (
         <>
           <section>
-            <h2 className="section-title">Start from</h2>
+            <h2 className="section-title">
+              Build a week in one tap
+              <span className="text-sm faint">You can still change anything after</span>
+            </h2>
             <div className={styles.presets}>
+              <button
+                type="button"
+                className={`${styles.preset} ${styles.presetQuick}`}
+                onClick={() => buildFromPreset()}
+              >
+                <strong>
+                  <Zap size={15} aria-hidden="true" /> Just plan it
+                </strong>
+                <small>
+                  {prefs.mealsNeeded} dinners, cook {prefs.targetCookSessions}× — your usual
+                </small>
+              </button>
               {PLAN_PRESETS.map((preset) => (
                 <button
                   key={preset.id}
                   type="button"
                   className={styles.preset}
-                  onClick={() =>
-                    setPrefs((current) => ({
-                      ...current,
-                      ...preset.patch,
-                      preferredMethods:
-                        preset.patch.preferredMethods ?? current.preferredMethods,
-                      requiredMethods:
-                        preset.patch.requiredMethods ?? current.requiredMethods,
-                    }))
-                  }
+                  onClick={() => buildFromPreset(preset)}
                 >
                   <strong>{preset.label}</strong>
                   <small>{preset.description}</small>
@@ -326,6 +432,10 @@ export function PlanWizardPage() {
               ))}
             </div>
           </section>
+
+          <h2 className={`section-title ${styles.customiseTitle}`}>
+            Or set it up yourself
+          </h2>
 
           <section>
             <h2 className="section-title">How many meals?</h2>
@@ -620,11 +730,24 @@ export function PlanWizardPage() {
                       <LockOpen size={17} aria-hidden="true" />
                     )}
                   </button>
+                  {slot.kind === 'recipe' ? (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-icon"
+                      onClick={() => tryAnother(slot.date)}
+                      disabled={Boolean(slot.locked)}
+                      aria-label="Try another suggestion for this night"
+                      title="Try another"
+                    >
+                      <Shuffle size={17} aria-hidden="true" />
+                    </button>
+                  ) : null}
                   <button
                     type="button"
                     className="btn btn-ghost btn-icon"
                     onClick={() => setSwapping(slot.date)}
-                    aria-label="Replace this meal"
+                    aria-label="Replace this meal with one you choose"
+                    title="Choose a recipe"
                   >
                     <Replace size={17} aria-hidden="true" />
                   </button>

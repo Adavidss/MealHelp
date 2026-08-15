@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { useLocation, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, ImagePlus, Loader2 } from 'lucide-react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { ArrowLeft, ClipboardPaste, Globe, ImagePlus, Loader2, Sparkles } from 'lucide-react'
 import { getRecipe, saveRecipe, updateRecipe } from '@/db/recipes'
 import {
   BUDGET_LEVELS,
@@ -19,7 +19,7 @@ import type {
   Score5,
 } from '@/models'
 import { parseIngredientLines } from '@/services/ingredientParser'
-import { buildInstructions } from '@/services/recipeImport'
+import { buildInstructions, detectCookingMethods, parseRecipeText } from '@/services/recipeImport'
 import { useToast } from '@/components/common/Toast'
 import { isImageFile, resizeImageFile } from '@/utils/image'
 import { newId } from '@/utils/id'
@@ -118,6 +118,8 @@ export function RecipeEditPage() {
   const [imageBusy, setImageBusy] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [error, setError] = useState<string>()
+  const [pasteOpen, setPasteOpen] = useState(false)
+  const [pasteText, setPasteText] = useState('')
 
   useEffect(() => {
     if (!id) {
@@ -139,6 +141,50 @@ export function RecipeEditPage() {
     () => parseIngredientLines(form.ingredientText),
     [form.ingredientText],
   )
+
+  // What the words on the page say about how it is cooked, offered — never
+  // applied — because a suggestion the user has to tap is one they can see.
+  const suggestedMethods = useMemo(() => {
+    const detected = detectCookingMethods(
+      form.title,
+      form.instructionText.split(/\n+/).filter(Boolean),
+      form.equipment.join(' '),
+    )
+    return detected.filter((method) => !form.cookingMethods.includes(method))
+  }, [form.title, form.instructionText, form.equipment, form.cookingMethods])
+
+  /**
+   * A whole recipe pasted in one go — from a message, a note, a photo's text —
+   * read the way Import reads pasted text, and poured into whichever fields
+   * are still empty. Nothing already typed is overwritten.
+   */
+  const fillFromPaste = () => {
+    const text = pasteText.trim()
+    if (!text) return
+    const { draft } = parseRecipeText(text)
+    setForm((current) => ({
+      ...current,
+      title: current.title.trim() || draft.title,
+      description: current.description.trim() || draft.description || '',
+      servings: current.servings.trim() && current.servings !== '4' ? current.servings : draft.servings ? String(draft.servings) : current.servings,
+      prepTimeMinutes: current.prepTimeMinutes || (draft.prepTimeMinutes ? String(draft.prepTimeMinutes) : ''),
+      cookTimeMinutes: current.cookTimeMinutes || (draft.cookTimeMinutes ? String(draft.cookTimeMinutes) : ''),
+      ingredientText:
+        current.ingredientText.trim() || draft.ingredients.map((i) => i.originalText).join('\n'),
+      instructionText:
+        current.instructionText.trim() || draft.instructions.map((s) => s.text).join('\n\n'),
+      cookingMethods: current.cookingMethods.length ? current.cookingMethods : draft.cookingMethods,
+      tags: current.tags.trim() || draft.tags.join(', '),
+    }))
+    setPasteText('')
+    setPasteOpen(false)
+    toast(
+      draft.ingredients.length
+        ? `Read ${draft.ingredients.length} ingredients and ${draft.instructions.length} steps. Check them over.`
+        : 'Read what it could — check the fields it filled.',
+      { tone: 'success' },
+    )
+  }
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }))
@@ -254,6 +300,61 @@ export function RecipeEditPage() {
         </p>
       ) : null}
 
+      {!id ? (
+        <section className={styles.smartStart}>
+          {pasteOpen ? (
+            <>
+              <label className="field-label" htmlFor="paste-recipe">
+                Paste a recipe and MealHelp will fill the form
+              </label>
+              <textarea
+                id="paste-recipe"
+                className={`textarea ${styles.pasteBox}`}
+                value={pasteText}
+                onChange={(event) => setPasteText(event.target.value)}
+                placeholder={
+                  'Slow Cooker Chicken Curry\n\nServes 6\nPrep 20 minutes\n\nIngredients\n2 lbs chicken thighs\n1 can coconut milk\n\nInstructions\n1. Put everything in the slow cooker.\n2. Cook on low for 6 hours.'
+                }
+                autoFocus
+              />
+              <div className="row-tight">
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  onClick={fillFromPaste}
+                  disabled={!pasteText.trim()}
+                >
+                  <Sparkles size={15} aria-hidden="true" />
+                  Fill the form
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-sm"
+                  onClick={() => setPasteOpen(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className={styles.smartRow}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => setPasteOpen(true)}
+              >
+                <ClipboardPaste size={15} aria-hidden="true" />
+                Paste a recipe to fill this in
+              </button>
+              <span className="text-sm faint">
+                From a message, a note, anywhere — MealHelp sorts out the ingredients and
+                steps.
+              </span>
+            </div>
+          )}
+        </section>
+      ) : null}
+
       <div className="field">
         <label className="field-label" htmlFor="title">
           Name
@@ -266,6 +367,15 @@ export function RecipeEditPage() {
           placeholder="Slow Cooker Chicken Curry"
           required
         />
+        {!id && form.title.trim().length >= 3 && !form.ingredientText.trim() ? (
+          <span className="field-hint">
+            Know it from a website?{' '}
+            <Link to={`/browser?q=${encodeURIComponent(form.title.trim())}`}>
+              <Globe size={13} aria-hidden="true" /> Find “{form.title.trim()}” online
+            </Link>{' '}
+            and add it from the page instead of typing.
+          </span>
+        ) : null}
       </div>
 
       <div className="field">
@@ -382,6 +492,22 @@ export function RecipeEditPage() {
             </button>
           ))}
         </div>
+        {suggestedMethods.length ? (
+          <span className={`field-hint ${styles.suggestRow}`}>
+            <Sparkles size={13} aria-hidden="true" />
+            Reads like{' '}
+            {suggestedMethods.map((method) => COOKING_METHOD_LABELS[method]).join(' · ')}.
+            <button
+              type="button"
+              className={styles.suggestApply}
+              onClick={() =>
+                set('cookingMethods', [...form.cookingMethods, ...suggestedMethods])
+              }
+            >
+              Use {suggestedMethods.length === 1 ? 'that' : 'those'}
+            </button>
+          </span>
+        ) : null}
       </div>
 
       <div className="field">

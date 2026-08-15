@@ -8,6 +8,7 @@ import {
   Printer,
   ShoppingCart,
   Sparkles,
+  Zap,
 } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
 import { copyWeek, movePlannedMeal } from '@/db/plans'
@@ -54,6 +55,14 @@ export function PlannerPage() {
         .filter((meal) => meal.kind === 'recipe' && meal.recipeId)
         .map((meal) => meal.recipeId as string),
     [week.meals],
+  )
+
+  const weekRecipes = useMemo(
+    () =>
+      usedRecipeIds
+        .map((id) => week.recipesById.get(id))
+        .filter((recipe): recipe is NonNullable<typeof recipe> => Boolean(recipe)),
+    [usedRecipeIds, week.recipesById],
   )
 
   const summary = useMemo(() => {
@@ -139,9 +148,13 @@ export function PlannerPage() {
       </header>
 
       <div className={styles.actionBar}>
-        <Link to={`/plan-week?week=${weekStart}`} className="btn btn-primary">
+        <Link to={`/plan-week?week=${weekStart}&quick=1`} className="btn btn-primary">
+          <Zap size={17} aria-hidden="true" />
+          Plan it for me
+        </Link>
+        <Link to={`/plan-week?week=${weekStart}`} className="btn btn-secondary">
           <Sparkles size={17} aria-hidden="true" />
-          Plan my week
+          Customise
         </Link>
         <button
           type="button"
@@ -165,10 +178,14 @@ export function PlannerPage() {
       {summary.planned === 0 ? (
         <EmptyState
           title="Let's figure out what you're eating this week."
-          description="MealHelp can suggest a week that fits how much you actually want to cook — or you can fill it in yourself."
+          description="One tap and MealHelp suggests a week that fits how much you actually want to cook. Change anything you like before you accept it — or fill the days in yourself."
         >
-          <Link to={`/plan-week?week=${weekStart}`} className="btn btn-primary">
-            Plan my week
+          <Link to={`/plan-week?week=${weekStart}&quick=1`} className="btn btn-primary">
+            <Zap size={17} aria-hidden="true" />
+            Plan it for me
+          </Link>
+          <Link to={`/plan-week?week=${weekStart}`} className="btn btn-secondary">
+            Customise first
           </Link>
         </EmptyState>
       ) : null}
@@ -253,6 +270,7 @@ export function PlannerPage() {
           mealType={adding.mealType}
           leftovers={week.leftovers}
           usedRecipeIds={usedRecipeIds}
+          weekRecipes={weekRecipes}
           defaultServings={settings.defaultServings}
           onClose={() => setAdding(null)}
         />

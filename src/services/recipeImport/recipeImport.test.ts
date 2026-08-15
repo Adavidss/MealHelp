@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { parseRecipeFromHtml } from './jsonLd'
 import { parseRecipeText } from './parseText'
-import { detectTimerMinutes, parseISODuration, parseServings } from './normalizeDraft'
+import {
+  detectCookingMethods,
+  detectTimerMinutes,
+  inferCookingMethods,
+  parseISODuration,
+  parseServings,
+} from './normalizeDraft'
 import { looksLikeAddress, normalizeUrl } from './adapters'
 
 const JSON_LD_PAGE = `<!doctype html><html><head><title>Curry</title>
@@ -146,6 +152,19 @@ describe('duration and yield parsing', () => {
     expect(parseServings('6 servings')).toBe(6)
     expect(parseServings('Serves 4-6')).toBe(4)
     expect(parseServings(8)).toBe(8)
+  })
+})
+
+describe('cooking method detection', () => {
+  it('reads the appliance out of the words, and says nothing when there is nothing to say', () => {
+    expect(detectCookingMethods('Slow Cooker Chicken Curry', ['Cook on low for 6 hours.'])).toEqual([
+      'slow-cooker',
+    ])
+    expect(detectCookingMethods('Chicken Curry', ['Combine and serve.'])).toEqual([])
+  })
+
+  it('still defaults the importer to the stovetop when a page gives no clue', () => {
+    expect(inferCookingMethods('Chicken Curry', ['Combine and serve.'])).toEqual(['stovetop'])
   })
 })
 

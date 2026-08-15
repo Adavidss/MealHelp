@@ -9,6 +9,7 @@ import {
   Refrigerator,
   ShoppingCart,
   Sparkles,
+  Zap,
 } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
@@ -150,11 +151,15 @@ export function TodayPage() {
               Nothing is on the plan for today.
             </p>
             <div className={styles.todayActions}>
-              <Link to="/plan-week" className="btn btn-primary">
-                <Sparkles size={17} aria-hidden="true" />
-                Plan my week
+              <Link to="/plan-week?quick=1" className="btn btn-primary">
+                <Zap size={17} aria-hidden="true" />
+                Plan it for me
               </Link>
-              <Link to={`/plan/${weekStart}`} className="btn btn-secondary">
+              <Link to="/plan-week" className="btn btn-secondary">
+                <Sparkles size={17} aria-hidden="true" />
+                Customise
+              </Link>
+              <Link to={`/plan/${weekStart}`} className="btn btn-ghost">
                 Open planner
               </Link>
             </div>
@@ -242,6 +247,10 @@ export function TodayPage() {
       <section>
         <h2 className="section-title">Quick actions</h2>
         <div className={styles.actions}>
+          <Link to="/plan-week?quick=1" className={styles.action}>
+            <Zap size={19} aria-hidden="true" />
+            Plan it for me
+          </Link>
           <Link to="/plan-week" className={styles.action}>
             <Sparkles size={19} aria-hidden="true" />
             Plan my week

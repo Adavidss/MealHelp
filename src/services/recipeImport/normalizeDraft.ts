@@ -87,10 +87,11 @@ const METHOD_HINTS: Array<{ method: CookingMethod; patterns: RegExp }> = [
 ]
 
 /**
- * Guesses how a recipe is cooked from its own words. These are only defaults —
- * the import preview lets the user correct them before anything is saved.
+ * What a recipe's own words say about how it is cooked — and nothing when they
+ * say nothing. The editor uses this to *suggest*; import uses the defaulting
+ * version below.
  */
-export function inferCookingMethods(
+export function detectCookingMethods(
   title: string,
   instructions: string[],
   equipmentText = '',
@@ -105,8 +106,20 @@ export function inferCookingMethods(
     found.delete('stovetop')
     found.delete('oven')
   }
-  const methods = [...found]
-  return methods.length ? methods.filter(isCookingMethod) : ['stovetop']
+  return [...found].filter(isCookingMethod)
+}
+
+/**
+ * Guesses how a recipe is cooked from its own words. These are only defaults —
+ * the import preview lets the user correct them before anything is saved.
+ */
+export function inferCookingMethods(
+  title: string,
+  instructions: string[],
+  equipmentText = '',
+): CookingMethod[] {
+  const methods = detectCookingMethods(title, instructions, equipmentText)
+  return methods.length ? methods : ['stovetop']
 }
 
 function isCookingMethod(value: string): value is CookingMethod {

@@ -38,6 +38,55 @@
   color: inherit;
 }
 
+/* The one-tap card: your own defaults, no preset flavour, built now. */
+.presetQuick {
+  grid-column: 1 / -1;
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.presetQuick strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.presetQuick small,
+.presetQuick:hover small {
+  color: rgb(255 255 255 / 85%);
+}
+
+.presetQuick:hover {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+  color: #fff;
+}
+
+.customiseTitle {
+  margin-top: var(--space-6);
+}
+
+.building {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-7) var(--space-4);
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.building svg {
+  color: var(--accent);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.05); }
+}
+
 .days {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

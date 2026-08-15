@@ -98,6 +98,18 @@ describe('rankRecipes', () => {
 
     expect(ranked.map((r) => r.recipe.id)).toEqual(['b', 'a'])
   })
+
+  /**
+   * "Try another" only works if the one just turned down cannot come straight
+   * back — however well it scores.
+   */
+  it('never offers back a recipe that was passed over', () => {
+    const ranked = rankRecipes(
+      [makeRecipe({ id: 'best', rating: 5, favorite: true }), makeRecipe({ id: 'next', rating: 3 })],
+      { excludeRecipeIds: new Set(['best']) },
+    )
+    expect(ranked.map((r) => r.recipe.id)).toEqual(['next'])
+  })
 })
 
 describe('findAlternatives', () => {

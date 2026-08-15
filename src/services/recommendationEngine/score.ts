@@ -73,6 +73,8 @@ export interface ScoringContext {
   recentlyCookedSoftDays?: number
   /** Minimum servings the slot needs, when leftovers hang off it. */
   minServings?: number
+  /** Turned down already — never offered again in this round. */
+  excludeRecipeIds?: ReadonlySet<string>
 }
 
 const WEIGHTS = {
@@ -300,6 +302,10 @@ function dayLimit(load: DayLoad | undefined): number | undefined {
 
 /** Reasons a recipe cannot fill a slot at all, as opposed to fitting it badly. */
 function disqualify(recipe: Recipe, context: ScoringContext): string | undefined {
+  if (context.excludeRecipeIds?.has(recipe.id)) {
+    return 'Passed over this time'
+  }
+
   if (context.mealType && recipe.mealTypes.length) {
     if (!recipe.mealTypes.includes(context.mealType)) {
       return `Not a ${context.mealType} recipe`
@@ -349,6 +355,9 @@ export function contextFromRequest(
     avoidRecentlyCooked: request.avoidRecentlyCooked,
     usePantryFirst: request.usePantryFirst,
     useUpIngredients: request.useUpIngredients,
+    excludeRecipeIds: request.excludeRecipeIds?.length
+      ? new Set(request.excludeRecipeIds)
+      : undefined,
     ...extras,
   }
 }
