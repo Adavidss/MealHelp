@@ -12,23 +12,28 @@ import type { WebSearchPage, WebSearchResult } from './types'
  * Searching the web from inside MealHelp.
  *
  * A search engine's normal results page is built for a browser with scripts
- * on, and most engines answer a datacentre with a robot check instead. Two
- * still answer plainly, and MealHelp draws the list itself from what they
- * send:
+ * on, and most engines answer a datacentre with a robot check instead. Three
+ * still answer plainly from somewhere, and MealHelp draws the list itself
+ * from what they send:
  *
  *   - Brave Search serves its results page as real HTML, and it is the one
  *     asked first: the results are good and it has never been seen to answer
- *     the wrong question.
- *   - Bing publishes results as an RSS feed — tiny and stable, but it has a
- *     habit of answering a multi-word query with results for its first word
- *     alone. It is the fallback, and its answers are checked before use.
+ *     the wrong question. It rate-limits Cloudflare's addresses, though, so
+ *     from the live site (whose fetcher is a Worker) it usually says no.
+ *   - DuckDuckGo's lite page — a plain table meant for text browsers — answers
+ *     the Worker, and refuses the shared fetchers. One page of ten, no more.
+ *   - Bing publishes results as an RSS feed — tiny and stable, and reachable
+ *     from anywhere, but with a habit of answering a multi-word query with
+ *     results for its first word alone. It is the last resort, and its
+ *     answers are checked before use.
  *
- * Both reach MealHelp by the same ladder as any recipe page: the user's own
- * fetcher first, shared ones after. Nothing about a search is stored anywhere
- * but on the device.
+ * Which one answers depends on which fetcher the request went through, which
+ * is why all three are tried in turn rather than one being chosen. They all
+ * reach MealHelp by the same ladder as any recipe page. Nothing about a search
+ * is stored anywhere but on the device.
  */
 
-export type SearchEngineId = 'brave' | 'bing'
+export type SearchEngineId = 'brave' | 'duckduckgo' | 'bing'
 
 interface SearchEngine {
   id: SearchEngineId
@@ -138,6 +143,47 @@ export function parseBraveResults(html: string): WebSearchResult[] {
 const LEADING_DATE =
   /^\s*(?:[A-Z][a-z]+ \d{1,2}, \d{4}|\d+\s+(?:minute|hour|day|week|month|year)s?\s+ago|yesterday|today)\s*-\s*/i
 
+/* ---------- DuckDuckGo lite ---------- */
+
+/** The lite page. Later pages need a POSTed token, so there is only ever this one. */
+export function duckDuckGoLiteUrl(query: string, offset = 0, freshness?: string): string {
+  const url = new URL('https://lite.duckduckgo.com/lite/')
+  url.searchParams.set('q', query)
+  if (offset > 0) url.searchParams.set('s', String(offset))
+  if (freshness) url.searchParams.set('_', freshness)
+  return url.toString()
+}
+
+/** Result links point at a DuckDuckGo redirect with the real address in `uddg`. */
+function unwrapDuckDuckGoLink(href: string): string | undefined {
+  try {
+    const url = new URL(href, 'https://duckduckgo.com/')
+    if (/(^|\.)duckduckgo\.com$/.test(url.hostname) && url.pathname === '/l/') {
+      return url.searchParams.get('uddg') ?? undefined
+    }
+    return url.toString()
+  } catch {
+    return undefined
+  }
+}
+
+/** Reads results out of the lite page: a link row, then a snippet row, ten times. */
+export function parseDuckDuckGoLite(html: string): WebSearchResult[] {
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+  const seen = new Set<string>()
+  const results: WebSearchResult[] = []
+  const links = [...doc.querySelectorAll('a.result-link')]
+  const snippets = [...doc.querySelectorAll('td.result-snippet')]
+  links.forEach((link, index) => {
+    collect(results, seen, {
+      url: unwrapDuckDuckGoLink(link.getAttribute('href') ?? ''),
+      title: link.textContent,
+      snippet: snippets[index]?.textContent,
+    })
+  })
+  return results
+}
+
 /* ---------- Bing ---------- */
 
 /**
@@ -222,6 +268,16 @@ const ENGINES: Record<SearchEngineId, SearchEngine> = {
     accept: looksLikeHtml,
     parse: parseBraveResults,
   },
+  duckduckgo: {
+    id: 'duckduckgo',
+    label: 'DuckDuckGo',
+    // One page only: asking for more needs a token that only a POST carries,
+    // so a full page is reported as the end rather than as "more".
+    pageSize: Number.POSITIVE_INFINITY,
+    url: duckDuckGoLiteUrl,
+    accept: looksLikeHtml,
+    parse: parseDuckDuckGoLite,
+  },
   bing: {
     id: 'bing',
     label: 'Bing',
@@ -232,7 +288,7 @@ const ENGINES: Record<SearchEngineId, SearchEngine> = {
   },
 }
 
-const ENGINE_ORDER: SearchEngineId[] = ['brave', 'bing']
+const ENGINE_ORDER: SearchEngineId[] = ['brave', 'duckduckgo', 'bing']
 
 export interface WebSearchOptions {
   signal?: AbortSignal
@@ -312,8 +368,6 @@ export async function webSearch(
 
   throw new WebSearchError(
     "MealHelp couldn't reach a search engine.",
-    settings.useSharedFetchers || settings.proxyUrl
-      ? 'Check the connection and try again, or open a recipe site from the list below.'
-      : 'Searching needs a fetcher: turn on shared fetchers in Settings, or add your own.',
+    'Check the connection and try again, or open a recipe site from the start page.',
   )
 }

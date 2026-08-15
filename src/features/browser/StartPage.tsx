@@ -5,7 +5,6 @@ import styles from './StartPage.module.css'
 
 interface StartPageProps {
   recent: RecentPage[]
-  canFetch: boolean
   onOpen: (url: string) => void
   onSearch: (query: string) => void
   onClearRecent: () => void
@@ -18,20 +17,9 @@ const SUGGESTIONS = ['weeknight chicken', 'slow cooker chili', 'one pot pasta', 
  * who know what they want (search), for people who know where they like to
  * cook from (sites), and for people picking up where they left off (recent).
  */
-export function StartPage({ recent, canFetch, onOpen, onSearch, onClearRecent }: StartPageProps) {
+export function StartPage({ recent, onOpen, onSearch, onClearRecent }: StartPageProps) {
   return (
     <div className={styles.start}>
-      {!canFetch ? (
-        <div className={styles.notice} role="status">
-          <p className={styles.noticeTitle}>Browsing needs a fetcher</p>
-          <p className={styles.noticeText}>
-            MealHelp reads pages through your own fetcher or the shared ones, and
-            both are off. <Link to="/settings">Turn shared fetchers on in Settings</Link>{' '}
-            or add your own to browse here.
-          </p>
-        </div>
-      ) : null}
-
       <section className={styles.section}>
         <h2 className={styles.heading}>Try searching for</h2>
         <div className={styles.chips}>

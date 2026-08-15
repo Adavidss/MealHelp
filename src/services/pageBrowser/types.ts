@@ -36,7 +36,7 @@ export interface WebSearchPage {
   query: string
   results: WebSearchResult[]
   /** Which engine answered, and how to credit it. */
-  engine: 'brave' | 'bing'
+  engine: 'brave' | 'duckduckgo' | 'bing'
   engineLabel: string
   /** Offset for the next page of results, when there is one. */
   nextOffset?: number

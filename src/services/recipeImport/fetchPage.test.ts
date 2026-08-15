@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { PageFetchError, fetchRecipePage } from './fetchPage'
+import { BUILT_IN_FETCHER, PageFetchError, fetchRecipePage } from './fetchPage'
 
 const HTML = '<!doctype html><html><head></head><body>recipe</body></html>'
 
@@ -79,7 +79,45 @@ describe('fetchRecipePage', () => {
       fetchRecipePage('https://example.com/recipe', { useSharedFetchers: false }),
     ).rejects.toBeInstanceOf(PageFetchError)
 
-    expect(asked).toEqual(['https://example.com/recipe'])
+    // The site itself, then MealHelp's own fetcher; nothing public.
+    expect(asked).toEqual([
+      'https://example.com/recipe',
+      'https://mealhelp-fetch.kidsdc.workers.dev/?url=https%3A%2F%2Fexample.com%2Frecipe',
+    ])
+  })
+
+  it("tries MealHelp's own fetcher before any shared one, and not twice if it is also the user's", async () => {
+    const asked = mockNetwork(() => null)
+
+    await expect(
+      fetchRecipePage('https://example.com/recipe', {
+        proxyUrl: BUILT_IN_FETCHER,
+        useSharedFetchers: true,
+      }),
+    ).rejects.toBeInstanceOf(PageFetchError)
+
+    expect(asked.filter((url) => url.includes('mealhelp-fetch'))).toHaveLength(1)
+    expect(asked[1]).toContain('mealhelp-fetch')
+    expect(asked[2]).toContain('corsproxy')
+  })
+
+  /**
+   * corsproxy.io answers a 403 with `{"error":"Free usage is limited to
+   * localhost…"}` from anywhere but localhost. That is the fetcher declining,
+   * not the site — reading it as a wall would tell the user to open a page in
+   * Safari that MealHelp's own fetcher could have opened.
+   */
+  it("does not mistake a fetcher's own JSON error for the site's wall", async () => {
+    mockNetwork((url) =>
+      url.includes('corsproxy')
+        ? { status: 403, body: '{"error":"Free usage is limited to localhost and development environments."}' }
+        : null,
+    )
+
+    await expect(fetchRecipePage('https://example.com/recipe')).rejects.toMatchObject({
+      botBlocked: false,
+      reason: 'refused',
+    })
   })
 
   /**

@@ -57,8 +57,6 @@ export function BrowserPage() {
   const [preview, setPreview] = useState<RecipeImportResult>()
   const [menuOpen, setMenuOpen] = useState(false)
 
-  const canFetch = settings.importSettings.useSharedFetchers || Boolean(settings.importSettings.proxyUrl?.trim())
-
   // Arriving with ?q= or ?url= — from Import, Discover, or a typed link —
   // starts there, then the address is tidied so a reload does not repeat it.
   useEffect(() => {
@@ -202,7 +200,6 @@ export function BrowserPage() {
           <div className={styles.scroller}>
             <StartPage
               recent={recent}
-              canFetch={canFetch}
               onOpen={browser.open}
               onSearch={browser.search}
               onClearRecent={() => {

@@ -12,7 +12,8 @@ import type { ImportSettings } from '@/models'
  *
  *   1. The site itself, in case it allows it. Costs nothing to try.
  *   2. The user's own fetcher, if they run one. Nobody else sees what they read.
- *   3. Shared public fetchers, which are convenient and can be turned off.
+ *   3. MealHelp's own fetcher — the Worker in `worker/`, run for the site.
+ *   4. Shared public fetchers, which are convenient and can be turned off.
  *
  * Even all three together do not cover everything — the larger recipe sites
  * block datacentre traffic outright, and a fetcher of any kind looks exactly
@@ -22,7 +23,7 @@ import type { ImportSettings } from '@/models'
  * the general form below accepts any text and not only HTML.
  */
 
-export type FetchRoute = 'direct' | 'own-proxy' | 'shared'
+export type FetchRoute = 'direct' | 'own-proxy' | 'built-in' | 'shared'
 
 export interface FetchedText {
   text: string
@@ -54,9 +55,20 @@ export class PageFetchError extends Error {
 }
 
 /**
+ * MealHelp's own fetcher: the Worker in `worker/`, deployed for the site by
+ * whoever runs it. It is tried before any shared fetcher because it is the
+ * only route that is fast, uncapped and reliably reachable from the live
+ * site — the shared ones turned out to be localhost-only, ten seconds slow,
+ * or gone (see below). A fetcher the user sets in Settings still comes first.
+ */
+export const BUILT_IN_FETCHER = 'https://mealhelp-fetch.kidsdc.workers.dev/?url={url}'
+
+/**
  * Shared fetchers. More than one, deliberately: any of them may disappear,
  * start charging or begin rate-limiting, and none of them should be able to
- * take recipe import down on their own.
+ * take recipe import down on their own. Checked 2026-08-15 from the live
+ * site: corsproxy.io answers only from localhost (a JSON 403 elsewhere),
+ * allorigins works but takes ten seconds or more, codetabs was down.
  */
 const SHARED_FETCHERS: Array<(url: string) => string> = [
   (url) => `https://corsproxy.io/?url=${encodeURIComponent(url)}`,
@@ -119,6 +131,11 @@ export function looksLikeXml(text: string): boolean {
   return head.startsWith('<?xml') || head.startsWith('<rss') || head.startsWith('<feed')
 }
 
+function looksLikeJson(text: string): boolean {
+  const head = text.slice(0, 200).trimStart()
+  return head.startsWith('{') || head.startsWith('[')
+}
+
 export interface FetchOptions {
   /**
    * What counts as a usable answer. A shared fetcher that is down often
@@ -161,6 +178,11 @@ async function attempt(
     })
     const text = await response.text()
 
+    // A fetcher's own complaint — a JSON error about plans, keys or limits —
+    // arrives with a 4xx too, and must not be mistaken for the site's wall:
+    // no recipe site turns robots away with a JSON body.
+    if (looksLikeJson(text)) return { ok: false, botBlocked: false }
+
     if (!response.ok || looksBotBlocked(response.status, text)) {
       return { ok: false, botBlocked: looksBotBlocked(response.status, text) }
     }
@@ -202,6 +224,9 @@ export async function fetchThroughFetchers(
   ]
   const own = settings.proxyUrl?.trim()
   if (own) routes.push({ via: 'own-proxy', requestUrl: ownFetcherUrl(own, url) })
+  if (own !== BUILT_IN_FETCHER) {
+    routes.push({ via: 'built-in', requestUrl: ownFetcherUrl(BUILT_IN_FETCHER, url) })
+  }
   if (settings.useSharedFetchers) {
     for (const build of SHARED_FETCHERS) routes.push({ via: 'shared', requestUrl: build(url) })
   }

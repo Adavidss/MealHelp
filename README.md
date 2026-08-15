@@ -259,8 +259,9 @@ and the last one always works:
 | Route | Reaches | Setup |
 | --- | --- | --- |
 | The site directly | The few that allow it | None |
-| **Your own fetcher** | Most sites | Deploy `worker/` (optional) |
-| **Shared public fetchers** | Most sites | None; can be turned off |
+| **Your own fetcher** | Most sites | Deploy `worker/` yourself (optional) |
+| **MealHelp's fetcher** | Most sites | None — the same Worker, run for the site |
+| **Shared public fetchers** | Most sites, slowly | None; can be turned off |
 | **The MealHelp button** | **Everything** | One-time, ~2 minutes |
 | Pasted text | Everything | None |
 
@@ -279,20 +280,28 @@ Both are generated for you, with copy buttons, on the Import screen. Only the
 recipe fields travel, which is what keeps a 700 KB page down to a link of a few
 thousand characters — a real Budget Bytes recipe comes to about 6 KB.
 
-### Your own fetcher
+### MealHelp's fetcher, and your own
 
 `worker/` holds a ~40-line Cloudflare Worker that fetches a page and returns it
-with CORS headers. Deploy it, paste its URL into Settings, and MealHelp tries it
-before anything public — so no third party learns which recipes you read. It is
-optional, and it cannot get past the sites in (2) either; nothing on a server
-can.
+with CORS headers. One copy of it is deployed for the live site
+(`mealhelp-fetch.kidsdc.workers.dev`, answering only MealHelp's own origins) and
+built into the app as the rung after "the site itself" — so import and the
+built-in browser work from the live site with no setup, at Worker speed, with
+no size cap. It cannot get past the sites in (2); nothing on a server can.
+
+If you would rather nothing but you and the site saw what you read, deploy the
+same Worker to your own account and paste its URL into Settings: yours is tried
+before MealHelp's.
 
 ### Shared fetchers
 
-Without a fetcher of your own, MealHelp falls back to shared public ones. There
-are several, tried in turn, precisely so that none of them can take import down
-by disappearing. The honest cost is that the *address* of the recipe passes
-through a third party, which is why there is a switch for it in Settings.
+After both of those, MealHelp falls back to shared public ones. There are
+several, tried in turn, precisely so that none of them can take import down by
+disappearing — and disappearing is what they do: checked from the live site,
+corsproxy.io answers only from localhost, allorigins takes ten seconds or more,
+and codetabs was down. They remain as a last resort. The honest cost is that
+the *address* of the recipe passes through a third party, which is why there is
+a switch for them in Settings.
 
 Every import — whichever route it came by — is previewed and editable before it
 is saved, and the original line of every ingredient is kept exactly as written.
@@ -369,14 +378,18 @@ Import, and saving keeps you on the page so you can carry on browsing.
 Three things make it a browser rather than a picture of a page:
 
 - **It searches.** Type words instead of an address and MealHelp searches the
-  web — Brave Search first, with "recipe" added to what you typed, and Bing's
-  results feed as a fallback — and draws the results itself. Results from sites
-  that open inside MealHelp come first; the ones that only answer a real
-  browser are grouped after and marked. Videos and social posts are left out,
-  since neither can be read here. (Bing has a habit of answering a multi-word
-  query with results for its first word alone — "slow cooker chili" comes back
-  as dictionary entries for *slow* — so its answers are checked against the
-  words asked for, and asked again fresh when they do not match.)
+  web with "recipe" added to what you typed, and draws the results itself.
+  Three engines are tried in turn, because which one answers depends on which
+  fetcher the request went through: Brave Search (good results, but it
+  rate-limits Cloudflare's addresses, so from the live site it usually
+  declines), DuckDuckGo's lite page (answers the Worker; one page of ten), and
+  Bing's results feed (answers from anywhere, but has a habit of answering a
+  multi-word query with results for its first word alone — "slow cooker chili"
+  comes back as dictionary entries for *slow* — so its answers are checked
+  against the words asked for, and asked again fresh when they do not match).
+  Results from sites that open inside MealHelp come first; the ones that only
+  answer a real browser are grouped after and marked. Videos and social posts
+  are left out, since neither can be read here.
 - **Links work, and so do site search boxes.** Every link on the page and every
   ordinary search form is routed back through MealHelp's own loader, so you can
   wander a site the way you would in Safari. Back and forward work, and coming
@@ -393,8 +406,8 @@ Three things make it a browser rather than a picture of a page:
 The frame cannot load a site directly: almost every site forbids being framed,
 and even a site that allowed it would be a sealed box MealHelp could not read
 the recipe out of. So the browser fetches the page's HTML through the same
-ladder Import uses — the site itself, then your own fetcher, then the shared
-ones — prepares it (a `<base>` for the page's own address, scripts and preload
+ladder Import uses — the site itself, your own fetcher if you set one,
+MealHelp's Worker, then the shared ones — prepares it (a `<base>` for the page's own address, scripts and preload
 hints removed, lazy images fixed, a meta refresh that would carry the frame off
 dropped), and hands the result to the frame as `srcdoc`.
 

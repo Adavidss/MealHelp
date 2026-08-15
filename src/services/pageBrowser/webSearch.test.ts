@@ -3,9 +3,11 @@ import {
   WebSearchError,
   bingRssUrl,
   braveSearchUrl,
+  duckDuckGoLiteUrl,
   looksOffTopic,
   parseBingRss,
   parseBraveResults,
+  parseDuckDuckGoLite,
   recipeQuery,
   significantTerms,
   webSearch,
@@ -109,6 +111,30 @@ describe('parseBraveResults', () => {
   })
 })
 
+describe('parseDuckDuckGoLite', () => {
+  const LITE = `<html><body><table>
+    <tr><td><a rel="nofollow" href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fwww.cookingclassy.com%2Fslow%2Dcooker%2Dchili%2F&amp;rut=abc" class="result-link">Easy Slow Cooker Chili - Cooking Classy</a></td></tr>
+    <tr><td class="result-snippet">This Easy Slow Cooker Chili is one of my most popular recipes.</td></tr>
+    <tr><td><a rel="nofollow" href="https://natashaskitchen.com/slow-cooker-chili-recipe/" class="result-link">Slow Cooker Chili Recipe</a></td></tr>
+    <tr><td class="result-snippet">Learn how to make the best slow cooker chili.</td></tr>
+  </table></body></html>`
+
+  it('unwraps the redirect links and pairs each link with its snippet', () => {
+    const results = parseDuckDuckGoLite(LITE)
+    expect(results.map((r) => r.url)).toEqual([
+      'https://www.cookingclassy.com/slow-cooker-chili/',
+      'https://natashaskitchen.com/slow-cooker-chili-recipe/',
+    ])
+    expect(results[1].snippet).toBe('Learn how to make the best slow cooker chili.')
+  })
+
+  it('asks for the lite page by query', () => {
+    expect(duckDuckGoLiteUrl('lentil soup recipe')).toBe(
+      'https://lite.duckduckgo.com/lite/?q=lentil+soup+recipe',
+    )
+  })
+})
+
 describe('parseBingRss', () => {
   it('reads title, link, host and snippet, skipping duplicates, videos and non-web links', () => {
     const results = parseBingRss(FEED)
@@ -168,7 +194,11 @@ describe('looksOffTopic', () => {
 
 describe('webSearch', () => {
   /** Answers each engine by its address; anything else is unreachable. */
-  function network(answers: { brave?: string | null; bing?: string | (() => string) | null }) {
+  function network(answers: {
+    brave?: string | null
+    duckduckgo?: string | null
+    bing?: string | (() => string) | null
+  }) {
     const asked: string[] = []
     vi.stubGlobal('fetch', async (input: RequestInfo | URL) => {
       const url = String(input)
@@ -176,16 +206,23 @@ describe('webSearch', () => {
       const decoded = decodeURIComponent(url)
       const body = decoded.includes('search.brave.com')
         ? answers.brave
-        : decoded.includes('bing.com')
-          ? typeof answers.bing === 'function'
-            ? answers.bing()
-            : answers.bing
-          : null
+        : decoded.includes('duckduckgo.com')
+          ? answers.duckduckgo
+          : decoded.includes('bing.com')
+            ? typeof answers.bing === 'function'
+              ? answers.bing()
+              : answers.bing
+            : null
       if (body == null) throw new TypeError('Failed to fetch')
       return new Response(body, { status: 200 })
     })
     return asked
   }
+
+  const LITE_PAGE = `<html><body><table>
+    <tr><td><a href="//duckduckgo.com/l/?uddg=https%3A%2F%2Fa.example%2Flentil" class="result-link">Lentil Soup</a></td></tr>
+    <tr><td class="result-snippet">Good.</td></tr>
+  </table></body></html>`
 
   it('asks Brave first and stops there when it answers well', async () => {
     const asked = network({
@@ -205,16 +242,31 @@ describe('webSearch', () => {
     expect(asked.some((url) => url.includes('bing'))).toBe(false)
   })
 
-  it('falls back to Bing when Brave cannot be reached, and pages with the engine that answered', async () => {
-    const asked = network({ brave: null, bing: feedOf(Array.from({ length: 10 }, (_, i) => `Lentil soup ${i}`)) })
+  it('falls back to DuckDuckGo when Brave cannot be reached, with no second page on offer', async () => {
+    const asked = network({ brave: null, duckduckgo: LITE_PAGE, bing: FEED })
+
+    const found = await webSearch('lentil soup', { useSharedFetchers: true })
+
+    expect(found.engine).toBe('duckduckgo')
+    expect(found.results.map((r) => r.url)).toEqual(['https://a.example/lentil'])
+    expect(found.nextOffset).toBeUndefined()
+    // Brave was tried by every route first; Bing was never needed.
+    expect(asked.filter((url) => decodeURIComponent(url).includes('brave')).length).toBeGreaterThan(0)
+    expect(asked.some((url) => url.includes('bing'))).toBe(false)
+  })
+
+  it('falls back to Bing when neither of the others answers, and pages with the engine that answered', async () => {
+    const asked = network({
+      brave: null,
+      duckduckgo: null,
+      bing: feedOf(Array.from({ length: 10 }, (_, i) => `Lentil soup ${i}`)),
+    })
 
     const found = await webSearch('lentil soup', { useSharedFetchers: true })
 
     expect(found.engine).toBe('bing')
     expect(found.results).toHaveLength(10)
     expect(found.nextOffset).toBe(10)
-    // Brave was tried by every route first; then Bing.
-    expect(asked.filter((url) => decodeURIComponent(url).includes('brave')).length).toBeGreaterThan(0)
 
     const more = await webSearch('lentil soup', { useSharedFetchers: true }, { offset: 10, engine: 'bing' })
     expect(more.engine).toBe('bing')
@@ -225,6 +277,7 @@ describe('webSearch', () => {
     let calls = 0
     network({
       brave: null,
+      duckduckgo: null,
       bing: () =>
         ++calls === 1
           ? feedOf(['SLOW Definition', 's l o w r o a d s', 'SLOW meaning', 'SLOW synonyms'])
@@ -238,7 +291,7 @@ describe('webSearch', () => {
   })
 
   it('explains itself when nothing can reach any engine', async () => {
-    network({ brave: null, bing: null })
+    network({ brave: null, duckduckgo: null, bing: null })
 
     await expect(
       webSearch('soup', { useSharedFetchers: false }),

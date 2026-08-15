@@ -201,18 +201,14 @@ function walledError(url: string, host: string): BrowserError {
   }
 }
 
-function unreachableError(url: string, host: string, settings: ImportSettings): BrowserError {
-  const noFetcher = !settings.useSharedFetchers && !settings.proxyUrl?.trim()
+function unreachableError(url: string, host: string): BrowserError {
   return {
     kind: 'unreachable',
     url,
     host,
-    message: noFetcher
-      ? 'MealHelp has no way to fetch pages right now.'
-      : `MealHelp couldn't load that page from ${host}.`,
-    suggestion: noFetcher
-      ? 'Turn on shared fetchers in Settings, or add your own, and try again.'
-      : 'It may be down, too large for a shared fetcher, or not a web page. You can open it in your browser instead.',
+    message: `MealHelp couldn't load that page from ${host}.`,
+    suggestion:
+      'It may be down, or not a web page, or the connection dropped. You can open it in your browser instead.',
   }
 }
 
@@ -277,9 +273,7 @@ export function useEmbeddedBrowser(settings: ImportSettings) {
         dispatch({
           type: 'failed',
           id,
-          error: botBlocked
-            ? walledError(url, host)
-            : unreachableError(url, host, settingsRef.current),
+          error: botBlocked ? walledError(url, host) : unreachableError(url, host),
         })
       }
     },

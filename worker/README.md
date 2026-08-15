@@ -3,15 +3,19 @@
 A ~40-line Cloudflare Worker that fetches a recipe page and returns it with
 permissive CORS headers, so MealHelp can read it.
 
-**You do not need this.** MealHelp works without it: it falls back to shared
-public fetchers, and the page-capture button handles anything neither can
-reach. Run it if you would rather no third party saw which recipes you look up,
-or if the shared fetchers are being unreliable.
+One copy of it is deployed for the live site as `mealhelp-fetch.kidsdc.workers.dev`
+and built into the app (`BUILT_IN_FETCHER` in `src/services/recipeImport/fetchPage.ts`),
+answering only the origins listed in `wrangler.toml`. That is what makes import
+and the built-in browser work from kidsdc.org: the shared public fetchers turned
+out to be localhost-only, ten seconds slow, or gone. Redeploy with
+`wrangler deploy` from this folder after changing it.
 
-The built-in browser and its web search go through the same fetcher, so with
-this deployed, every page you browse inside MealHelp comes through your own
-Worker too — and pages over the shared fetchers' size limit (about 1 MB; some
-magazine sites are bigger) open here when they would not otherwise.
+**You do not need your own.** Run one if you would rather nothing but you and
+the recipe site saw which pages you read — paste its URL into Settings and it
+is tried before MealHelp's. The built-in browser and its web search go through
+the same fetcher, so every page you browse comes through your Worker too, and
+pages over the shared fetchers' size limit (about 1 MB; some magazine sites are
+bigger) open when they would not otherwise.
 
 ## Deploy
 

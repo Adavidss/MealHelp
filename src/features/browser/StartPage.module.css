@@ -6,25 +6,6 @@
   margin: 0 auto;
 }
 
-.notice {
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius);
-  background: var(--honey-soft);
-  border-left: 3px solid var(--honey);
-  margin-bottom: var(--space-4);
-}
-
-.noticeTitle {
-  margin: 0;
-  font-weight: 600;
-}
-
-.noticeText {
-  margin: var(--space-1) 0 0;
-  font-size: 0.88rem;
-  color: var(--ink-soft);
-}
-
 .section {
   margin-bottom: var(--space-5);
 }

@@ -294,9 +294,10 @@ export function SettingsPage() {
             }
           />
           <span className="field-hint">
-            Optional. If you run your own fetcher, MealHelp tries it first and
-            nobody else sees the recipes you read. There is a ready-made one in
-            the project's <code>worker/</code> folder.
+            Optional. MealHelp already reads pages through its own fetcher — the
+            Worker in the project's <code>worker/</code> folder, run for this
+            site. Put yours here to use it instead: it is tried first, and nobody
+            else sees the recipes you read.
           </span>
         </div>
 
@@ -318,9 +319,10 @@ export function SettingsPage() {
             Use shared public fetchers
           </button>
           <span className="field-hint">
-            These make many more sites work without any setup. The trade is that
-            the address of the recipe passes through a third party — turn this
-            off to keep every request between you and the recipe site.
+            A last resort for when MealHelp's own fetcher cannot help. The trade
+            is that the address of the recipe passes through a third party —
+            turn this off to keep every request between you, the recipe site
+            and MealHelp's fetcher.
           </span>
         </div>
       </section>
