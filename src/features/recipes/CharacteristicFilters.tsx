@@ -8,6 +8,12 @@ interface CharacteristicFiltersProps {
   recipes: Recipe[]
   selected: string[]
   onChange: (selected: string[]) => void
+  /**
+   * One scrolling row instead of a wrapping block. Nothing folds away —
+   * every filter is reachable by scrolling sideways — which on a phone
+   * leaves the screen to the recipes.
+   */
+  compact?: boolean
 }
 
 /**
@@ -30,6 +36,7 @@ export function CharacteristicFilters({
   recipes,
   selected,
   onChange,
+  compact = false,
 }: CharacteristicFiltersProps) {
   const [expanded, setExpanded] = useState(false)
   const counts = countCharacteristics(recipes)
@@ -44,15 +51,16 @@ export function CharacteristicFilters({
 
   // Anything switched on stays visible even when collapsed, so a filter can
   // never be active somewhere the user cannot see or reach it.
-  const shown = expanded
-    ? CHARACTERISTICS
-    : CHARACTERISTICS.filter(
-        (entry, index) => index < VISIBLE_BY_DEFAULT || selected.includes(entry.id),
-      )
-  const hiddenCount = CHARACTERISTICS.length - shown.length
+  const shown =
+    expanded || compact
+      ? CHARACTERISTICS
+      : CHARACTERISTICS.filter(
+          (entry, index) => index < VISIBLE_BY_DEFAULT || selected.includes(entry.id),
+        )
+  const hiddenCount = compact ? 0 : CHARACTERISTICS.length - shown.length
 
   return (
-    <div className={styles.wrap}>
+    <div className={`${styles.wrap} ${compact ? styles.compact : ''}`}>
       <div className={styles.row}>
         {shown.map((characteristic) => {
           const count = counts.get(characteristic.id) ?? 0

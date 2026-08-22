@@ -64,3 +64,22 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* The single-row form: scrolls sideways, never wraps, no fold toggle. */
+.compact {
+  margin: 0 calc(-1 * var(--space-4));
+  padding: 0 var(--space-4);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.compact::-webkit-scrollbar {
+  display: none;
+}
+
+.compact .row {
+  flex-wrap: nowrap;
+  width: max-content;
+  padding-bottom: 2px;
+}

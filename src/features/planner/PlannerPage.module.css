@@ -4,6 +4,10 @@
   flex: none;
 }
 
+.tabRow {
+  margin-bottom: var(--space-3);
+}
+
 .actionBar {
   display: flex;
   gap: var(--space-2);

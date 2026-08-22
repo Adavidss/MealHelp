@@ -76,10 +76,11 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   write, it says how the recipe reads ("Reads like Slow Cooker · One Pot — use
   those") rather than making you tick appliances; and if you type a name you know
   from a website, it offers to find it in the built-in browser instead.
-- **Discover** — find recipes you do not have yet. Search by name, ask for a
-  surprise, or tell it what is in the fridge and get recipes ranked by how many
-  of your ingredients they use. Saving one turns it into an ordinary MealHelp
-  recipe, source link and all. See [Discovery](#discovery).
+- **Recipe databases** (Browser → Recipe databases) — find recipes you do not
+  have yet. Search by name, ask for a surprise, or tell it what is in the
+  fridge and get recipes ranked by how many of your ingredients they use.
+  Saving one turns it into an ordinary MealHelp recipe, source link and all.
+  See [Discovery](#discovery).
 - **Browser** — a web browser inside MealHelp, the way Mela has one. Search the
   web or open a recipe site, read the page as itself, and when the page has a
   recipe on it an **Add** button appears. Nothing to set up, nothing leaves the
@@ -103,26 +104,52 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
 - **Ratings and history** — say how a meal went and it changes what gets
   suggested next. Repeat a good week with one button.
 - **Print** — a refrigerator sheet for US Letter, with a QR code per cooked meal
-  and one for the grocery list.
+  and one for the grocery list. And any recipe, or a whole collection, as a
+  printable page: facts across the top, tick-box ingredients down the left,
+  directions down the right, nutrition and a QR code back to the recipe under,
+  with scale, photo, large-text and QR switches above the sheet.
+- **Nutrition** — per-serving nutrition on every recipe, and a daily overview
+  that adds the week up. See [Nutrition](#nutrition).
 - **Backup** — export everything as JSON, restore by merging or replacing.
 - **Installable** — works offline once loaded, on iPhone and desktop.
 
 ---
 
-## Screens
+## Sections
 
-| Screen | What it is for |
+Five, the way a recipe app settles down (Mela's tabs are Recipes, Browser,
+Calendar, Shopping). Everything else is a view inside one of them, reachable
+by a pill of tabs at the top of the section, and every old address still
+lands in the right place.
+
+| Section | Views inside it |
 | --- | --- |
-| **Today** | What you are eating tonight, what is in the fridge, what is coming, what is left to buy |
-| **Plan** | The week — stacked day cards on a phone, a seven-column grid on a desktop |
-| **Plan my week** | The preferences form and the plan preview, with reasons and locks |
-| **Recipes** | The library, search and filters |
-| **Discover** | Finding recipes you do not have yet |
-| **Browser** | The web, inside MealHelp — search, read the page, tap Add |
-| **Recipe** | The one standard layout every recipe gets |
-| **Cooking** | Full-screen, step-by-step, timers |
-| **Grocery** | Aisle-sorted checklist with a pantry check |
-| **Print** | The refrigerator sheet |
+| **Recipes** | All · Collections · What can I make? — and one **Add** menu: find it online, import a link, paste text, type it in, starter recipes |
+| **Browser** | Web · Recipe databases (TheMealDB, Wikibooks, Spoonacular) — the built-in browser is a main section, as in Mela |
+| **Plan** | Week (with *Tonight* at the top on the current week) · Nutrition · History |
+| **Grocery** | List · Pantry |
+| **More** | Nutrition, History, Pantry, Collections, Import, Print this week, Settings |
+
+Plus the full-screen views: a recipe, cooking mode, the plan wizard, the
+refrigerator sheet and the printable recipe.
+
+### Searching
+
+Every section has the same compact search pill — the icon in its own column
+so it never overlaps what you type, a clear button, 44px tall, and nothing
+else. In Recipes the filters are one scrolling row of chips with a count on
+each plus a single Filters sheet; in the databases the "how" is a select
+rather than four tabs; in Grocery and Pantry one field both finds what is on
+the list and, on Enter, adds what you typed.
+
+### Themes
+
+Settings → Appearance. Seven palettes — Paper, Sage, Ocean, Plum, Citrus,
+Slate and the dark-only Midnight — each drawn in miniature with its own
+colours so you can see it before you tap, and applied the moment you do.
+Light and dark are a separate choice (follow the system, or force one), and
+every theme has both. The choice is kept in the database and mirrored to
+localStorage so the first paint after a reload is already the right colour.
 
 ---
 
@@ -133,7 +160,7 @@ src/
   app/          App shell, routing, settings context
   db/           Dexie database and one repository per domain
   models/       Recipe, MealPlan, Grocery, Pantry, Settings
-  features/     One folder per screen (dashboard, recipes, planner, planning,
+  features/     One folder per section or view (recipes, browser, planner, planning,
                 cooking, grocery, pantry, import, discover, browser,
                 collections, history, print, sharing, settings)
   services/     Pure logic, no React and no database:
@@ -467,6 +494,34 @@ system ones. And it is not a place to sign in to anything: no cookies, no
 forms that post, no way for a page to reach outside its frame.
 
 ---
+
+## Nutrition
+
+Three places the numbers can come from, and the label always says which:
+
+1. **The recipe site.** Most pages publish schema.org `NutritionInformation`
+   alongside the recipe. Import reads it the way Mealie's `clean_nutrition`
+   does — the first number out of each string ("250 calories", "1,5 g"),
+   sodium and cholesterol turned into milligrams when a site wrote them in
+   grams, kJ into kcal. The MealHelp button carries it too.
+2. **You.** Nine fields on the recipe editor, per serving.
+3. **An estimate from the ingredients.** The method is Tandoor's recipe
+   property calculation with the food list built in: each ingredient line is
+   matched to one of ~110 common foods, converted to grams (mass units
+   directly; volume through the food's own density, so a cup of flour is
+   125 g and a cup of oil 216 g; counts through the weight of one), multiplied
+   by the food's values per 100 g from USDA FoodData Central, summed and
+   divided by the servings. It reports its coverage — "estimated from 7 of 9
+   ingredients" — and is labelled as an estimate wherever it appears.
+
+**Plan → Nutrition** adds a day up: every planned meal counts as one serving
+eaten, leftovers included, and anything else goes in the log — typed in, or
+looked up on [Open Food Facts](https://world.openfoodfacts.org) (keyless,
+answers a static site directly). Four bars measure calories, protein, carbs
+and fat against your targets (Settings; blank means the FDA Daily Value), the
+rest sit in a table under, the week is a strip of seven bars, and a meal whose
+recipe has no numbers is listed as uncounted with a way to fix it rather than
+silently making the day look lighter.
 
 ## PWA installation
 

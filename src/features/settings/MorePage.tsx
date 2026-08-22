@@ -1,49 +1,46 @@
 import { Link } from 'react-router-dom'
 import {
+  Activity,
   ChevronRight,
-  Compass,
   Download,
-  Globe,
   History as HistoryIcon,
   Library,
   Package,
   Printer,
-  Refrigerator,
   Settings as SettingsIcon,
 } from 'lucide-react'
 import styles from './MorePage.module.css'
 
 const LINKS = [
   {
-    to: '/discover',
-    label: 'Discover recipes',
-    description: 'Find something new online',
-    icon: Compass,
+    to: '/plan?tab=nutrition',
+    label: 'Nutrition',
+    description: 'Calories and macros, per day and per week',
+    icon: Activity,
   },
   {
-    to: '/browser',
-    label: 'Browser',
-    description: 'Search the web and add recipes without leaving',
-    icon: Globe,
+    to: '/plan?tab=history',
+    label: 'History',
+    description: 'Past weeks and what you cooked',
+    icon: HistoryIcon,
   },
-  { to: '/pantry', label: 'Pantry', description: 'Things you usually have', icon: Package },
   {
-    to: '/collections',
+    to: '/grocery?tab=pantry',
+    label: 'Pantry',
+    description: 'Things you usually have',
+    icon: Package,
+  },
+  {
+    to: '/recipes?tab=collections',
     label: 'Collections',
     description: 'Group recipes your own way',
     icon: Library,
   },
   {
-    to: '/recipes/what-can-i-make',
-    label: 'What can I make?',
-    description: 'Match recipes to what you have',
-    icon: Refrigerator,
-  },
-  {
-    to: '/history',
-    label: 'History',
-    description: 'Past weeks and what you cooked',
-    icon: HistoryIcon,
+    to: '/import',
+    label: 'Import a recipe',
+    description: 'From a link, pasted text, or the MealHelp button',
+    icon: Download,
   },
   {
     to: '/print',
@@ -51,11 +48,10 @@ const LINKS = [
     description: 'A sheet for the refrigerator',
     icon: Printer,
   },
-  { to: '/import', label: 'Import a recipe', description: 'From a link or pasted text', icon: Download },
   {
     to: '/settings',
     label: 'Settings',
-    description: 'Kitchen, planning and your data',
+    description: 'Themes, kitchen, planning and your data',
     icon: SettingsIcon,
   },
 ]

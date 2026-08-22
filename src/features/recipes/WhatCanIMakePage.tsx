@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ArrowLeft, Plus, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { db } from '@/db/database'
 import { matchByIngredients } from '@/services/recommendationEngine'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -13,7 +13,7 @@ import styles from './WhatCanIMakePage.module.css'
  * is never required — one missing spice should not hide a recipe you could
  * happily cook tonight.
  */
-export function WhatCanIMakePage() {
+export function WhatCanIMakeView() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], [])
   const pantry = useLiveQuery(() => db.pantryItems.toArray(), [], [])
 
@@ -48,22 +48,7 @@ export function WhatCanIMakePage() {
   }
 
   return (
-    <div className="page">
-      <div className={styles.topBar}>
-        <Link to="/recipes" className="btn btn-ghost btn-sm">
-          <ArrowLeft size={16} aria-hidden="true" />
-          Recipes
-        </Link>
-      </div>
-
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">What can I make?</h1>
-          <p className="page-subtitle">
-            List what you have and MealHelp will find the closest matches.
-          </p>
-        </div>
-      </header>
+    <div>
 
       <form className={styles.addRow} onSubmit={add}>
         <input
@@ -120,7 +105,7 @@ export function WhatCanIMakePage() {
           title="Nothing close enough"
           description="None of your recipes use much of that — but MealHelp can look for new ones that do."
         >
-          <Link to="/discover" className="btn btn-primary">
+          <Link to="/browser" className="btn btn-primary">
             Search online instead
           </Link>
           <Link to="/import" className="btn btn-secondary">

@@ -104,7 +104,7 @@ export function captureToDraft(payload: CapturePayload): CaptureResult {
  */
 export function buildCaptureScript(appUrl: string): string {
   return `(function(){
-var KEEP=['name','description','image','author','recipeYield','prepTime','cookTime','totalTime','recipeIngredient','recipeInstructions','keywords','recipeCategory'];
+var KEEP=['name','description','image','author','recipeYield','prepTime','cookTime','totalTime','recipeIngredient','recipeInstructions','keywords','recipeCategory','nutrition'];
 function findRecipe(n,d){if(!n||typeof n!=='object'||d>6)return null;
 if(Array.isArray(n)){for(var i=0;i<n.length;i++){var f=findRecipe(n[i],d+1);if(f)return f}return null}
 var t=[].concat(n['@type']||[]);for(var j=0;j<t.length;j++){if(String(t[j]).toLowerCase()==='recipe')return n}

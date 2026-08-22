@@ -1,0 +1,99 @@
+.panel {
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.title {
+  font-size: 1.15rem;
+}
+
+.perServing {
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.headline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-2);
+  margin: 0;
+}
+
+.fact {
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunk);
+  text-align: center;
+}
+
+.fact dt {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.fact dd {
+  margin: 2px 0 0;
+  font-family: var(--font-serif);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.rest {
+  margin: var(--space-3) 0 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 4px var(--space-4);
+}
+
+.restRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  padding: 2px 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.restRow dt {
+  color: var(--ink-soft);
+}
+
+.restRow dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.source {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: var(--space-3) 0 0;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.linkButton {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  color: var(--accent-ink);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}

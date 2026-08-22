@@ -1,0 +1,75 @@
+/*
+ * One search field for every section. The icon sits in its own column rather
+ * than floating over the text, so it can never overlap the placeholder, and
+ * the whole thing is a single 44px pill — tall enough to hit, short enough to
+ * leave the screen to the results.
+ */
+.field {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+  min-height: var(--tap);
+  padding: 0 8px 0 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+
+.icon {
+  flex: none;
+  color: var(--ink-faint);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  /* 16px keeps iOS Safari from zooming when the field is focused. */
+  font-size: 16px;
+  line-height: 1.3;
+  padding: 8px 0;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--ink-faint);
+}
+
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration {
+  display: none;
+}
+
+.clear {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-sunk);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.clear:hover {
+  color: var(--ink);
+}
+
+.trailing {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

@@ -1,4 +1,4 @@
-import type { CookingMethod, RecipeDraft, RecipeInstruction } from '@/models'
+import type { CookingMethod, Nutrition, RecipeDraft, RecipeInstruction } from '@/models'
 import { COOKING_METHODS } from '@/models'
 import { parseIngredient } from '@/services/ingredientParser'
 import { newId } from '@/utils/id'
@@ -142,6 +142,8 @@ export interface DraftInput {
   tags?: string[]
   categories?: string[]
   notes?: string
+  /** Per serving, as the site published it. */
+  nutrition?: Nutrition
 }
 
 /** Assembles a preview-ready draft. Nothing here writes to the database. */
@@ -181,6 +183,8 @@ export function toRecipeDraft(input: DraftInput): RecipeDraft {
       instructions.map((step) => step.text),
     ),
     mealTypes: ['dinner'],
+    nutrition: input.nutrition,
+    nutritionSource: input.nutrition ? 'site' : undefined,
     favorite: false,
     timesCooked: 0,
   }

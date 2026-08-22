@@ -1,0 +1,145 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.schemes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.schemeChip {
+  gap: 6px;
+}
+
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: var(--space-2);
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.card:hover {
+  border-color: var(--line-strong);
+}
+
+.cardSelected,
+.cardSelected:hover {
+  border-color: var(--accent);
+}
+
+/* A tiny page: paper, one card with a title, two lines and a button. */
+.preview {
+  display: block;
+  position: relative;
+  height: 84px;
+  border: 1px solid;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.previewCard {
+  position: absolute;
+  inset: 12px 12px 0 12px;
+  border: 1px solid;
+  border-radius: 8px 8px 0 0;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.previewTitle {
+  display: block;
+  width: 60%;
+  height: 7px;
+  border-radius: 3px;
+}
+
+.previewLine {
+  display: block;
+  width: 80%;
+  height: 4px;
+  border-radius: 2px;
+  opacity: 0.7;
+}
+
+.previewButton {
+  display: block;
+  width: 34px;
+  height: 12px;
+  border-radius: 999px;
+  margin-top: 2px;
+}
+
+.previewChip {
+  position: absolute;
+  right: 8px;
+  top: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.text strong {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.text small {
+  color: var(--ink-faint);
+  font-size: 0.74rem;
+  line-height: 1.3;
+}
+
+.tag {
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--surface-sunk);
+  color: var(--ink-faint);
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.check {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+}

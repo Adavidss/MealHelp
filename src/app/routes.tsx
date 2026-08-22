@@ -2,9 +2,8 @@ import { Suspense, lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './AppShell'
 
-// The dashboard, planner and library are what people open the app for, so they
-// ship in the entry chunk. Everything else loads when it is first visited.
-import { TodayPage } from '@/features/dashboard/TodayPage'
+// The planner and library are what people open the app for, so they ship in
+// the entry chunk. Everything else loads when it is first visited.
 import { PlannerPage } from '@/features/planner/PlannerPage'
 import { RecipeLibraryPage } from '@/features/recipes/RecipeLibraryPage'
 
@@ -37,21 +36,15 @@ const PlanWizardPage = lazy(() =>
 const GroceryPage = lazy(() =>
   import('@/features/grocery/GroceryPage').then((m) => ({ default: m.GroceryPage })),
 )
-const PantryPage = lazy(() =>
-  import('@/features/pantry/PantryPage').then((m) => ({ default: m.PantryPage })),
-)
-const CollectionsPage = lazy(() =>
-  import('@/features/collections/CollectionsPage').then((m) => ({
-    default: m.CollectionsPage,
-  })),
-)
 const CollectionDetailPage = lazy(() =>
   import('@/features/collections/CollectionDetailPage').then((m) => ({
     default: m.CollectionDetailPage,
   })),
 )
-const HistoryPage = lazy(() =>
-  import('@/features/history/HistoryPage').then((m) => ({ default: m.HistoryPage })),
+const RecipePrintPage = lazy(() =>
+  import('@/features/print/RecipePrintPage').then((m) => ({
+    default: m.RecipePrintPage,
+  })),
 )
 const PrintPage = lazy(() =>
   import('@/features/print/PrintPage').then((m) => ({ default: m.PrintPage })),
@@ -67,16 +60,8 @@ const SettingsPage = lazy(() =>
 const MorePage = lazy(() =>
   import('@/features/settings/MorePage').then((m) => ({ default: m.MorePage })),
 )
-const DiscoverPage = lazy(() =>
-  import('@/features/discover/DiscoverPage').then((m) => ({ default: m.DiscoverPage })),
-)
 const BrowserPage = lazy(() =>
   import('@/features/browser/BrowserPage').then((m) => ({ default: m.BrowserPage })),
-)
-const WhatCanIMakePage = lazy(() =>
-  import('@/features/recipes/WhatCanIMakePage').then((m) => ({
-    default: m.WhatCanIMakePage,
-  })),
 )
 
 function RouteFallback() {
@@ -92,7 +77,7 @@ export function AppRoutes() {
     <Suspense fallback={<RouteFallback />}>
       <Routes>
         <Route element={<AppShell />}>
-          <Route path="/" element={<TodayPage />} />
+          <Route path="/" element={<Navigate to="/plan" replace />} />
 
           <Route path="/plan" element={<PlannerPage />} />
           <Route path="/plan/:weekStart" element={<PlannerPage />} />
@@ -100,23 +85,27 @@ export function AppRoutes() {
 
           <Route path="/recipes" element={<RecipeLibraryPage />} />
           <Route path="/recipes/new" element={<RecipeEditPage />} />
-          <Route path="/recipes/what-can-i-make" element={<WhatCanIMakePage />} />
+          <Route path="/recipes/print" element={<RecipePrintPage />} />
+          <Route path="/recipes/:id/print" element={<RecipePrintPage />} />
+          <Route path="/recipes/what-can-i-make" element={<Navigate to="/recipes?tab=make" replace />} />
           <Route path="/recipes/:id" element={<RecipeDetailPage />} />
           <Route path="/recipes/:id/edit" element={<RecipeEditPage />} />
           <Route path="/recipes/:id/cook" element={<CookingModePage />} />
 
           <Route path="/import" element={<ImportPage />} />
           <Route path="/capture/:payload" element={<CapturePage />} />
-          <Route path="/discover" element={<DiscoverPage />} />
           <Route path="/browser" element={<BrowserPage />} />
 
           <Route path="/grocery" element={<GroceryPage />} />
-          <Route path="/pantry" element={<PantryPage />} />
-
-          <Route path="/collections" element={<CollectionsPage />} />
           <Route path="/collections/:id" element={<CollectionDetailPage />} />
 
-          <Route path="/history" element={<HistoryPage />} />
+          {/* The sections these used to be are now views inside others. Old
+              links, bookmarks and home-screen shortcuts still arrive. */}
+          <Route path="/discover" element={<Navigate to="/browser?tab=databases" replace />} />
+          <Route path="/pantry" element={<Navigate to="/grocery?tab=pantry" replace />} />
+          <Route path="/collections" element={<Navigate to="/recipes?tab=collections" replace />} />
+          <Route path="/history" element={<Navigate to="/plan?tab=history" replace />} />
+          <Route path="/nutrition" element={<Navigate to="/plan?tab=nutrition" replace />} />
           <Route path="/print" element={<PrintPage />} />
           <Route path="/print/:weekStart" element={<PrintPage />} />
 

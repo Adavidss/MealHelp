@@ -20,6 +20,8 @@ import type {
 } from '@/models'
 import { parseIngredientLines } from '@/services/ingredientParser'
 import { buildInstructions, detectCookingMethods, parseRecipeText } from '@/services/recipeImport'
+import { estimateNutrition } from '@/services/nutrition'
+import { NUTRIENTS, type NutrientKey, type Nutrition, type NutritionSource } from '@/models'
 import { useToast } from '@/components/common/Toast'
 import { isImageFile, resizeImageFile } from '@/utils/image'
 import { newId } from '@/utils/id'
@@ -49,6 +51,9 @@ interface FormState {
   mealPrepFriendly: boolean
   reheatsWell: boolean
   costTier?: BudgetLevel
+  /** Per serving, as text so a half-typed number never becomes a stored zero. */
+  nutrition: Partial<Record<NutrientKey, string>>
+  nutritionSource?: NutritionSource
 }
 
 const EMPTY: FormState = {
@@ -71,6 +76,7 @@ const EMPTY: FormState = {
   freezerFriendly: false,
   mealPrepFriendly: false,
   reheatsWell: false,
+  nutrition: {},
 }
 
 function toForm(recipe: Recipe): FormState {
@@ -100,7 +106,22 @@ function toForm(recipe: Recipe): FormState {
     mealPrepFriendly: Boolean(recipe.mealPrepFriendly),
     reheatsWell: Boolean(recipe.reheatsWell),
     costTier: recipe.costTier,
+    nutrition: Object.fromEntries(
+      NUTRIENTS.map((n) => [n.key, recipe.nutrition?.[n.key] != null ? String(recipe.nutrition[n.key]) : '']),
+    ) as Partial<Record<NutrientKey, string>>,
+    nutritionSource: recipe.nutritionSource,
   }
+}
+
+function nutritionFromForm(form: FormState): Nutrition | undefined {
+  const out: Nutrition = {}
+  for (const nutrient of NUTRIENTS) {
+    const raw = form.nutrition[nutrient.key]
+    if (raw == null || raw.trim() === '') continue
+    const parsed = Number(raw)
+    if (Number.isFinite(parsed) && parsed >= 0) out[nutrient.key] = parsed
+  }
+  return Object.keys(out).length ? out : undefined
 }
 
 export function RecipeEditPage() {
@@ -118,7 +139,39 @@ export function RecipeEditPage() {
   const [imageBusy, setImageBusy] = useState(false)
   const [showAdvanced, setShowAdvanced] = useState(false)
   const [error, setError] = useState<string>()
-  const [pasteOpen, setPasteOpen] = useState(false)
+  const [pasteOpen, setPasteOpen] = useState(
+    Boolean((location.state as { paste?: boolean } | null)?.paste),
+  )
+  const focusNutrition = Boolean((location.state as { focus?: string } | null)?.focus === 'nutrition')
+  const [nutritionNote, setNutritionNote] = useState<string>()
+
+  // Opened from "Enter it" on a recipe page: land on the nutrition fields.
+  useEffect(() => {
+    if (!focusNutrition || loading) return
+    document.getElementById('nutrition-section')?.scrollIntoView({ block: 'start' })
+  }, [focusNutrition, loading])
+
+  const estimate = () => {
+    const result = estimateNutrition({
+      ingredients: parsedIngredients.map((parsed) => ({ id: '', ...parsed })),
+      servings: toNumber(form.servings),
+    })
+    if (result.matched === 0) {
+      setNutritionNote("MealHelp didn't recognise any of these ingredients well enough to estimate.")
+      return
+    }
+    setForm((current) => ({
+      ...current,
+      nutrition: Object.fromEntries(
+        NUTRIENTS.map((n) => [n.key, result.perServing[n.key] != null ? String(result.perServing[n.key]) : '']),
+      ) as Partial<Record<NutrientKey, string>>,
+      nutritionSource: 'estimate',
+    }))
+    setNutritionNote(
+      `Estimated from ${result.matched} of ${result.total} ingredients for ${result.servings} servings.` +
+        (result.unmatched.length ? ` Not counted: ${result.unmatched.join(', ')}.` : ''),
+    )
+  }
   const [pasteText, setPasteText] = useState('')
 
   useEffect(() => {
@@ -250,6 +303,8 @@ export function RecipeEditPage() {
         mealPrepFriendly: form.mealPrepFriendly || undefined,
         reheatsWell: form.reheatsWell || undefined,
         costTier: form.costTier,
+        nutrition: nutritionFromForm(form),
+        nutritionSource: nutritionFromForm(form) ? (form.nutritionSource ?? 'manual') : undefined,
       }
 
       if (id) {
@@ -592,6 +647,49 @@ export function RecipeEditPage() {
           Photos are resized before they are saved, so a large one is fine.
         </span>
       </div>
+
+      <section id="nutrition-section" className={styles.nutrition}>
+        <div className={styles.nutritionHead}>
+          <span className="field-label">Nutrition per serving</span>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={estimate} disabled={!form.ingredientText.trim()}>
+            <Sparkles size={14} aria-hidden="true" />
+            Estimate from ingredients
+          </button>
+        </div>
+        <div className={styles.nutritionGrid}>
+          {NUTRIENTS.map((nutrient) => (
+            <label key={nutrient.key} className={styles.nutritionField}>
+              <span className={styles.nutritionLabel}>
+                {nutrient.label} <small>{nutrient.unit}</small>
+              </span>
+              <input
+                className="input"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="any"
+                value={form.nutrition[nutrient.key] ?? ''}
+                onChange={(event) =>
+                  setForm((current) => ({
+                    ...current,
+                    nutrition: { ...current.nutrition, [nutrient.key]: event.target.value },
+                    // Typing over an estimate makes it yours.
+                    nutritionSource: 'manual',
+                  }))
+                }
+              />
+            </label>
+          ))}
+        </div>
+        <span className="field-hint">
+          {nutritionNote ??
+            (form.nutritionSource === 'site'
+              ? 'As published by the recipe site.'
+              : form.nutritionSource === 'estimate'
+                ? 'An estimate from the ingredients — edit anything you know better.'
+                : 'Optional. From the package, the site, or an estimate.')}
+        </span>
+      </section>
 
       <button
         type="button"

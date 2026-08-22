@@ -18,7 +18,7 @@ const SUGGESTIONS = [
   'Very Cheap',
 ]
 
-export function CollectionsPage() {
+export function CollectionsView() {
   const collections = useLiveQuery(() => db.collections.toArray(), [], [])
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], [])
   const [creating, setCreating] = useState(false)
@@ -35,21 +35,18 @@ export function CollectionsPage() {
     ids.filter((id) => recipes?.some((recipe) => recipe.id === id)).length
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Collections</h1>
-          <p className="page-subtitle">Group recipes however you like</p>
-        </div>
+    <div>
+      <div className={styles.bar}>
+        <p className="text-sm muted">Group recipes however you like.</p>
         <button
           type="button"
-          className="btn btn-primary btn-sm"
+          className="btn btn-secondary btn-sm"
           onClick={() => setCreating(true)}
         >
           <Plus size={16} aria-hidden="true" />
-          New
+          New collection
         </button>
-      </header>
+      </div>
 
       {collections?.length ? (
         <ul className={styles.grid}>

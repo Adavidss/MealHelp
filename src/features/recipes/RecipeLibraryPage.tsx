@@ -4,12 +4,14 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   ChevronDown,
   ChevronUp,
+  ClipboardPaste,
+  Globe,
   LayoutGrid,
+  Link2,
   List,
+  PencilLine,
   Plus,
-  Search,
   SlidersHorizontal,
-  X,
 } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
@@ -18,6 +20,11 @@ import { COOKING_METHODS, COOKING_METHOD_LABELS } from '@/models'
 import type { CookingMethod, Recipe } from '@/models'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Modal } from '@/components/common/Modal'
+import { SearchField } from '@/components/common/SearchField'
+import { SegmentedTabs } from '@/components/common/SegmentedTabs'
+import { useSectionTab } from '@/app/useSectionTab'
+import { CollectionsView } from '@/features/collections/CollectionsPage'
+import { WhatCanIMakeView } from './WhatCanIMakePage'
 import { AddToPlanDialog } from '@/features/planner/AddToPlanDialog'
 import { BrowseRow } from './BrowseRow'
 import { buildBrowseSections, sectionTotal } from './browseSections'
@@ -46,7 +53,12 @@ export function RecipeLibraryPage() {
   const [sort, setSort] = useState<RecipeSort>('recent')
   const [view, setView] = useState<'gallery' | 'list'>('gallery')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
   const [planFor, setPlanFor] = useState<Recipe>()
+  const [tab, setTab] = useSectionTab<'all' | 'collections' | 'make'>(
+    ['all', 'collections', 'make'],
+    'all',
+  )
 
   const tags = useMemo(() => collectTags(recipes ?? []), [recipes])
 
@@ -121,52 +133,104 @@ export function RecipeLibraryPage() {
     )
   }
 
+  const addMenu = (
+    <Modal open={addOpen} title="Add a recipe" onClose={() => setAddOpen(false)}>
+      <div className={styles.addMenu}>
+        <Link to="/browser" className={styles.addOption} onClick={() => setAddOpen(false)}>
+          <Globe size={20} aria-hidden="true" />
+          <span>
+            <strong>Find it online</strong>
+            <small>Search the web or the recipe databases, then tap Add</small>
+          </span>
+        </Link>
+        <Link to="/import" className={styles.addOption} onClick={() => setAddOpen(false)}>
+          <Link2 size={20} aria-hidden="true" />
+          <span>
+            <strong>Import from a link</strong>
+            <small>Paste a recipe page's address</small>
+          </span>
+        </Link>
+        <Link
+          to="/recipes/new"
+          state={{ paste: true }}
+          className={styles.addOption}
+          onClick={() => setAddOpen(false)}
+        >
+          <ClipboardPaste size={20} aria-hidden="true" />
+          <span>
+            <strong>Paste recipe text</strong>
+            <small>From a message or a note — MealHelp fills the form</small>
+          </span>
+        </Link>
+        <Link to="/recipes/new" className={styles.addOption} onClick={() => setAddOpen(false)}>
+          <PencilLine size={20} aria-hidden="true" />
+          <span>
+            <strong>Type it in</strong>
+            <small>A blank recipe</small>
+          </span>
+        </Link>
+        <div className={styles.addStarter}>
+          <StarterRecipesButton />
+        </div>
+      </div>
+    </Modal>
+  )
+
+  const tabs = (
+    <SegmentedTabs
+      tabs={[
+        { id: 'all', label: 'All', count: recipes.length || undefined },
+        { id: 'collections', label: 'Collections' },
+        { id: 'make', label: 'What can I make?' },
+      ]}
+      value={tab}
+      onChange={setTab}
+      label="Recipe views"
+    />
+  )
+
+  if (tab !== 'all') {
+    return (
+      <div className="page">
+        <header className="page-header">
+          <div>
+            <h1 className="page-title">{tab === 'collections' ? 'Collections' : 'What can I make?'}</h1>
+          </div>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
+            <Plus size={16} aria-hidden="true" />
+            Add
+          </button>
+        </header>
+        <div className={styles.tabRow}>{tabs}</div>
+        {tab === 'collections' ? <CollectionsView /> : <WhatCanIMakeView />}
+        {addMenu}
+      </div>
+    )
+  }
+
   return (
     <div className="page">
       <header className="page-header">
         <div>
           <h1 className="page-title">Recipes</h1>
-          <p className="page-subtitle">
-            {recipes.length === 0
-              ? 'Your cookbook, in one format'
-              : `${recipes.length} recipe${recipes.length === 1 ? '' : 's'}`}
-          </p>
         </div>
-        <div className="row-tight">
-          <Link to="/discover" className="btn btn-secondary btn-sm">
-            Discover
-          </Link>
-          <Link to="/recipes/new" className="btn btn-primary btn-sm">
-            <Plus size={16} aria-hidden="true" />
-            Add
-          </Link>
-        </div>
+        <button type="button" className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
+          <Plus size={16} aria-hidden="true" />
+          Add
+        </button>
       </header>
+
+      <div className={styles.tabRow}>{tabs}</div>
 
       {recipes.length > 0 ? (
         <>
           <div className={styles.searchRow}>
-            <div className={styles.searchField}>
-              <Search size={17} aria-hidden="true" className={styles.searchIcon} />
-              <input
-                type="search"
-                className={`input ${styles.search}`}
-                placeholder="Search recipes, ingredients, tags…"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                aria-label="Search recipes"
-              />
-              {query ? (
-                <button
-                  type="button"
-                  className={styles.clear}
-                  onClick={() => setQuery('')}
-                  aria-label="Clear search"
-                >
-                  <X size={16} aria-hidden="true" />
-                </button>
-              ) : null}
-            </div>
+            <SearchField
+              value={query}
+              onChange={setQuery}
+              placeholder="Search recipes, ingredients, tags…"
+              label="Search recipes"
+            />
             <button
               type="button"
               className="btn btn-secondary btn-icon"
@@ -198,11 +262,14 @@ export function RecipeLibraryPage() {
             recipes={searched}
             selected={characteristics}
             onChange={setCharacteristics}
+            compact
           />
 
           <div className={styles.resultsBar}>
             <p className="text-sm muted">
-              {results.length} of {recipes.length}
+              {results.length === recipes.length
+                ? `${recipes.length} recipe${recipes.length === 1 ? '' : 's'}`
+                : `${results.length} of ${recipes.length}`}
             </p>
             <label className={styles.sortLabel}>
               <span className="sr-only">Sort by</span>
@@ -324,8 +391,8 @@ export function RecipeLibraryPage() {
           title="Save your first recipe"
           description="Find one online, import from a link, add your own, or start from a handful MealHelp ships with."
         >
-          <Link to="/discover" className="btn btn-primary">
-            Discover recipes
+          <Link to="/browser" className="btn btn-primary">
+            Find recipes online
           </Link>
           <Link to="/import" className="btn btn-secondary">
             Import from a link
@@ -396,6 +463,8 @@ export function RecipeLibraryPage() {
           </div>
         ) : null}
       </Modal>
+
+      {addMenu}
 
       {planFor ? (
         <AddToPlanDialog

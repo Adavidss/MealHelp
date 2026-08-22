@@ -15,6 +15,7 @@ import {
   Heart,
   Library,
   Pencil,
+  Printer,
   Share2,
   ShoppingCart,
   Trash2,
@@ -38,6 +39,7 @@ import { AddToGroceryDialog } from '@/features/grocery/AddToGroceryDialog'
 import { CollectionPickerDialog } from '@/features/collections/CollectionPickerDialog'
 import { FinishCookingDialog } from '@/features/cooking/FinishCookingDialog'
 import { ShareRecipeDialog } from '@/features/sharing/ShareRecipeDialog'
+import { NutritionPanel } from '@/features/nutrition/NutritionPanel'
 import { RecipeCard } from './RecipeCard'
 import {
   SCALE_OPTIONS,
@@ -362,6 +364,8 @@ export function RecipeDetailPage() {
         </ol>
       </section>
 
+      <NutritionPanel recipe={recipe} />
+
       {recipe.notes ? (
         <section>
           <h2 className="section-title">Notes</h2>
@@ -484,6 +488,10 @@ export function RecipeDetailPage() {
             <CopyPlus size={17} aria-hidden="true" />
             Duplicate and edit the copy
           </button>
+          <Link to={`/recipes/${recipe.id}/print`} className="btn btn-secondary btn-block" onClick={() => setMoreOpen(false)}>
+            <Printer size={17} aria-hidden="true" />
+            Print this recipe
+          </Link>
           <button
             type="button"
             className="btn btn-secondary btn-block"

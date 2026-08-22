@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Plus, Trash2 } from 'lucide-react'
 import { db } from '@/db/database'
@@ -10,6 +10,7 @@ import {
 } from '@/db/pantry'
 import { SUGGESTED_PANTRY_STAPLES } from '@/services/ingredientParser'
 import { EmptyState } from '@/components/common/EmptyState'
+import { SearchField } from '@/components/common/SearchField'
 import { useToast } from '@/components/common/Toast'
 import styles from './PantryPage.module.css'
 
@@ -18,17 +19,22 @@ import styles from './PantryPage.module.css'
  * shopping list. It is not an inventory, and MealHelp never silently decides
  * you have something — staples move to a "check the pantry" section instead.
  */
-export function PantryPage() {
+export function PantryView() {
   const items = useLiveQuery(() => db.pantryItems.orderBy('name').toArray(), [], [])
   const { toast } = useToast()
   const [name, setName] = useState('')
 
-  const add = async (event: React.FormEvent) => {
-    event.preventDefault()
+  const add = async () => {
     if (!name.trim()) return
     await addPantryItem(name)
     setName('')
   }
+
+  const needle = name.trim().toLowerCase()
+  const visible = useMemo(
+    () => (needle ? (items ?? []).filter((item) => item.name.toLowerCase().includes(needle)) : items ?? []),
+    [items, needle],
+  )
 
   const addSuggested = async () => {
     const added = await addPantryItems(SUGGESTED_PANTRY_STAPLES)
@@ -40,30 +46,32 @@ export function PantryPage() {
     )
   }
 
-  const staples = items?.filter((item) => item.alwaysHave) ?? []
-  const others = items?.filter((item) => !item.alwaysHave) ?? []
+  const staples = visible.filter((item) => item.alwaysHave)
+  const others = visible.filter((item) => !item.alwaysHave)
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Pantry</h1>
-          <p className="page-subtitle">Things you usually have</p>
-        </div>
-      </header>
-
-      <form className={styles.addRow} onSubmit={add}>
-        <input
-          className="input"
+    <div>
+      <p className={styles.lead}>
+        Things you usually have. They come off the shopping list into a short
+        "check the pantry" list instead of being assumed.
+      </p>
+      <div className={styles.addRow}>
+        <SearchField
           value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="Olive oil, salt, rice…"
-          aria-label="Add a pantry item"
+          onChange={setName}
+          onSubmit={() => void add()}
+          placeholder="Find or add — olive oil, rice…"
+          label="Find or add a pantry item"
+          trailing={
+            name.trim() ? (
+              <button type="button" className={styles.addButton} onClick={() => void add()}>
+                <Plus size={15} aria-hidden="true" />
+                Add
+              </button>
+            ) : null
+          }
         />
-        <button type="submit" className="btn btn-primary btn-icon" aria-label="Add">
-          <Plus size={19} aria-hidden="true" />
-        </button>
-      </form>
+      </div>
 
       {!items?.length ? (
         <EmptyState

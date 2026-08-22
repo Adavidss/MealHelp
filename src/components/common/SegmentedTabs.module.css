@@ -1,0 +1,63 @@
+/*
+ * Sub-views inside a section. A pill track with one highlighted segment —
+ * the control every phone OS uses for "same screen, different slice" — so a
+ * section can hold several views without each needing its own tab bar entry.
+ */
+.track {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  border: 1px solid var(--line);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+.tab {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+.tab[aria-selected='true'] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+}
+
+.count {
+  padding: 0 6px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  color: var(--ink-faint);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.tab[aria-selected='true'] .count {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}

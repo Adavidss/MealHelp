@@ -1,5 +1,6 @@
 import type { BudgetLevel, CookingMethod, EffortLevel, MealType } from './common'
 import type { VarietyMode } from './MealPlan'
+import type { NutritionTargets } from './Nutrition'
 
 export interface PlanningDefaults {
   mealsNeeded: number
@@ -72,6 +73,13 @@ export interface Settings {
    */
   spoonacularKey?: string
 
+  /** Which palette, and whether to follow the system between light and dark. */
+  theme?: string
+  colorScheme?: 'auto' | 'light' | 'dark'
+
+  /** Daily nutrition targets; anything unset falls back to the Daily Value. */
+  nutritionTargets?: NutritionTargets
+
   onboardedAt?: string
   updatedAt: string
 }
@@ -125,5 +133,7 @@ export const DEFAULT_SETTINGS: Settings = {
   importSettings: {
     useSharedFetchers: true,
   },
+  theme: 'paper',
+  colorScheme: 'auto',
   updatedAt: new Date(0).toISOString(),
 }

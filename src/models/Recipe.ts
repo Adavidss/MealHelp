@@ -6,6 +6,7 @@ import type {
   MealType,
   Score5,
 } from './common'
+import type { Nutrition, NutritionSource } from './Nutrition'
 
 /**
  * One ingredient line.
@@ -100,6 +101,10 @@ export interface Recipe {
   reheatsWell?: boolean
 
   costTier?: BudgetLevel
+
+  /** Per serving. Read from the site, typed in, or estimated from the ingredients. */
+  nutrition?: Nutrition
+  nutritionSource?: NutritionSource
 
   favorite: boolean
 

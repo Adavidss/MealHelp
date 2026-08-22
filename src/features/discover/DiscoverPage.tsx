@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { Check, Dices, Loader2, Plus, Search, Sparkles, UtensilsCrossed, X } from 'lucide-react'
+import { SearchField } from '@/components/common/SearchField'
 import { db } from '@/db/database'
 import { saveRecipe } from '@/db/recipes'
 import type { Recipe, RecipeDraft } from '@/models'
@@ -31,7 +32,7 @@ import styles from './DiscoverPage.module.css'
 
 type Mode = 'pantry' | 'search' | 'browse' | 'surprise'
 
-export function DiscoverPage() {
+export function DatabasesView() {
   const { toast } = useToast()
   const { settings } = useSettings()
 
@@ -44,7 +45,7 @@ export function DiscoverPage() {
   const providerOptions = useMemo(() => ({ spoonacularKey }), [spoonacularKey])
   const providers = useMemo(() => activeProviders(providerOptions), [providerOptions])
 
-  const [mode, setMode] = useState<Mode>('pantry')
+  const [mode, setMode] = useState<Mode>('search')
   const [selected, setSelected] = useState<string[]>([])
   const [extra, setExtra] = useState('')
   const [query, setQuery] = useState('')
@@ -197,14 +198,6 @@ export function DiscoverPage() {
     )
   }
 
-  const addExtra = (event: React.FormEvent) => {
-    event.preventDefault()
-    const value = extra.trim()
-    if (!value) return
-    if (!selected.includes(value)) toggleIngredient(value)
-    setExtra('')
-  }
-
   // Previewing reuses the import screen, so a discovered recipe is checked over
   // in exactly the same place as a pasted one before it is saved.
   if (preview) {
@@ -219,63 +212,89 @@ export function DiscoverPage() {
   }
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">Discover</h1>
-          <p className="page-subtitle">
-            Find something new and add it to your library
-          </p>
-        </div>
-      </header>
-
-      {!spoonacularKey ? (
-        <p className={styles.sourceNote}>
-          Searching TheMealDB and the Wikibooks Cookbook — a few thousand
-          recipes, free and no account needed.{' '}
-          <Link to="/settings">Add a free Spoonacular key</Link> to search
-          hundreds of thousands more.
-        </p>
-      ) : null}
-
-      <div className={styles.modes} role="tablist" aria-label="How to search">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === 'pantry'}
-          className="chip chip-button"
-          onClick={() => setMode('pantry')}
+    <div className={styles.view}>
+      {/* One row: what to look for, and how. The how is a select rather than
+          a row of tabs, because four tabs do not fit a phone and a select
+          always does. */}
+      <div className={styles.searchRow}>
+        <select
+          className={`select ${styles.scope}`}
+          value={mode}
+          onChange={(event) => setMode(event.target.value as Mode)}
+          aria-label="How to search"
         >
-          From my pantry
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === 'search'}
-          className="chip chip-button"
-          onClick={() => setMode('search')}
-        >
-          Search
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === 'browse'}
-          className="chip chip-button"
-          onClick={() => setMode('browse')}
-        >
-          Browse
-        </button>
-        <button
-          type="button"
-          role="tab"
-          aria-selected={mode === 'surprise'}
-          className="chip chip-button"
-          onClick={() => setMode('surprise')}
-        >
-          Surprise me
-        </button>
+          <option value="search">By name</option>
+          <option value="pantry">From my pantry</option>
+          <option value="browse">Browse</option>
+          <option value="surprise">Surprise me</option>
+        </select>
+        {mode === 'search' ? (
+          <SearchField
+            value={query}
+            onChange={setQuery}
+            onSubmit={(value) => {
+              if (value) void searchText()
+            }}
+            placeholder="curry, pasta bake, tacos…"
+            label="Search for recipes"
+            trailing={
+              <button
+                type="button"
+                className={styles.goButton}
+                onClick={() => void searchText()}
+                disabled={busy || !query.trim()}
+                aria-label="Search"
+              >
+                {busy ? <Loader2 size={16} aria-hidden="true" /> : <Search size={16} aria-hidden="true" />}
+              </button>
+            }
+          />
+        ) : null}
+        {mode === 'pantry' ? (
+          <SearchField
+            value={extra}
+            onChange={setExtra}
+            onSubmit={(value) => {
+              if (value && !selected.includes(value)) toggleIngredient(value)
+              setExtra('')
+            }}
+            placeholder="Add an ingredient: chicken, spinach…"
+            label="Add an ingredient to search with"
+            trailing={
+              <button
+                type="button"
+                className={styles.goButton}
+                onClick={() => {
+                  const value = extra.trim()
+                  if (value && !selected.includes(value)) toggleIngredient(value)
+                  setExtra('')
+                }}
+                disabled={!extra.trim()}
+                aria-label="Add ingredient"
+              >
+                <Plus size={16} aria-hidden="true" />
+              </button>
+            }
+          />
+        ) : null}
+        {mode === 'surprise' ? (
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => void surprise()}
+            disabled={busy}
+          >
+            {busy ? <Loader2 size={17} aria-hidden="true" /> : <Dices size={17} aria-hidden="true" />}
+            {busy ? 'Looking…' : 'Surprise me'}
+          </button>
+        ) : null}
       </div>
+      <p className={styles.sourceLine}>
+        {spoonacularKey
+          ? 'Searching Spoonacular, TheMealDB and the Wikibooks Cookbook.'
+          : 'TheMealDB and the Wikibooks Cookbook — free, no account.'}{' '}
+        {!spoonacularKey ? <Link to="/settings">Add a Spoonacular key</Link> : null}
+      </p>
 
       {mode === 'pantry' ? (
         <section className={styles.panel}>
@@ -297,22 +316,9 @@ export function DiscoverPage() {
           ) : (
             <p className="text-sm muted">
               Nothing in your pantry yet — type what you have below, or{' '}
-              <Link to="/pantry">set up your pantry</Link> so it is remembered.
+              <Link to="/grocery?tab=pantry">set up your pantry</Link> so it is remembered.
             </p>
           )}
-
-          <form className={styles.addRow} onSubmit={addExtra}>
-            <input
-              className="input"
-              value={extra}
-              onChange={(event) => setExtra(event.target.value)}
-              placeholder="chicken, spinach, black beans…"
-              aria-label="Add an ingredient to search with"
-            />
-            <button type="submit" className="btn btn-primary btn-icon" aria-label="Add ingredient">
-              <Plus size={19} aria-hidden="true" />
-            </button>
-          </form>
 
           {selected.length ? (
             <div className={styles.selectedRow}>
@@ -422,27 +428,6 @@ export function DiscoverPage() {
         </section>
       ) : null}
 
-      {mode === 'surprise' ? (
-        <section className={styles.panel}>
-          <p className="text-sm muted">
-            A handful at random from every source, for when nothing sounds good.
-          </p>
-          <button
-            type="button"
-            className="btn btn-primary btn-block"
-            onClick={() => void surprise()}
-            disabled={busy}
-          >
-            {busy ? (
-              <Loader2 size={17} aria-hidden="true" />
-            ) : (
-              <Dices size={17} aria-hidden="true" />
-            )}
-            {busy ? 'Looking…' : 'Surprise me'}
-          </button>
-        </section>
-      ) : null}
-
       {failure ? (
         <div className={styles.failure} role="status">
           <p className={styles.failureMessage}>{failure.message}</p>
@@ -535,11 +520,9 @@ export function DiscoverPage() {
         )
       ) : null}
 
-      {!results && !failure && !busy ? (
+      {!results && !failure && !busy && mode === 'search' ? (
         <p className={styles.hint}>
-          Anything you save becomes an ordinary MealHelp recipe — it keeps its
-          source link, and it can be planned, shopped for and cooked like the
-          rest.
+          Anything you save becomes an ordinary MealHelp recipe, source link and all.
         </p>
       ) : null}
     </div>

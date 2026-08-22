@@ -23,6 +23,8 @@ import {
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { Modal } from '@/components/common/Modal'
 import { useToast } from '@/components/common/Toast'
+import { NUTRIENTS } from '@/models'
+import { ThemePicker } from './ThemePicker'
 import styles from './SettingsPage.module.css'
 
 export function SettingsPage() {
@@ -93,6 +95,14 @@ export function SettingsPage() {
           </p>
         </div>
       </header>
+
+      <section>
+        <h2 className="section-title">Appearance</h2>
+        <p className="text-sm muted">
+          Tap a theme to try it on — it applies straight away and stays.
+        </p>
+        <ThemePicker />
+      </section>
 
       <section>
         <h2 className="section-title">Planning</h2>
@@ -324,6 +334,40 @@ export function SettingsPage() {
             turn this off to keep every request between you, the recipe site
             and MealHelp's fetcher.
           </span>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="section-title">Nutrition targets</h2>
+        <p className="text-sm muted">
+          What the Nutrition view measures a day against. Blank means the standard
+          Daily Value for a 2,000-calorie diet.
+        </p>
+        <div className={styles.targets}>
+          {NUTRIENTS.filter((n) => n.headline || n.key === 'fiber' || n.key === 'sodium').map((nutrient) => (
+            <label key={nutrient.key} className={styles.target}>
+              <span className="field-label">
+                {nutrient.label} <small>({nutrient.unit})</small>
+              </span>
+              <input
+                className="input"
+                type="number"
+                inputMode="decimal"
+                min="0"
+                placeholder={String(nutrient.dailyValue)}
+                defaultValue={settings.nutritionTargets?.[nutrient.key] ?? ''}
+                onBlur={(event) => {
+                  const value = Number(event.target.value)
+                  void update({
+                    nutritionTargets: {
+                      ...settings.nutritionTargets,
+                      [nutrient.key]: event.target.value.trim() && value > 0 ? value : undefined,
+                    },
+                  })
+                }}
+              />
+            </label>
+          ))}
         </div>
       </section>
 

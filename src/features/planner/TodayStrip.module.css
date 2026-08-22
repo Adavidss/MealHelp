@@ -1,0 +1,71 @@
+.strip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.tonight {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent-ink);
+}
+
+.title {
+  font-size: 1.25rem;
+  margin-top: 2px;
+}
+
+.meta {
+  margin: 2px 0 0;
+  font-size: 0.84rem;
+  color: var(--ink-soft);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.reminders {
+  list-style: none;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--honey-soft);
+  font-size: 0.85rem;
+}
+
+.fridge {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.fridge li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.fridgeCount {
+  color: var(--sage);
+  font-weight: 500;
+}

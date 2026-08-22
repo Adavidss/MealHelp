@@ -2,6 +2,7 @@ import { createContext, use, useCallback, useEffect, useMemo, useState } from 'r
 import type { ReactNode } from 'react'
 import { loadSettings, saveSettings } from '@/db/database'
 import { DEFAULT_SETTINGS, type Settings } from '@/models'
+import { applyAppearance } from './themes'
 
 interface SettingsContextValue {
   settings: Settings
@@ -26,6 +27,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void reload()
   }, [reload])
+
+  // The stored choice wins over whatever the first paint guessed from
+  // localStorage, and every change lands on the page the moment it is saved.
+  useEffect(() => {
+    if (!ready) return
+    applyAppearance({ theme: settings.theme ?? 'paper', scheme: settings.colorScheme ?? 'auto' })
+  }, [ready, settings.theme, settings.colorScheme])
 
   const update = useCallback(async (patch: Partial<Settings>) => {
     const next = await saveSettings(patch)

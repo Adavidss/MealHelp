@@ -30,3 +30,22 @@
   padding-top: var(--space-4);
   border-top: 1px solid var(--line);
 }
+
+.targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.target {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.target small {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}

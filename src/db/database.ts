@@ -5,6 +5,7 @@ import type {
   CookFeedback,
   GroceryList,
   MealPlan,
+  NutritionLogEntry,
   PantryItem,
   PlannedMeal,
   Recipe,
@@ -27,6 +28,7 @@ export class MealHelpDatabase extends Dexie {
   collections!: EntityTable<Collection, 'id'>
   settings!: EntityTable<Settings, 'id'>
   feedback!: EntityTable<CookFeedback, 'id'>
+  nutritionLog!: EntityTable<NutritionLogEntry, 'id'>
 
   constructor(name = 'mealhelp') {
     super(name)
@@ -42,6 +44,11 @@ export class MealHelpDatabase extends Dexie {
       collections: 'id, name, updatedAt',
       settings: 'id',
       feedback: 'id, recipeId, date',
+    })
+
+    // Things eaten outside the plan, for the nutrition overview.
+    this.version(2).stores({
+      nutritionLog: 'id, date, createdAt',
     })
   }
 }
@@ -59,6 +66,7 @@ export const ALL_TABLE_NAMES = [
   'collections',
   'settings',
   'feedback',
+  'nutritionLog',
 ] as const
 
 export type TableName = (typeof ALL_TABLE_NAMES)[number]

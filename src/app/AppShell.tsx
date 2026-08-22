@@ -3,16 +3,13 @@ import {
   BookOpen,
   CalendarDays,
   ChefHat,
-  Compass,
+  Download,
   Ellipsis,
   Globe,
   Home,
-  Package,
   Printer,
   Settings as SettingsIcon,
   ShoppingCart,
-  History as HistoryIcon,
-  Library,
 } from 'lucide-react'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { UpdatePrompt } from '@/components/common/UpdatePrompt'
@@ -25,22 +22,24 @@ interface NavItem {
   end?: boolean
 }
 
-/** The five destinations that matter on a phone. */
+/**
+ * Four sections and a More — the shape a recipe app settles into (Mela's tabs
+ * are Recipes, Browser, Calendar, Shopping). Everything else is a view inside
+ * one of them: Today sits at the top of Plan, History and Nutrition are Plan
+ * views, Pantry is a Grocery view, Collections a Recipes view, and the recipe
+ * databases live inside the Browser next to the web.
+ */
 const PRIMARY_NAV: NavItem[] = [
-  { to: '/', label: 'Today', icon: Home, end: true },
-  { to: '/plan', label: 'Plan', icon: CalendarDays },
   { to: '/recipes', label: 'Recipes', icon: BookOpen },
+  { to: '/browser', label: 'Browser', icon: Globe },
+  { to: '/plan', label: 'Plan', icon: CalendarDays },
   { to: '/grocery', label: 'Grocery', icon: ShoppingCart },
   { to: '/more', label: 'More', icon: Ellipsis },
 ]
 
-/** Desktop has room to show everything, so nothing hides behind "More". */
+/** Desktop has room for the few things More holds. */
 const SECONDARY_NAV: NavItem[] = [
-  { to: '/discover', label: 'Discover', icon: Compass },
-  { to: '/browser', label: 'Browser', icon: Globe },
-  { to: '/pantry', label: 'Pantry', icon: Package },
-  { to: '/collections', label: 'Collections', icon: Library },
-  { to: '/history', label: 'History', icon: HistoryIcon },
+  { to: '/import', label: 'Import', icon: Download },
   { to: '/print', label: 'Print week', icon: Printer },
   { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]
@@ -50,7 +49,7 @@ const SECONDARY_NAV: NavItem[] = [
  * be something to hit by accident with wet hands, or ink on the page.
  */
 function isImmersive(pathname: string): boolean {
-  return /\/cook$/.test(pathname) || pathname.startsWith('/print')
+  return /\/cook$/.test(pathname) || /\/print$/.test(pathname) || pathname.startsWith('/print')
 }
 
 export function AppShell() {

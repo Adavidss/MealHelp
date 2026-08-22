@@ -5,6 +5,7 @@ import {
   toRecipeDraft,
   type DraftInput,
 } from './normalizeDraft'
+import { parseSchemaNutrition } from '@/services/nutrition/parseSchemaNutrition'
 
 /**
  * Schema.org Recipe extraction.
@@ -196,6 +197,7 @@ export function fromSchemaNode(
     instructionTexts,
     tags,
     categories,
+    nutrition: parseSchemaNutrition(node.nutrition),
   }
 
   return { draft: toRecipeDraft(input), warnings }

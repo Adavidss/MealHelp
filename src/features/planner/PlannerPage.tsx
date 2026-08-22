@@ -25,12 +25,20 @@ import {
   todayISO,
 } from '@/utils/date'
 import { EmptyState } from '@/components/common/EmptyState'
+import { SegmentedTabs } from '@/components/common/SegmentedTabs'
 import { useToast } from '@/components/common/Toast'
+import { useSectionTab } from '@/app/useSectionTab'
+import { HistoryView } from '@/features/history/HistoryPage'
+import { NutritionView } from '@/features/nutrition/NutritionView'
 import { AddMealDialog } from './AddMealDialog'
 import { MealActionsDialog } from './MealActionsDialog'
 import { MealSlot } from './MealSlot'
+import { TodayStrip } from './TodayStrip'
 import { usePlannerWeek } from './usePlannerWeek'
 import styles from './PlannerPage.module.css'
+
+const PLAN_TABS = ['week', 'nutrition', 'history'] as const
+type PlanTab = (typeof PLAN_TABS)[number]
 
 export function PlannerPage() {
   const { weekStart: weekParam } = useParams<{ weekStart: string }>()
@@ -40,6 +48,7 @@ export function PlannerPage() {
 
   const weekStart = weekParam ?? startOfWeek(todayISO(), settings.weekStartsOn)
   const week = usePlannerWeek(weekStart)
+  const [tab, setTab] = useSectionTab<PlanTab>(PLAN_TABS, 'week')
 
   const [adding, setAdding] = useState<{ date: string; mealType: MealType } | null>(null)
   const [selected, setSelected] = useState<PlannedMeal | null>(null)
@@ -73,6 +82,7 @@ export function PlannerPage() {
   }, [week.meals])
 
   const today = todayISO()
+  const isCurrentWeek = weekStart === startOfWeek(today, settings.weekStartsOn)
 
   const makeGroceryList = async () => {
     await generateGroceryList(weekStart, week.meals, { planId: week.plan?.id })
@@ -103,6 +113,34 @@ export function PlannerPage() {
     return (
       <div className="page">
         <p className="muted">Loading your week…</p>
+      </div>
+    )
+  }
+
+  if (tab !== 'week') {
+    return (
+      <div className="page">
+        <header className="page-header">
+          <div>
+            <h1 className="page-title">{tab === 'history' ? 'History' : 'Nutrition'}</h1>
+            <p className="page-subtitle">
+              {tab === 'history'
+                ? 'What you cooked, and what worked'
+                : 'What the week adds up to, per day'}
+            </p>
+          </div>
+          <SegmentedTabs
+            tabs={[
+              { id: 'week', label: 'Week' },
+              { id: 'nutrition', label: 'Nutrition' },
+              { id: 'history', label: 'History' },
+            ]}
+            value={tab}
+            onChange={setTab}
+            label="Plan views"
+          />
+        </header>
+        {tab === 'history' ? <HistoryView /> : <NutritionView />}
       </div>
     )
   }
@@ -146,6 +184,21 @@ export function PlannerPage() {
           </button>
         </div>
       </header>
+
+      <div className={styles.tabRow}>
+        <SegmentedTabs
+          tabs={[
+            { id: 'week', label: 'Week' },
+            { id: 'nutrition', label: 'Nutrition' },
+            { id: 'history', label: 'History' },
+          ]}
+          value={tab}
+          onChange={setTab}
+          label="Plan views"
+        />
+      </div>
+
+      {isCurrentWeek ? <TodayStrip meals={week.meals} recipesById={week.recipesById} /> : null}
 
       <div className={styles.actionBar}>
         <Link to={`/plan-week?week=${weekStart}&quick=1`} className="btn btn-primary">

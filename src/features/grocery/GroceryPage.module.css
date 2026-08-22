@@ -1,11 +1,27 @@
+.tabRow {
+  margin-bottom: var(--space-3);
+}
+
 .addRow {
   display: flex;
   gap: var(--space-2);
   margin-bottom: var(--space-4);
 }
 
-.addRow .input {
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 32px;
+  padding: 0 12px;
+  border: 0;
   border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .categoryTitle {

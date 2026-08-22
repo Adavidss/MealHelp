@@ -1,0 +1,265 @@
+.screen {
+  min-height: 100dvh;
+  background: var(--paper);
+  padding: var(--space-4);
+  padding-bottom: var(--space-7);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  max-width: 8.5in;
+  margin: 0 auto var(--space-4);
+}
+
+.options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+/* The sheet: a Letter page on screen, the page itself on paper. */
+.sheet {
+  max-width: 8.5in;
+  margin: 0 auto var(--space-5);
+  padding: 0.5in;
+  background: #fff;
+  color: #111;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  font-family: var(--font-sans);
+  font-size: 11pt;
+  line-height: 1.45;
+}
+
+.large .sheet {
+  font-size: 13pt;
+}
+
+.head {
+  display: flex;
+  gap: 0.3in;
+  align-items: flex-start;
+  border-bottom: 2px solid #111;
+  padding-bottom: 0.15in;
+  margin-bottom: 0.2in;
+}
+
+.headText {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-serif);
+  font-size: 2em;
+  line-height: 1.1;
+  color: #111;
+}
+
+.description {
+  margin: 0.08in 0 0;
+  color: #444;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.08in 0.3in;
+  margin: 0.12in 0 0;
+}
+
+.facts div {
+  display: flex;
+  gap: 0.06in;
+  align-items: baseline;
+}
+
+.facts dt {
+  font-size: 0.72em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.facts dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.photo {
+  width: 1.8in;
+  height: 1.8in;
+  object-fit: cover;
+  border-radius: 6px;
+  flex: none;
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: 2.6in 1fr;
+  gap: 0.35in;
+}
+
+.h2 {
+  font-family: var(--font-serif);
+  font-size: 1.2em;
+  margin: 0 0 0.1in;
+  color: #111;
+}
+
+.h3 {
+  font-family: var(--font-sans);
+  font-size: 0.8em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #555;
+  margin: 0.12in 0 0.05in;
+}
+
+.ingredientList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.04in;
+  margin-bottom: 0.08in;
+}
+
+.ingredientList li {
+  display: flex;
+  gap: 0.08in;
+  align-items: flex-start;
+  break-inside: avoid;
+}
+
+.tick {
+  flex: none;
+  width: 0.13in;
+  height: 0.13in;
+  margin-top: 0.05in;
+  border: 1.5px solid #888;
+  border-radius: 2px;
+}
+
+.equipment {
+  margin-top: 0.12in;
+  font-size: 0.9em;
+  color: #444;
+}
+
+.steps {
+  padding-left: 1.3em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.08in;
+}
+
+.steps li {
+  break-inside: avoid;
+  padding-left: 0.06in;
+}
+
+.steps li::marker {
+  font-weight: 700;
+  color: #111;
+}
+
+.notes {
+  margin-top: 0.25in;
+  padding: 0.12in 0.15in;
+  background: #f5f5f5;
+  border-radius: 6px;
+}
+
+.notes p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.foot {
+  margin-top: 0.25in;
+  padding-top: 0.12in;
+  border-top: 1px solid #bbb;
+  font-size: 0.85em;
+  color: #444;
+}
+
+.nutrition {
+  margin: 0 0 0.08in;
+}
+
+.footRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3in;
+}
+
+.source {
+  margin: 0;
+  word-break: break-all;
+}
+
+.qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+.qr small {
+  font-size: 0.7em;
+  color: #666;
+}
+
+@media (max-width: 640px) {
+  .sheet {
+    padding: var(--space-4);
+  }
+
+  .columns {
+    grid-template-columns: 1fr;
+  }
+
+  .photo {
+    width: 1.2in;
+    height: 1.2in;
+  }
+}
+
+@media print {
+  .screen {
+    padding: 0;
+    background: #fff;
+  }
+
+  .sheet {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    break-after: page;
+  }
+
+  .sheet:last-child {
+    break-after: auto;
+  }
+
+  .columns {
+    grid-template-columns: 2.6in 1fr;
+  }
+
+  .photo {
+    width: 1.8in;
+    height: 1.8in;
+  }
+}

@@ -1,0 +1,299 @@
+.view {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.dayNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.dayTitle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.dayTitle strong {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+}
+
+.dayTitle small {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+}
+
+.weekStrip {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-2);
+}
+
+.dayBar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink-faint);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+
+.dayBarActive {
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
+
+.barTrack {
+  display: flex;
+  align-items: flex-end;
+  width: 100%;
+  height: 48px;
+  border-radius: 6px;
+  background: var(--surface-sunk);
+  overflow: hidden;
+}
+
+.barFill {
+  width: 100%;
+  background: var(--accent);
+  border-radius: 6px 6px 0 0;
+  transition: height 0.2s ease;
+}
+
+.barOver {
+  background: var(--danger);
+}
+
+.totals {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.gauge {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px var(--space-3);
+  align-items: center;
+}
+
+.gaugeHead {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.gaugeLabel {
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.gaugeValue {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.gaugeValue small {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.track {
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width 0.25s ease;
+}
+
+.fillOver {
+  background: var(--danger);
+}
+
+.percent {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+  min-width: 36px;
+  text-align: right;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 4px var(--space-4);
+  margin: 0;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 4px 0;
+  border-bottom: 1px dashed var(--line);
+  font-size: 0.85rem;
+}
+
+.detailRow dt {
+  color: var(--ink-soft);
+}
+
+.detailRow dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.detailRow small {
+  color: var(--ink-faint);
+  font-weight: 500;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.sectionHead :global(.section-title) {
+  margin: var(--space-2) 0;
+}
+
+.items {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+}
+
+.itemText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.itemText small {
+  color: var(--ink-faint);
+  font-size: 0.76rem;
+}
+
+.itemValue {
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.remove {
+  border: 0;
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.uncounted {
+  margin-top: var(--space-2);
+  font-size: 0.82rem;
+  color: var(--honey);
+}
+
+.targetsNote {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.lookupRow {
+  margin-bottom: var(--space-3);
+}
+
+.lookupButton {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.hits {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: var(--space-3);
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.hit {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.hit small {
+  color: var(--ink-faint);
+  font-size: 0.76rem;
+}
+
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: var(--space-2);
+}
+
+.number {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

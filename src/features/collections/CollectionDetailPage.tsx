@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ArrowLeft, Plus, Trash2 } from 'lucide-react'
+import { ArrowLeft, Plus, Printer, Trash2 } from 'lucide-react'
 import { db } from '@/db/database'
 import { deleteCollection, toggleRecipeInCollection, updateCollection } from '@/db/collections'
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
@@ -33,7 +33,7 @@ export function CollectionDetailPage() {
     return (
       <div className="page">
         <p>That collection no longer exists.</p>
-        <Link to="/collections" className="btn btn-secondary">
+        <Link to="/recipes?tab=collections" className="btn btn-secondary">
           Back to collections
         </Link>
       </div>
@@ -47,7 +47,7 @@ export function CollectionDetailPage() {
   return (
     <div className="page">
       <div className={styles.topBar}>
-        <Link to="/collections" className="btn btn-ghost btn-sm">
+        <Link to="/recipes?tab=collections" className="btn btn-ghost btn-sm">
           <ArrowLeft size={16} aria-hidden="true" />
           Collections
         </Link>
@@ -81,14 +81,25 @@ export function CollectionDetailPage() {
             {members.length} recipe{members.length === 1 ? '' : 's'}
           </p>
         </div>
-        <button
-          type="button"
-          className="btn btn-primary btn-sm"
-          onClick={() => setAdding(true)}
-        >
-          <Plus size={16} aria-hidden="true" />
-          Add
-        </button>
+        <div className="row-tight">
+          {members.length ? (
+            <Link
+              to={`/recipes/print?ids=${members.flatMap((recipe) => (recipe ? [recipe.id] : [])).join(',')}`}
+              className="btn btn-secondary btn-sm"
+            >
+              <Printer size={16} aria-hidden="true" />
+              Print all
+            </Link>
+          ) : null}
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => setAdding(true)}
+          >
+            <Plus size={16} aria-hidden="true" />
+            Add
+          </button>
+        </div>
       </header>
 
       {members.length ? (

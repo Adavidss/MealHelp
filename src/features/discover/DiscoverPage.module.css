@@ -219,3 +219,49 @@
   font-size: 0.88rem;
   color: var(--ink-soft);
 }
+
+/* One row: scope on the left, the field or the action on the right. */
+.searchRow {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.scope {
+  flex: none;
+  width: auto;
+  max-width: 46%;
+  border-radius: var(--radius-pill);
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.goButton {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+.goButton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.sourceLine {
+  margin: 0 0 var(--space-3);
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.view {
+  padding: var(--space-3) var(--space-4) var(--space-6);
+  max-width: var(--content-max);
+  margin: 0 auto;
+}

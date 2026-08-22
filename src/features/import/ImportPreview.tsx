@@ -70,6 +70,9 @@ export function ImportPreview({
             {COOKING_METHOD_LABELS[method]}
           </span>
         ))}
+        {recipe.nutrition?.calories != null ? (
+          <span className="chip chip-sage">{Math.round(recipe.nutrition.calories)} kcal / serving</span>
+        ) : null}
       </div>
 
       <section>

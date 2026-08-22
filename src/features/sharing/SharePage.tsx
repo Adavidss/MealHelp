@@ -43,7 +43,7 @@ export function SharePage() {
       <div className="page">
         <h1 className="page-title">Shared link</h1>
         <p className={styles.error}>{decoded.error}</p>
-        <Link to="/" className="btn btn-secondary">
+        <Link to="/plan" className="btn btn-secondary">
           Open MealHelp
         </Link>
       </div>
@@ -230,7 +230,7 @@ export function SharePage() {
       <p className={styles.error}>
         This link is for something MealHelp doesn't recognise.
       </p>
-      <Link to="/" className="btn btn-secondary">
+      <Link to="/plan" className="btn btn-secondary">
         Open MealHelp
       </Link>
     </div>

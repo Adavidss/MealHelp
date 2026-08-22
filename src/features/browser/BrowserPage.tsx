@@ -26,6 +26,9 @@ import { forgetRecentPages, recentPages, type RecentPage } from '@/services/page
 import { Modal } from '@/components/common/Modal'
 import { useToast } from '@/components/common/Toast'
 import { ImportPreview } from '@/features/import/ImportPreview'
+import { SegmentedTabs } from '@/components/common/SegmentedTabs'
+import { useSectionTab } from '@/app/useSectionTab'
+import { DatabasesView } from '@/features/discover/DiscoverPage'
 import { AddressBar } from './AddressBar'
 import { PageFrame } from './PageFrame'
 import { SearchResults } from './SearchResults'
@@ -53,6 +56,7 @@ export function BrowserPage() {
   const { view, loading, current } = browser
 
   const frameRef = useRef<HTMLIFrameElement>(null)
+  const [tab, setTab] = useSectionTab<'web' | 'databases'>(['web', 'databases'], 'web')
   const [recent, setRecent] = useState<RecentPage[]>(() => recentPages())
   const [preview, setPreview] = useState<RecipeImportResult>()
   const [menuOpen, setMenuOpen] = useState(false)
@@ -102,10 +106,11 @@ export function BrowserPage() {
 
   const go = useCallback(
     (text: string) => {
+      setTab('web')
       if (looksLikeAddress(text)) browser.open(text)
       else browser.search(text)
     },
-    [browser],
+    [browser, setTab],
   )
 
   const openExternal = useCallback(
@@ -195,8 +200,26 @@ export function BrowserPage() {
         {loading ? <div className={styles.progressBar} /> : null}
       </div>
 
+      <div className={styles.tabRow}>
+        <SegmentedTabs
+          tabs={[
+            { id: 'web', label: 'Web' },
+            { id: 'databases', label: 'Recipe databases' },
+          ]}
+          value={tab}
+          onChange={setTab}
+          label="Where to look"
+        />
+      </div>
+
       <div className={styles.stage}>
-        {view.kind === 'start' ? (
+        {tab === 'databases' ? (
+          <div className={styles.scroller}>
+            <DatabasesView />
+          </div>
+        ) : null}
+
+        {tab === 'web' && view.kind === 'start' ? (
           <div className={styles.scroller}>
             <StartPage
               recent={recent}
@@ -210,7 +233,7 @@ export function BrowserPage() {
           </div>
         ) : null}
 
-        {view.kind === 'results' && view.entry.results ? (
+        {tab === 'web' && view.kind === 'results' && view.entry.results ? (
           <div className={styles.scroller}>
             <SearchResults
               query={view.entry.query}
@@ -224,11 +247,11 @@ export function BrowserPage() {
           </div>
         ) : null}
 
-        {view.kind === 'loading' ? (
+        {tab === 'web' && view.kind === 'loading' ? (
           <LoadingPanel entry={view.entry} stopped={!loading} onReload={() => browser.reload()} />
         ) : null}
 
-        {view.kind === 'error' ? (
+        {tab === 'web' && view.kind === 'error' ? (
           <ErrorPanel
             error={view.error}
             entry={view.entry}
@@ -238,7 +261,7 @@ export function BrowserPage() {
           />
         ) : null}
 
-        {view.kind === 'page' ? (
+        {tab === 'web' && view.kind === 'page' ? (
           <>
             <PageFrame
               frameRef={frameRef}

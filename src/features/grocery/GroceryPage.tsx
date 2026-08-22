@@ -19,7 +19,11 @@ import { categoryRank } from '@/services/groceryAggregator'
 import { formatQuantity } from '@/services/unitConversion'
 import { formatWeekRange, startOfWeek, todayISO } from '@/utils/date'
 import { EmptyState } from '@/components/common/EmptyState'
+import { SearchField } from '@/components/common/SearchField'
+import { SegmentedTabs } from '@/components/common/SegmentedTabs'
 import { useToast } from '@/components/common/Toast'
+import { useSectionTab } from '@/app/useSectionTab'
+import { PantryView } from '@/features/pantry/PantryPage'
 import { ShareGroceryDialog } from '@/features/sharing/ShareGroceryDialog'
 import styles from './GroceryPage.module.css'
 
@@ -30,6 +34,7 @@ export function GroceryPage() {
 
   const weekStart =
     searchParams.get('week') ?? startOfWeek(todayISO(), settings.weekStartsOn)
+  const [tab, setTab] = useSectionTab<'list' | 'pantry'>(['list', 'pantry'], 'list')
 
   const list = useLiveQuery(() => getGroceryList(weekStart), [weekStart])
   const plan = useLiveQuery(
@@ -46,9 +51,14 @@ export function GroceryPage() {
   const [showCompleted, setShowCompleted] = useState(!settings.hideCompletedGrocery)
   const [shareOpen, setShareOpen] = useState(false)
 
-  // Memoised so the grouping below only re-runs when the stored list changes,
-  // not on every keystroke in the "add item" field.
-  const items = useMemo(() => list?.items ?? [], [list])
+  // One field does both jobs: typing narrows the list to what matches, and
+  // Enter adds what you typed. On a phone there is no room for two.
+  const needle = newItem.trim().toLowerCase()
+  const items = useMemo(() => {
+    const all = list?.items ?? []
+    if (!needle) return all
+    return all.filter((item) => item.name.toLowerCase().includes(needle))
+  }, [list, needle])
 
   const { pantryChecks, toBuy, done } = useMemo(() => {
     const pantryChecks: GroceryItem[] = []
@@ -92,11 +102,36 @@ export function GroceryPage() {
     )
   }
 
-  const addItem = async (event: React.FormEvent) => {
-    event.preventDefault()
+  const addItem = async () => {
     if (!newItem.trim()) return
     await addManualGroceryItem(weekStart, newItem)
     setNewItem('')
+  }
+
+  const tabs = (
+    <SegmentedTabs
+      tabs={[
+        { id: 'list', label: 'List', count: toBuy.length + pantryChecks.length || undefined },
+        { id: 'pantry', label: 'Pantry' },
+      ]}
+      value={tab}
+      onChange={setTab}
+      label="Grocery views"
+    />
+  )
+
+  if (tab === 'pantry') {
+    return (
+      <div className="page">
+        <header className="page-header">
+          <div>
+            <h1 className="page-title">Pantry</h1>
+          </div>
+          {tabs}
+        </header>
+        <PantryView />
+      </div>
+    )
   }
 
   return (
@@ -130,18 +165,25 @@ export function GroceryPage() {
         </div>
       </header>
 
-      <form className={styles.addRow} onSubmit={addItem}>
-        <input
-          className="input"
+      <div className={styles.tabRow}>{tabs}</div>
+
+      <div className={styles.addRow}>
+        <SearchField
           value={newItem}
-          onChange={(event) => setNewItem(event.target.value)}
-          placeholder="Add anything — paper towels, milk…"
-          aria-label="Add a grocery item"
+          onChange={setNewItem}
+          onSubmit={() => void addItem()}
+          placeholder="Find or add — milk, paper towels…"
+          label="Find or add a grocery item"
+          trailing={
+            newItem.trim() ? (
+              <button type="button" className={styles.addButton} onClick={() => void addItem()}>
+                <Plus size={15} aria-hidden="true" />
+                Add
+              </button>
+            ) : null
+          }
         />
-        <button type="submit" className="btn btn-primary btn-icon" aria-label="Add item">
-          <Plus size={19} aria-hidden="true" />
-        </button>
-      </form>
+      </div>
 
       {extras.length ? (
         <section className={styles.extras} aria-label="Recipes added to this list">
@@ -169,7 +211,13 @@ export function GroceryPage() {
         </section>
       ) : null}
 
-      {items.length === 0 ? (
+      {items.length === 0 && needle ? (
+        <p className="text-sm muted">
+          Nothing on the list matches “{newItem.trim()}” — press Add to put it on.
+        </p>
+      ) : null}
+
+      {(list?.items.length ?? 0) === 0 ? (
         <EmptyState
           title="No list yet"
           description="Plan the week's meals and MealHelp will turn them into one list. Any recipe's page can add its ingredients here too, and anything else goes in by hand above."

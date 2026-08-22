@@ -12,8 +12,8 @@ import { StarRating } from '@/components/common/StarRating'
 import { useToast } from '@/components/common/Toast'
 import styles from './HistoryPage.module.css'
 
-/** What has actually been cooked, and which weeks are worth repeating. */
-export function HistoryPage() {
+/** What has actually been cooked, and which weeks are worth repeating. A view of Plan. */
+export function HistoryView() {
   const { settings } = useSettings()
   const { toast } = useToast()
   const navigate = useNavigate()
@@ -64,14 +64,7 @@ export function HistoryPage() {
   const hasHistory = weeks.length > 0 || recentCooks.length > 0
 
   return (
-    <div className="page">
-      <header className="page-header">
-        <div>
-          <h1 className="page-title">History</h1>
-          <p className="page-subtitle">What you cooked, and what worked</p>
-        </div>
-      </header>
-
+    <div>
       {!hasHistory ? (
         <EmptyState
           title="Nothing here yet"
