@@ -3,6 +3,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
   ArrowLeft,
+  ChevronDown,
+  ChevronUp,
   Lock,
   LockOpen,
   RefreshCw,
@@ -31,10 +33,11 @@ import {
   type VarietyMode,
 } from '@/models'
 import {
-  generatePlan,
+  generateWeek,
   replaceCookSlot,
   suggestAnother,
   type GeneratedSlot,
+  type WeekSlotPlan,
 } from '@/services/plannerEngine'
 import { contextFromRequest } from '@/services/recommendationEngine'
 import {
@@ -49,7 +52,9 @@ import {
 import { Modal } from '@/components/common/Modal'
 import { EmptyState } from '@/components/common/EmptyState'
 import { useToast } from '@/components/common/Toast'
+import { MealCard } from '@/components/meal/MealCard'
 import { RecipePicker } from '@/features/planner/RecipePicker'
+import { RecipePeek } from './RecipePeek'
 import { StarterRecipesButton } from '@/features/recipes/StarterRecipesButton'
 import { PLAN_PRESETS, type PlanPreset } from './planPresets'
 import styles from './PlanWizardPage.module.css'
@@ -112,7 +117,9 @@ export function PlanWizardPage() {
   const weekStart =
     searchParams.get('week') ?? startOfWeek(todayISO(), settings.weekStartsOn)
   const dates = useMemo(() => weekDates(weekStart), [weekStart])
-  const mealType = settings.visibleMealTypes[0] ?? 'dinner'
+  const mealSlots = settings.mealSlots
+  /** The slots that need a recipe chosen; the rest cost the planner nothing. */
+  const cookSlots = mealSlots.filter((slot) => slot.fill === 'cook')
 
   // Arriving with ?quick=1 (or ?preset=…) means "just plan it": the week is
   // built the moment the library is in, and the form is only a tap away.
@@ -128,7 +135,9 @@ export function PlanWizardPage() {
     preferencesFromSettings(settings.planningDefaults, dates),
   )
 
-  const [slots, setSlots] = useState<GeneratedSlot[] | null>(null)
+  const [plans, setPlans] = useState<WeekSlotPlan[] | null>(null)
+  /** Which meal is open for reading, keyed slot:date. */
+  const [peeking, setPeeking] = useState<string>()
   const [warnings, setWarnings] = useState<string[]>([])
   const [swapping, setSwapping] = useState<string | null>(null)
   const [accepting, setAccepting] = useState(false)
@@ -175,7 +184,7 @@ export function PlanWizardPage() {
   ): PlanningRequest => ({
     startDate: weekStart,
     dates: [...using.selectedDates].sort(),
-    mealType,
+    mealType: cookSlots[0]?.type ?? 'dinner',
     mealsNeeded: using.selectedDates.length,
     targetCookSessions: using.targetCookSessions,
     preferLeftovers: using.preferLeftovers,
@@ -199,8 +208,8 @@ export function PlanWizardPage() {
         id: `locked-${slot.date}`,
         planId: '',
         date: slot.date,
-        mealType,
-        kind: slot.kind,
+        mealType: cookSlots[0]?.type ?? 'dinner',
+        kind: slot.kind === 'custom' ? 'custom' : slot.kind,
         recipeId: slot.recipeId,
         servings: slot.servings,
         locked: true,
@@ -216,11 +225,30 @@ export function PlanWizardPage() {
     recentlyCookedSoftDays: settings.recentlyCookedSoftDays,
   }
 
-  /** Builds the week from `using`, keeping locked nights when asked. */
+  /**
+   * Builds every slot of the day, keeping locked meals when asked.
+   *
+   * The form's "nights you want to cook" belongs to the first cooking slot —
+   * the one people mean when they say "how often do you cook". Any other
+   * cooking slot keeps whatever it was configured with in Settings.
+   */
   const generateWith = (using: Preferences, keepLocked = false) => {
-    const request = buildRequest(using, keepLocked ? (slots ?? []) : [])
-    const result = generatePlan({ request, library: recipes ?? [], context: engineContext })
-    setSlots(result.slots)
+    const locked = keepLocked ? (plans ?? []).flatMap((plan) => plan.meals) : []
+    const request = buildRequest(using, locked)
+    const planningSlots = mealSlots.map((slot, index) =>
+      slot.fill === 'cook' && index === mealSlots.findIndex((s) => s.fill === 'cook')
+        ? { ...slot, cookSessions: using.targetCookSessions, servings: using.servingsPerMeal }
+        : slot,
+    )
+    const result = generateWeek({
+      slots: planningSlots,
+      dates: [...using.selectedDates].sort(),
+      request,
+      library: recipes ?? [],
+      context: engineContext,
+      defaultServings: using.servingsPerMeal,
+    })
+    setPlans(result.plans)
     setWarnings(result.warnings)
     setPassedOver({})
   }
@@ -252,95 +280,104 @@ export function PlanWizardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quick, presetId, settingsReady, recipes, pantry])
 
-  const toggleLock = (date: string) => {
-    setSlots(
+  /** Everything the wizard does to one meal is addressed by slot and day. */
+  const patchPlan = (slotId: string, update: (meals: GeneratedSlot[]) => GeneratedSlot[]) =>
+    setPlans(
       (current) =>
-        current?.map((slot) =>
-          slot.date === date ? { ...slot, locked: !slot.locked } : slot,
+        current?.map((plan) =>
+          plan.slot.id === slotId ? { ...plan, meals: update(plan.meals) } : plan,
         ) ?? null,
     )
-  }
 
-  const swap = (date: string, recipe: Recipe) => {
-    setSlots((current) => {
-      if (!current) return current
-      const replaced = current.find((slot) => slot.date === date)
-      if (replaced?.recipeId && replaced.recipeId !== recipe.id) {
-        // Turning a suggestion down is a signal worth remembering.
-        void recordRejection(replaced.recipeId)
-      }
-      return replaceCookSlot(current, date, recipe, prefs.servingsPerMeal, [
-        'You picked this one',
-      ])
-    })
+  const toggleLock = (slotId: string, date: string) =>
+    patchPlan(slotId, (meals) =>
+      meals.map((meal) => (meal.date === date ? { ...meal, locked: !meal.locked } : meal)),
+    )
+
+  const swap = (slotId: string, date: string, recipe: Recipe) => {
+    const plan = plans?.find((entry) => entry.slot.id === slotId)
+    const replaced = plan?.meals.find((meal) => meal.date === date)
+    if (replaced?.recipeId && replaced.recipeId !== recipe.id) {
+      // Turning a suggestion down is a signal worth remembering.
+      void recordRejection(replaced.recipeId)
+    }
+    const perMeal = plan?.slot.servings ?? prefs.servingsPerMeal
+    patchPlan(slotId, (meals) =>
+      replaceCookSlot(meals, date, recipe, perMeal, ['You picked this one']),
+    )
     setSwapping(null)
   }
 
   /**
-   * "Not that one" — the next-best recipe for that night, ranked against the
+   * "Not that one" — the next-best recipe for that meal, ranked against the
    * rest of the week as it stands, with everything already turned down for
-   * that night kept out of the running.
+   * that day kept out of the running.
    */
-  const tryAnother = (date: string) => {
-    if (!slots) return
-    const current = slots.find((slot) => slot.date === date)
-    const alreadyPassed = passedOver[date] ?? []
+  const tryAnother = (slotId: string, date: string) => {
+    const plan = plans?.find((entry) => entry.slot.id === slotId)
+    if (!plan) return
+    const current = plan.meals.find((meal) => meal.date === date)
+    const key = `${slotId}:${date}`
+    const alreadyPassed = passedOver[key] ?? []
     const suggestion = suggestAnother({
-      slots,
+      slots: plan.meals,
       date,
       library: recipes ?? [],
-      context: { ...contextFromRequest(buildRequest(prefs), engineContext) },
-      perMeal: prefs.servingsPerMeal,
+      context: {
+        ...contextFromRequest(buildRequest(prefs), engineContext),
+        mealType: plan.slot.type,
+      },
+      perMeal: plan.slot.servings ?? prefs.servingsPerMeal,
       dayLoad: prefs.dayLoads[date],
       passedOver: new Set(alreadyPassed),
     })
     if (!suggestion) {
-      toast(`Nothing else in your library fits ${dayName(date)}.`)
+      toast(`Nothing else in your library fits ${plan.slot.label} on ${dayName(date)}.`)
       return
     }
     if (current?.recipeId) {
       void recordRejection(current.recipeId)
-      setPassedOver((rest) => ({ ...rest, [date]: [...alreadyPassed, current.recipeId as string] }))
+      setPassedOver((rest) => ({ ...rest, [key]: [...alreadyPassed, current.recipeId as string] }))
     }
-    setSlots(suggestion.slots)
+    patchPlan(slotId, () => suggestion.slots)
   }
 
   const accept = async () => {
-    if (!slots) return
+    if (!plans) return
     setAccepting(true)
     try {
       const plan = await getOrCreatePlan(weekStart)
       const existing = await listPlannedMeals(plan.id)
-      const keptDates = new Set(slots.map((slot) => slot.date))
 
-      // Slots the wizard filled replace whatever was on those days; the rest of
-      // the week is left exactly as it was.
-      const dateToSlotId = new Map<string, string>()
-      const meals = slots
-        .filter((slot) => !slot.unfilled)
-        .map((slot) => {
-          dateToSlotId.set(slot.date, slot.date)
-          return {
+      const meals = plans.flatMap((entry) =>
+        entry.meals
+          .filter((meal) => !meal.unfilled)
+          .map((meal) => ({
             planId: plan.id,
-            date: slot.date,
-            mealType,
-            kind: slot.kind,
-            recipeId: slot.recipeId,
-            servings: slot.servings,
-            isLeftover: slot.kind === 'leftover',
-            reasons: slot.reasons,
-          }
-        })
+            date: meal.date,
+            mealType: entry.slot.type,
+            slotId: entry.slot.id,
+            kind: meal.kind,
+            recipeId: meal.recipeId,
+            customName: meal.customName,
+            servings: meal.servings,
+            isLeftover: meal.kind === 'leftover',
+            reasons: meal.reasons,
+          })),
+      )
 
+      // Only the days and slots the wizard actually planned are replaced; the
+      // rest of the week is left exactly as it was.
       await replacePlanMeals(plan.id, meals, {
-        mealType,
-        dates: [...keptDates],
+        slotIds: plans.map((entry) => entry.slot.id),
+        dates: [...new Set(plans.flatMap((entry) => entry.meals.map((meal) => meal.date)))],
       })
 
       await recordPlanned(
-        slots
-          .filter((slot) => slot.kind === 'recipe' && slot.recipeId)
-          .map((slot) => slot.recipeId as string),
+        plans
+          .flatMap((entry) => entry.meals)
+          .filter((meal) => meal.kind === 'recipe' && meal.recipeId)
+          .map((meal) => meal.recipeId as string),
       )
 
       const savedMeals = await listPlannedMeals(plan.id)
@@ -375,8 +412,13 @@ export function PlanWizardPage() {
     )
   }
 
-  const cookCount = slots?.filter((slot) => slot.kind === 'recipe' && !slot.unfilled).length ?? 0
-  const leftoverCount = slots?.filter((slot) => slot.kind === 'leftover').length ?? 0
+  const allMeals = plans?.flatMap((plan) => plan.meals) ?? []
+  const cookCount = allMeals.filter((meal) => meal.kind === 'recipe' && !meal.unfilled).length
+  const leftoverCount = allMeals.filter((meal) => meal.kind === 'leftover').length
+  const routineCount = allMeals.filter((meal) => meal.kind === 'custom' && !meal.unfilled).length
+
+  /** The preview reads day by day, with each of the day's slots under it. */
+  const previewDays = [...new Set(allMeals.map((meal) => meal.date))].sort()
 
   return (
     <div className="page">
@@ -394,12 +436,12 @@ export function PlanWizardPage() {
         </div>
       </header>
 
-      {quickPending && !slots ? (
+      {quickPending && !plans ? (
         <div className={styles.building} role="status">
           <Sparkles size={28} aria-hidden="true" />
           <p>Building your week from your recipes…</p>
         </div>
-      ) : !slots ? (
+      ) : !plans ? (
         <>
           <section>
             <h2 className="section-title">
@@ -668,8 +710,9 @@ export function PlanWizardPage() {
                 {cookCount} cooking session{cookCount === 1 ? '' : 's'}
               </strong>
               {leftoverCount
-                ? ` · ${leftoverCount} leftover night${leftoverCount === 1 ? '' : 's'}`
+                ? ` · ${leftoverCount} meal${leftoverCount === 1 ? '' : 's'} of leftovers`
                 : ''}
+              {routineCount ? ` · ${routineCount} the usual` : ''}
             </p>
             <p className="text-sm muted">
               Nothing is saved until you accept the plan.
@@ -682,79 +725,137 @@ export function PlanWizardPage() {
             </p>
           ))}
 
-          <ul className={styles.slots}>
-            {slots.map((slot) => (
-              <li
-                key={slot.date}
-                className={`${styles.slot} ${slot.kind === 'leftover' ? styles.leftoverSlot : ''}`}
-              >
-                <div className={styles.slotDay}>
-                  <strong>{dayName(slot.date)}</strong>
-                  <small>{monthDay(slot.date)}</small>
+          <ol className={styles.days}>
+            {previewDays.map((date) => (
+              <li key={date} className={styles.day}>
+                <div className={styles.dayHead}>
+                  <strong>{dayName(date)}</strong>
+                  <small>{monthDay(date)}</small>
                 </div>
 
-                <div className={styles.slotBody}>
-                  {slot.unfilled ? (
-                    <p className={styles.unfilled}>Nothing fit this day</p>
-                  ) : (
-                    <>
-                      <p className={styles.slotTitle}>
-                        {slot.recipe?.title ?? 'Meal'}
-                        {slot.kind === 'leftover' ? ' — leftovers' : ''}
-                      </p>
-                      {slot.kind === 'recipe' && slot.servings ? (
-                        <p className={styles.slotMeta}>Cook {slot.servings} servings</p>
-                      ) : null}
-                      {slot.reasons.length ? (
-                        <ul className={styles.reasons}>
-                          {slot.reasons.map((reason) => (
-                            <li key={reason}>{reason}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </>
-                  )}
-                </div>
+                <ul className={styles.dayMeals}>
+                  {plans!.map((plan) => {
+                    const meal = plan.meals.find((entry) => entry.date === date)
+                    if (!meal) return null
+                    const key = `${plan.slot.id}:${date}`
+                    const open = peeking === key
 
-                <div className={styles.slotActions}>
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-icon"
-                    onClick={() => toggleLock(slot.date)}
-                    aria-pressed={Boolean(slot.locked)}
-                    aria-label={slot.locked ? 'Unlock this meal' : 'Lock this meal'}
-                  >
-                    {slot.locked ? (
-                      <Lock size={17} aria-hidden="true" />
-                    ) : (
-                      <LockOpen size={17} aria-hidden="true" />
-                    )}
-                  </button>
-                  {slot.kind === 'recipe' ? (
-                    <button
-                      type="button"
-                      className="btn btn-ghost btn-icon"
-                      onClick={() => tryAnother(slot.date)}
-                      disabled={Boolean(slot.locked)}
-                      aria-label="Try another suggestion for this night"
-                      title="Try another"
-                    >
-                      <Shuffle size={17} aria-hidden="true" />
-                    </button>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-icon"
-                    onClick={() => setSwapping(slot.date)}
-                    aria-label="Replace this meal with one you choose"
-                    title="Choose a recipe"
-                  >
-                    <Replace size={17} aria-hidden="true" />
-                  </button>
-                </div>
+                    return (
+                      <li
+                        key={key}
+                        className={`${styles.meal} ${
+                          meal.kind === 'leftover' ? styles.leftoverMeal : ''
+                        }`}
+                      >
+                        <div className={styles.mealMain}>
+                          {meal.recipe ? (
+                            <MealCard
+                              recipe={meal.recipe}
+                              size="compact"
+                              onSelect={() => setPeeking(open ? undefined : key)}
+                              eyebrow={
+                                plans!.length > 1 || plan.slot.fill !== 'cook'
+                                  ? plan.slot.label
+                                  : undefined
+                              }
+                            >
+                              <p className={styles.mealMeta}>
+                                {meal.kind === 'leftover'
+                                  ? `Leftovers${meal.sourceDate ? ` from ${dayNameShort(meal.sourceDate)}` : ''}`
+                                  : meal.servings
+                                    ? `Cook ${meal.servings} servings`
+                                    : null}
+                              </p>
+                            </MealCard>
+                          ) : (
+                            <div className={styles.plainMeal}>
+                              <span className={styles.slotName}>{plan.slot.label}</span>
+                              <strong>
+                                {meal.unfilled
+                                  ? plan.slot.fill === 'routine'
+                                    ? 'Nothing set yet'
+                                    : 'Nothing fit this day'
+                                  : (meal.customName ?? 'Meal')}
+                              </strong>
+                            </div>
+                          )}
+
+                          <div className={styles.mealActions}>
+                            {meal.recipe ? (
+                              <button
+                                type="button"
+                                className="btn btn-ghost btn-sm"
+                                aria-expanded={open}
+                                onClick={() => setPeeking(open ? undefined : key)}
+                              >
+                                {open ? (
+                                  <ChevronUp size={15} aria-hidden="true" />
+                                ) : (
+                                  <ChevronDown size={15} aria-hidden="true" />
+                                )}
+                                {open ? 'Hide' : 'Look at it'}
+                              </button>
+                            ) : null}
+
+                            {plan.slot.fill === 'cook' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost btn-icon"
+                                  onClick={() => toggleLock(plan.slot.id, date)}
+                                  aria-pressed={Boolean(meal.locked)}
+                                  aria-label={meal.locked ? 'Unlock this meal' : 'Lock this meal'}
+                                >
+                                  {meal.locked ? (
+                                    <Lock size={16} aria-hidden="true" />
+                                  ) : (
+                                    <LockOpen size={16} aria-hidden="true" />
+                                  )}
+                                </button>
+                                {meal.kind === 'recipe' ? (
+                                  <button
+                                    type="button"
+                                    className="btn btn-ghost btn-icon"
+                                    onClick={() => tryAnother(plan.slot.id, date)}
+                                    disabled={Boolean(meal.locked)}
+                                    aria-label="Try another suggestion"
+                                    title="Try another"
+                                  >
+                                    <Shuffle size={16} aria-hidden="true" />
+                                  </button>
+                                ) : null}
+                                <button
+                                  type="button"
+                                  className="btn btn-ghost btn-icon"
+                                  onClick={() => setSwapping(key)}
+                                  aria-label="Replace with one you choose"
+                                  title="Choose a recipe"
+                                >
+                                  <Replace size={16} aria-hidden="true" />
+                                </button>
+                              </>
+                            ) : null}
+                          </div>
+                        </div>
+
+                        {meal.reasons.length && !open ? (
+                          <ul className={styles.reasons}>
+                            {meal.reasons.slice(0, 3).map((reason) => (
+                              <li key={reason}>{reason}</li>
+                            ))}
+                          </ul>
+                        ) : null}
+
+                        {open && meal.recipe ? (
+                          <RecipePeek recipe={meal.recipe} servings={meal.servings} />
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
               </li>
             ))}
-          </ul>
+          </ol>
 
           <div className={styles.previewActions}>
             <button
@@ -765,7 +866,7 @@ export function PlanWizardPage() {
               <RefreshCw size={17} aria-hidden="true" />
               Regenerate
             </button>
-            <button type="button" className="btn btn-ghost" onClick={() => setSlots(null)}>
+            <button type="button" className="btn btn-ghost" onClick={() => setPlans(null)}>
               Change preferences
             </button>
           </div>
@@ -787,11 +888,17 @@ export function PlanWizardPage() {
             onClose={() => setSwapping(null)}
           >
             <RecipePicker
-              mealType={mealType}
-              excludeIds={slots
-                .map((slot) => slot.recipeId)
+              mealType={
+                plans?.find((plan) => plan.slot.id === swapping?.split(':')[0])?.slot.type
+              }
+              excludeIds={allMeals
+                .map((meal) => meal.recipeId)
                 .filter((id): id is string => Boolean(id))}
-              onSelect={(recipe) => swapping && swap(swapping, recipe)}
+              onSelect={(recipe) => {
+                if (!swapping) return
+                const [slotId, date] = swapping.split(':')
+                swap(slotId, date, recipe)
+              }}
             />
           </Modal>
         </>

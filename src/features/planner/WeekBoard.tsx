@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Plus, RotateCw, Store, Utensils } from 'lucide-react'
-import type { MealType, PlannedMeal, Recipe } from '@/models'
-import { MEAL_TYPE_LABELS } from '@/models'
+import type { MealSlotConfig, PlannedMeal, Recipe } from '@/models'
+import { slotsForDate } from '@/models'
 import { MealCard } from '@/components/meal/MealCard'
 import { dayName, dayNameShort, monthDay } from '@/utils/date'
 import { leftoverGraph } from './leftoverLinks'
@@ -12,11 +12,11 @@ interface WeekBoardProps {
   dates: string[]
   mealsByDate: Map<string, PlannedMeal[]>
   recipesById: Map<string, Recipe>
-  mealTypes: MealType[]
+  slots: MealSlotConfig[]
   today: string
-  onAdd: (date: string, mealType: MealType) => void
+  onAdd: (date: string, slot: MealSlotConfig) => void
   onOpenMeal: (meal: PlannedMeal) => void
-  onMove: (mealId: string, date: string, mealType: MealType) => void
+  onMove: (mealId: string, date: string, slot: MealSlotConfig) => void
 }
 
 /**
@@ -39,7 +39,7 @@ export function WeekBoard({
   dates,
   mealsByDate,
   recipesById,
-  mealTypes,
+  slots,
   today,
   onAdd,
   onOpenMeal,
@@ -58,6 +58,7 @@ export function WeekBoard({
     <ol className={styles.week}>
       {dates.map((date) => {
         const meals = mealsByDate.get(date) ?? []
+        const daySlots = slotsForDate(slots, date)
         const isToday = date === today
         const isPast = date < today
 
@@ -79,7 +80,7 @@ export function WeekBoard({
             }}
             onDragLeave={() => setDragOver((current) => (current === date ? null : current))}
             onDrop={() => {
-              if (dragging) onMove(dragging, date, mealTypes[0])
+              if (dragging) onMove(dragging, date, slotsForDate(slots, date)[0] ?? slots[0])
               setDragging(null)
               setDragOver(null)
             }}
@@ -92,12 +93,22 @@ export function WeekBoard({
               <span className={styles.dayDate}>{monthDay(date)}</span>
             </div>
 
-            {mealTypes.map((mealType) => {
-              const forType = meals.filter((meal) => meal.mealType === mealType)
+            {daySlots.map((slot) => {
+              /*
+               * A meal belongs to the slot whose id it stored. Meals planned
+               * before slots existed have none, so they fall back to the first
+               * slot of their kind — otherwise an upgrade would empty the week.
+               */
+              const forType = meals.filter((meal) =>
+                meal.slotId
+                  ? meal.slotId === slot.id
+                  : meal.mealType === slot.type &&
+                    daySlots.find((candidate) => candidate.type === meal.mealType)?.id === slot.id,
+              )
               return (
-                <div key={mealType} className={styles.group}>
-                  {mealTypes.length > 1 ? (
-                    <p className={styles.groupLabel}>{MEAL_TYPE_LABELS[mealType]}</p>
+                <div key={slot.id} className={styles.group}>
+                  {daySlots.length > 1 ? (
+                    <p className={styles.groupLabel}>{slot.label}</p>
                   ) : null}
 
                   {forType.map((meal) => {
@@ -162,7 +173,12 @@ export function WeekBoard({
                           {feeds?.length ? (
                             <p className={styles.feedsLine}>
                               <RotateCw size={11} aria-hidden="true" />
-                              Feeds {feeds.map((fed) => dayNameShort(fed)).join(', ')}
+                              {/* One day can eat from a session twice — its
+                                  lunch and its dinner — and "Feeds Tue, Tue"
+                                  reads like a mistake. The useful fact is how
+                                  far the batch stretches, so days are named
+                                  once. */}
+                              Feeds {[...new Set(feeds)].map((fed) => dayNameShort(fed)).join(', ')}
                             </p>
                           ) : null}
                         </MealCard>
@@ -173,11 +189,11 @@ export function WeekBoard({
                   <button
                     type="button"
                     className={`${styles.add} ${forType.length ? '' : styles.addEmpty}`}
-                    onClick={() => onAdd(date, mealType)}
+                    onClick={() => onAdd(date, slot)}
                   >
                     <Plus size={16} aria-hidden="true" />
                     <span className="sr-only">
-                      Add {MEAL_TYPE_LABELS[mealType].toLowerCase()} for {dayName(date)}
+                      Add {slot.label.toLowerCase()} for {dayName(date)}
                     </span>
                     <span aria-hidden="true">{forType.length ? 'Add another' : 'Add a meal'}</span>
                   </button>

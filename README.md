@@ -82,6 +82,29 @@ stands, with whatever you have already turned down for that night kept out —
 and if that night feeds the leftover nights after it, they follow, and the batch
 is sized for all of them.
 
+**The day is yours to describe.** Settings → Your day lists the meals you
+actually eat, in order, each with a rule for how it gets filled: *cook
+something* (the planner decides, N times a week), *the same thing every day*
+(write it once — "a bowl of Kellogg's Strawberry Special K" — and it fills
+every morning, with what it needs from the shop added to the list once for the
+week, not seven times), *leftovers from earlier*, or *leave it to me*. Add as
+many as you like, name them what you call them, set how many people each feeds
+and which days it happens on — a big weekend breakfast is a different slot from
+a weekday one.
+
+Planning then covers the whole day rather than dinner alone. Each cooking slot
+gets its own rhythm, and a leftovers slot eats from cooking earlier in the week
+— which means the cooking is *sized* for it: cook Monday's chili for the
+Tuesday and Wednesday lunches too, and the plan says so ("Cooks 16 servings —
+enough to eat again later in the week"). It will not serve a portion twice, and
+it will not offer Monday's lunch the leftovers of Monday's dinner.
+
+**And you can read the recipes before you commit to them.** Every meal in the
+plan preview is a photograph, and *Look at it* opens the whole recipe in
+place — ingredients scaled to the servings the plan actually intends, the
+directions, and a link to the full page — so accepting a week is not a decision
+made from seven titles.
+
 The same brain fills a single night. **Add → Suggest something** on any day of
 the planner ranks your library the way the planner does — your defaults, your
 pantry and equipment, what you cooked lately, what is already on the week — and
@@ -138,6 +161,13 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   list being rebuilt.
 - **Pantry** — the things you always have are pulled into a short "check the
   pantry" list instead of being assumed or silently dropped.
+- **What the shop will cost** — the grocery list totals itself, broken down by
+  aisle so it is obvious what is driving it, with every line priced. The
+  built-in prices are typical US supermarket prices and the panel says so;
+  correct any line and MealHelp uses your price for that ingredient for ever
+  after. Where a recipe quantity cannot honestly be converted into a shopping
+  one it shows a dash rather than a number, and the total says how much of the
+  list it covers.
 - **Ratings and history** — say how a meal went and it changes what gets
   suggested next. Repeat a good week with one button.
 - **Print** — a refrigerator sheet for US Letter, with a QR code per cooked meal

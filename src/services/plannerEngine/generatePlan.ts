@@ -22,8 +22,14 @@ import {
 export interface GeneratedSlot {
   date: string
   mealType: MealType
-  kind: 'recipe' | 'leftover'
+  /**
+   * `custom` is how a routine slot arrives — "a bowl of Special K" is a meal
+   * with no recipe behind it, and the week has to be able to say so.
+   */
+  kind: 'recipe' | 'leftover' | 'custom'
   recipeId?: string
+  /** For `custom`: what the user always has. */
+  customName?: string
   recipe?: Recipe
   servings?: number
   reasons: string[]

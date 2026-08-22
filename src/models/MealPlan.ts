@@ -29,6 +29,13 @@ export interface PlannedMeal {
 
   mealType: MealType
 
+  /**
+   * The slot in the day this fills, when the kitchen has more than one of a
+   * kind — two breakfasts, or a lunch and a post-gym snack. Older meals have
+   * none and fall back to matching on `mealType`.
+   */
+  slotId?: string
+
   kind: PlannedMealKind
 
   recipeId?: string

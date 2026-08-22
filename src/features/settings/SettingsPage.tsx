@@ -5,11 +5,8 @@ import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
 import {
   COMMON_EQUIPMENT,
-  MEAL_TYPES,
-  MEAL_TYPE_LABELS,
   VARIETY_LABELS,
   VARIETY_MODES,
-  type MealType,
   type VarietyMode,
 } from '@/models'
 import {
@@ -26,6 +23,7 @@ import { useToast } from '@/components/common/Toast'
 import { NUTRIENTS } from '@/models'
 import { ThemePicker } from './ThemePicker'
 import { STARTER_PHOTOS } from '@/features/recipes/starterPhotos'
+import { MealSlotEditor } from './MealSlotEditor'
 import styles from './SettingsPage.module.css'
 
 export function SettingsPage() {
@@ -44,14 +42,6 @@ export function SettingsPage() {
 
   const [pendingRestore, setPendingRestore] = useState<ValidationResult>()
   const [confirmWipe, setConfirmWipe] = useState(false)
-
-  const toggleMealType = (mealType: MealType) => {
-    const current = settings.visibleMealTypes
-    const next = current.includes(mealType)
-      ? current.filter((type) => type !== mealType)
-      : [...MEAL_TYPES.filter((t) => current.includes(t) || t === mealType)]
-    void update({ visibleMealTypes: next.length ? next : ['dinner'] })
-  }
 
   const toggleEquipment = (item: string) => {
     const owned = settings.equipmentOwned
@@ -109,23 +99,17 @@ export function SettingsPage() {
         <h2 className="section-title">Planning</h2>
 
         <div className="field">
-          <span className="field-label">Meals you plan</span>
-          <div className="row-tight">
-            {MEAL_TYPES.map((mealType) => (
-              <button
-                key={mealType}
-                type="button"
-                className="chip chip-button"
-                aria-pressed={settings.visibleMealTypes.includes(mealType)}
-                onClick={() => toggleMealType(mealType)}
-              >
-                {MEAL_TYPE_LABELS[mealType]}
-              </button>
-            ))}
-          </div>
-          <span className="field-hint">
-            Hide the ones you never plan and the planner gets much quieter.
+          <span className="field-label">Your day</span>
+          <span className="field-hint" style={{ marginBottom: 'var(--space-2)' }}>
+            The meals MealHelp plans, in the order you eat them. Only "cook
+            something" slots take any deciding — a breakfast you always have is
+            just written down once.
           </span>
+          <MealSlotEditor
+            slots={settings.mealSlots}
+            onChange={(mealSlots) => void update({ mealSlots })}
+            defaultServings={settings.defaultServings}
+          />
         </div>
 
         <div className="field">
@@ -334,6 +318,28 @@ export function SettingsPage() {
             is that the address of the recipe passes through a third party —
             turn this off to keep every request between you, the recipe site
             and MealHelp's fetcher.
+          </span>
+        </div>
+      </section>
+
+      <section>
+        <h2 className="section-title">Money</h2>
+        <div className="field">
+          <label className="field-label" htmlFor="currency">
+            Currency symbol
+          </label>
+          <input
+            id="currency"
+            className="input"
+            maxLength={3}
+            style={{ maxWidth: '120px' }}
+            defaultValue={settings.currency ?? '$'}
+            onBlur={(event) => void update({ currency: event.target.value.trim() || '$' })}
+          />
+          <span className="field-hint">
+            The grocery estimate's built-in prices are US supermarket prices, so
+            changing this changes the symbol and not the numbers. Correct any
+            line on the grocery list and MealHelp uses your price from then on.
           </span>
         </div>
       </section>

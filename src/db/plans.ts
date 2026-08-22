@@ -44,6 +44,7 @@ export interface PlannedMealInput {
   planId: string
   date: string
   mealType: MealType
+  slotId?: string
   kind: PlannedMealKind
   recipeId?: string
   customName?: string
@@ -107,8 +108,15 @@ export async function movePlannedMeal(
   id: string,
   date: string,
   mealType?: MealType,
+  slotId?: string,
 ): Promise<void> {
-  await updatePlannedMeal(id, mealType ? { date, mealType } : { date })
+  // Dropping a meal on a day drops it into that day's slot, so dragging
+  // Tuesday's dinner onto Saturday's lunch makes it a lunch.
+  await updatePlannedMeal(id, {
+    date,
+    ...(mealType ? { mealType } : {}),
+    ...(slotId ? { slotId } : {}),
+  })
 }
 
 export async function duplicatePlannedMeal(id: string): Promise<void> {
@@ -132,11 +140,18 @@ export async function duplicatePlannedMeal(id: string): Promise<void> {
 export async function replacePlanMeals(
   planId: string,
   meals: PlannedMealInput[],
-  options: { mealType?: MealType; dates?: string[] } = {},
+  options: { mealType?: MealType; slotIds?: string[]; dates?: string[] } = {},
 ): Promise<void> {
   const existing = await listPlannedMeals(planId)
   const doomed = existing.filter((meal) => {
     if (options.mealType && meal.mealType !== options.mealType) return false
+    /*
+     * Two slots can share a meal type — two breakfasts, or a lunch and a
+     * post-gym snack — so a regenerated week clears by slot. A meal saved
+     * before slots existed has no slotId and is matched by its type, which is
+     * what the mealType filter above is still for.
+     */
+    if (options.slotIds && meal.slotId && !options.slotIds.includes(meal.slotId)) return false
     if (options.dates && !options.dates.includes(meal.date)) return false
     return true
   })

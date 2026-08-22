@@ -275,3 +275,99 @@
   margin-top: var(--space-4);
   flex-wrap: wrap;
 }
+
+/*
+ * The preview, read as days rather than as one long list of dinners: with
+ * breakfast, lunch and dinner in play, "Monday" is the unit people check.
+ */
+.days {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  list-style: none;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.dayHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 1px solid var(--line);
+}
+
+.dayHead strong {
+  font-family: var(--font-serif);
+  font-size: 1.05rem;
+}
+
+.dayHead small {
+  color: var(--ink-faint);
+  font-size: 0.8rem;
+}
+
+.dayMeals {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+}
+
+.meal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.mealMain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.mealMain > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.leftoverMeal .mealMeta {
+  color: var(--sage-ink);
+  font-weight: 600;
+}
+
+.mealMeta {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.mealActions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: none;
+}
+
+/* A meal with no recipe behind it: the usual breakfast, or a gap. */
+.plainMeal {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-3);
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-sunk);
+}
+
+.slotName {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}

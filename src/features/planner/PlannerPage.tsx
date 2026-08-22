@@ -13,7 +13,7 @@ import { useSettings } from '@/app/SettingsContext'
 import { useQuickPlan } from '@/app/QuickPlanContext'
 import { copyWeek, movePlannedMeal } from '@/db/plans'
 import { generateGroceryList } from '@/db/grocery'
-import type { MealType, PlannedMeal } from '@/models'
+import type { MealSlotConfig, PlannedMeal } from '@/models'
 import { addDays, formatWeekRange, startOfWeek, todayISO } from '@/utils/date'
 import { EmptyState } from '@/components/common/EmptyState'
 import { SegmentedTabs } from '@/components/common/SegmentedTabs'
@@ -42,12 +42,10 @@ export function PlannerPage() {
   const week = usePlannerWeek(weekStart)
   const [tab, setTab] = useSectionTab<PlanTab>(PLAN_TABS, 'week')
 
-  const [adding, setAdding] = useState<{ date: string; mealType: MealType } | null>(null)
+  const [adding, setAdding] = useState<{ date: string; slot: MealSlotConfig } | null>(null)
   const [selected, setSelected] = useState<PlannedMeal | null>(null)
 
-  const mealTypes = settings.visibleMealTypes.length
-    ? settings.visibleMealTypes
-    : (['dinner'] as MealType[])
+  const mealSlots = settings.mealSlots
 
   const usedRecipeIds = useMemo(
     () =>
@@ -231,11 +229,11 @@ export function PlannerPage() {
             dates={week.dates}
             mealsByDate={week.mealsByDate}
             recipesById={week.recipesById}
-            mealTypes={mealTypes}
+            slots={mealSlots}
             today={today}
-            onAdd={(date, mealType) => setAdding({ date, mealType })}
+            onAdd={(date, slot) => setAdding({ date, slot })}
             onOpenMeal={setSelected}
-            onMove={(mealId, date, mealType) => void movePlannedMeal(mealId, date, mealType)}
+            onMove={(mealId, date, slot) => void movePlannedMeal(mealId, date, slot.type, slot.id)}
           />
         </div>
 
@@ -247,7 +245,7 @@ export function PlannerPage() {
           open
           weekStart={weekStart}
           date={adding.date}
-          mealType={adding.mealType}
+          slot={adding.slot}
           leftovers={week.leftovers}
           usedRecipeIds={usedRecipeIds}
           weekRecipes={weekRecipes}

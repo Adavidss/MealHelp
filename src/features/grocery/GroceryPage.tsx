@@ -26,6 +26,7 @@ import { useToast } from '@/components/common/Toast'
 import { useSectionTab } from '@/app/useSectionTab'
 import { PantryView } from '@/features/pantry/PantryPage'
 import { ShareGroceryDialog } from '@/features/sharing/ShareGroceryDialog'
+import { CostPanel } from './CostPanel'
 import styles from './GroceryPage.module.css'
 
 export function GroceryPage() {
@@ -235,6 +236,8 @@ export function GroceryPage() {
           </Link>
         </EmptyState>
       ) : null}
+
+      {items.length ? <CostPanel items={items} currency={settings.currency} /> : null}
 
       {pantryChecks.length ? (
         <section className={styles.pantrySection}>

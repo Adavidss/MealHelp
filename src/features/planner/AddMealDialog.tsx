@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ChefHat, Refrigerator, Shuffle, Sparkles, Store, Utensils } from 'lucide-react'
+import { ChefHat, Refrigerator, Repeat, Shuffle, Sparkles, Store, Utensils } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
 import { addPlannedMeal, getOrCreatePlan } from '@/db/plans'
 import { consumeLeftovers, recordRejection } from '@/db/cookEvents'
 import { pantryKeySet } from '@/db/pantry'
-import type { CookEvent, MealType, Recipe } from '@/models'
-import { MEAL_TYPE_LABELS } from '@/models'
+import type { CookEvent, MealSlotConfig, Recipe } from '@/models'
 import { rankRecipes, type ScoredRecipe } from '@/services/recommendationEngine'
 import { activeMinutes } from '@/services/recipeMetrics'
 import { Modal } from '@/components/common/Modal'
@@ -21,7 +20,7 @@ interface AddMealDialogProps {
   /** The week being planned. Its plan row is created on first use, not on sight. */
   weekStart: string
   date: string
-  mealType: MealType
+  slot: MealSlotConfig
   leftovers: CookEvent[]
   usedRecipeIds: string[]
   /** What is already on the week, so a suggestion can be different from it. */
@@ -36,7 +35,7 @@ export function AddMealDialog({
   open,
   weekStart,
   date,
-  mealType,
+  slot,
   leftovers,
   usedRecipeIds,
   weekRecipes = [],
@@ -60,7 +59,7 @@ export function AddMealDialog({
     if (mode !== 'suggest') return []
     const defaults = settings.planningDefaults
     return rankRecipes(library, {
-      mealType,
+      mealType: slot.type,
       preferredMethods: defaults.preferredMethods,
       preferLeftovers: defaults.preferLeftovers,
       variety: defaults.variety,
@@ -73,7 +72,7 @@ export function AddMealDialog({
       chosenRecipes: weekRecipes,
       excludeRecipeIds: new Set(usedRecipeIds),
     })
-  }, [mode, library, pantry, settings, mealType, weekRecipes, usedRecipeIds])
+  }, [mode, library, pantry, settings, slot, weekRecipes, usedRecipeIds])
 
   const suggestion = suggestions[suggestionIndex]
 
@@ -99,7 +98,8 @@ export function AddMealDialog({
     await addPlannedMeal({
       planId: plan.id,
       date,
-      mealType,
+      mealType: slot.type,
+      slotId: slot.id,
       kind: 'recipe',
       recipeId: recipe.id,
       servings: recipe.servings ?? defaultServings,
@@ -113,7 +113,8 @@ export function AddMealDialog({
     await addPlannedMeal({
       planId: plan.id,
       date,
-      mealType,
+      mealType: slot.type,
+      slotId: slot.id,
       kind: 'leftover',
       recipeId: event.recipeId,
       sourceCookEventId: event.id,
@@ -125,12 +126,28 @@ export function AddMealDialog({
     close()
   }
 
+  /** The slot's standing meal — no recipe, no decision, one tap. */
+  const addRoutine = async () => {
+    const plan = await getOrCreatePlan(weekStart)
+    await addPlannedMeal({
+      planId: plan.id,
+      date,
+      mealType: slot.type,
+      slotId: slot.id,
+      kind: 'custom',
+      customName: slot.routine?.name,
+    })
+    toast(`${slot.routine?.name} on ${dayName(date)}.`, { tone: 'success' })
+    close()
+  }
+
   const addCustom = async (kind: 'custom' | 'eating-out' | 'skip') => {
     const plan = await getOrCreatePlan(weekStart)
     await addPlannedMeal({
       planId: plan.id,
       date,
-      mealType,
+      mealType: slot.type,
+      slotId: slot.id,
       kind,
       customName:
         customName.trim() ||
@@ -142,7 +159,7 @@ export function AddMealDialog({
   return (
     <Modal
       open={open}
-      title={`${MEAL_TYPE_LABELS[mealType]} · ${dayName(date)} ${monthDay(date)}`}
+      title={`${slot.label} · ${dayName(date)} ${monthDay(date)}`}
       onClose={close}
     >
       {mode === 'choose' ? (
@@ -190,6 +207,20 @@ export function AddMealDialog({
               </small>
             </span>
           </button>
+
+          {slot.routine?.name ? (
+            <button
+              type="button"
+              className={styles.option}
+              onClick={() => void addRoutine()}
+            >
+              <Repeat size={20} aria-hidden="true" />
+              <span>
+                <strong>{slot.routine.name}</strong>
+                <small>What you always have for {slot.label.toLowerCase()}</small>
+              </span>
+            </button>
+          ) : null}
 
           <button
             type="button"
@@ -265,7 +296,7 @@ export function AddMealDialog({
 
       {mode === 'recipe' ? (
         <RecipePicker
-          mealType={mealType}
+          mealType={slot.type}
           excludeIds={usedRecipeIds}
           onSelect={(recipe) => void addRecipe(recipe)}
         />

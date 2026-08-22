@@ -26,12 +26,65 @@ export interface PrintOptions {
   largeText: boolean
 }
 
+/**
+ * How a slot in the day gets filled when MealHelp plans a week.
+ *
+ * Not every meal is a cooking decision. Breakfast, for most people, is the
+ * same thing every day and the only question it raises is whether there is
+ * cereal in the cupboard; lunch is often yesterday's dinner. Making those
+ * first-class stops the planner from pretending every slot needs a recipe
+ * chosen for it, and stops the user from having to fill them in by hand.
+ */
+export type SlotFill = 'cook' | 'routine' | 'leftovers' | 'open'
+
+export const SLOT_FILL_LABELS: Record<SlotFill, string> = {
+  cook: 'Cook something',
+  routine: 'The same thing every day',
+  leftovers: 'Leftovers from earlier',
+  open: 'Leave it to me',
+}
+
+/** The same thing every day — "a bowl of Special K", "toast and coffee". */
+export interface MealRoutine {
+  name: string
+  /**
+   * What that costs at the shop, written the way you would buy it — "1 box
+   * Special K", "2 L milk". Added to the list once for the week rather than
+   * once per day, because nobody buys seven boxes of cereal for seven
+   * breakfasts.
+   */
+  groceryLines: string[]
+}
+
+export interface MealSlotConfig {
+  id: string
+  /** What the user calls it: "Dinner", "Second breakfast", "Post-gym". */
+  label: string
+  /** The underlying kind, which is what recipes are matched against. */
+  type: MealType
+  fill: SlotFill
+  routine?: MealRoutine
+  /** For `cook`: how many times a week to actually cook for this slot. */
+  cookSessions?: number
+  /** How many people this slot feeds; falls back to the kitchen default. */
+  servings?: number
+  /**
+   * Days this slot happens on, 0 = Sunday. Undefined means every day — which
+   * is how a big weekend breakfast differs from an everyday one.
+   */
+  daysOfWeek?: number[]
+}
+
 export interface Settings {
   /** Single-row table; the id is always 'settings'. */
   id: string
 
-  /** Meal types the planner shows. Dinner-only is the common case. */
-  visibleMealTypes: MealType[]
+  /**
+   * The day's slots, in the order they are eaten. Dinner alone is the common
+   * case and the default; anyone who wants breakfast, two lunches or a
+   * post-gym snack adds them here.
+   */
+  mealSlots: MealSlotConfig[]
 
   equipmentOwned: string[]
 
@@ -68,6 +121,13 @@ export interface Settings {
   importSettings: ImportSettings
 
   /**
+   * What money looks like here. The built-in price estimates are US dollars,
+   * so changing this changes the symbol and not the numbers — which the
+   * grocery estimate says plainly.
+   */
+  currency?: string
+
+  /**
    * A key the user brings themselves. Nothing is shipped with the app, and the
    * key never leaves this device except to the service it belongs to.
    */
@@ -99,9 +159,14 @@ export interface ImportSettings {
   useSharedFetchers: boolean
 }
 
+/** The one slot nearly everyone plans, and the only one on by default. */
+export const DEFAULT_MEAL_SLOTS: MealSlotConfig[] = [
+  { id: 'dinner', label: 'Dinner', type: 'dinner', fill: 'cook' },
+]
+
 export const DEFAULT_SETTINGS: Settings = {
   id: 'settings',
-  visibleMealTypes: ['dinner'],
+  mealSlots: DEFAULT_MEAL_SLOTS,
   equipmentOwned: ['Slow Cooker', 'Instant Pot', 'Sheet Pan', 'Large Pot'],
   defaultServings: 4,
   weekStartsOn: 1,

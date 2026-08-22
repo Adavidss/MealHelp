@@ -1,0 +1,173 @@
+/*
+ * The cost of the shop. Collapsed to one line by default: the total is the
+ * thing people want, and the breakdown is for when it surprises them.
+ */
+.panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+  margin-bottom: var(--space-3);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.head:hover {
+  background: var(--surface-sunk);
+}
+
+.headText {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.headText svg {
+  color: var(--accent);
+  flex: none;
+}
+
+.headText span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+.headText strong {
+  font-size: 1.05rem;
+}
+
+.headText small {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+}
+
+.body {
+  padding: 0 var(--space-3) var(--space-3);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-3);
+}
+
+.categories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  list-style: none;
+}
+
+.categoryHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.bar {
+  height: 5px;
+  margin: 5px 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunk);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  list-style: none;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.lineName {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.price {
+  flex: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 2px 6px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.price:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+/* A price the shopper set themselves, which outranks the built-in one. */
+.ownPrice {
+  font-weight: 700;
+  color: var(--sage-ink);
+}
+
+.editor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.currency {
+  color: var(--ink-faint);
+}
+
+.priceInput {
+  width: 88px;
+  min-height: 36px;
+}
+
+.perUnit {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+  white-space: nowrap;
+}
+
+.unpriced,
+.caveat {
+  margin: var(--space-3) 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.caveat {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}

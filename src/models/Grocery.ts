@@ -104,3 +104,17 @@ export interface Collection {
   createdAt: string
   updatedAt: string
 }
+
+/**
+ * A price the shopper corrected, kept by ingredient so it applies to every
+ * list from then on. Typical prices are a starting point; this is what things
+ * cost where they actually shop.
+ */
+export interface PriceBookEntry {
+  /** Normalised ingredient key, as used by the grocery aggregator. */
+  key: string
+  price: number
+  /** The unit that price buys — "lb", "each", "fl oz". */
+  unit: string
+  updatedAt: string
+}

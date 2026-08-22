@@ -8,10 +8,11 @@ import type {
   NutritionLogEntry,
   PantryItem,
   PlannedMeal,
+  PriceBookEntry,
   Recipe,
   Settings,
 } from '@/models'
-import { DEFAULT_SETTINGS } from '@/models'
+import { DEFAULT_SETTINGS, DEFAULT_MEAL_SLOTS, slotsFromMealTypes } from '@/models'
 
 /**
  * IndexedDB cannot use booleans as keys, so `favorite` and friends are filtered
@@ -27,6 +28,7 @@ export class MealHelpDatabase extends Dexie {
   pantryItems!: EntityTable<PantryItem, 'id'>
   collections!: EntityTable<Collection, 'id'>
   settings!: EntityTable<Settings, 'id'>
+  priceBook!: EntityTable<PriceBookEntry, 'key'>
   feedback!: EntityTable<CookFeedback, 'id'>
   nutritionLog!: EntityTable<NutritionLogEntry, 'id'>
 
@@ -44,6 +46,14 @@ export class MealHelpDatabase extends Dexie {
       collections: 'id, name, updatedAt',
       settings: 'id',
       feedback: 'id, recipeId, date',
+    })
+
+    /*
+     * Version 2 adds the price book. Dexie carries every existing table
+     * forward untouched, so an upgrade costs nothing and loses nothing.
+     */
+    this.version(2).stores({
+      priceBook: 'key, updatedAt',
     })
 
     // Things eaten outside the plan, for the nutrition overview.
@@ -85,6 +95,10 @@ export async function loadSettings(): Promise<Settings> {
   return {
     ...DEFAULT_SETTINGS,
     ...stored,
+    // Settings written before slots existed carry visibleMealTypes instead.
+    mealSlots: stored.mealSlots?.length
+      ? stored.mealSlots
+      : legacyMealTypes(stored) ?? DEFAULT_MEAL_SLOTS,
     planningDefaults: {
       ...DEFAULT_SETTINGS.planningDefaults,
       ...stored.planningDefaults,
@@ -95,6 +109,12 @@ export async function loadSettings(): Promise<Settings> {
       ...stored.importSettings,
     },
   }
+}
+
+/** Reads the pre-slots shape off a stored settings row, if it is there. */
+function legacyMealTypes(stored: unknown) {
+  const types = (stored as { visibleMealTypes?: unknown }).visibleMealTypes
+  return Array.isArray(types) && types.length ? slotsFromMealTypes(types) : undefined
 }
 
 export async function saveSettings(patch: Partial<Settings>): Promise<Settings> {

@@ -1,4 +1,4 @@
-import { db } from './database'
+import { db, loadSettings } from './database'
 import type {
   GroceryCategory,
   GroceryExtra,
@@ -65,6 +65,39 @@ async function entriesFromMeals(meals: PlannedMeal[]): Promise<GroceryEntry[]> {
   return entries
 }
 
+/**
+ * What the week's standing meals need from the shop.
+ *
+ * A breakfast you always have is planned every day, but you do not buy seven
+ * boxes of cereal for seven breakfasts — so a routine's shopping lines are
+ * added once for the week, however many days it appears on. They are ordinary
+ * hand-added items from then on, and can be ticked or removed like any other.
+ */
+async function routineItems(meals: PlannedMeal[]): Promise<GroceryItem[]> {
+  const settings = await loadSettings()
+  const usedSlotIds = new Set(meals.map((meal) => meal.slotId).filter(Boolean))
+  const items: GroceryItem[] = []
+
+  for (const slot of settings.mealSlots) {
+    if (slot.fill !== 'routine' || !usedSlotIds.has(slot.id)) continue
+    for (const line of slot.routine?.groceryLines ?? []) {
+      const parsed = parseIngredient(line)
+      const name = parsed.ingredientName || line
+      items.push({
+        id: newId('gi'),
+        key: normalizeIngredientKey(name),
+        name: capitalize(name),
+        quantities: parsed.quantity != null ? [{ amount: parsed.quantity, unit: parsed.unit }] : [],
+        category: categorizeIngredient(name) as GroceryCategory,
+        checked: false,
+        manual: true,
+        sources: [{ recipeTitle: slot.routine?.name || slot.label, originalText: line }],
+      })
+    }
+  }
+  return items
+}
+
 /** The recipes added by hand, as aggregator entries. A deleted recipe simply drops out. */
 async function entriesFromExtras(extras: GroceryExtra[] = []): Promise<GroceryEntry[]> {
   if (!extras.length) return []
@@ -99,7 +132,11 @@ export async function generateGroceryList(
   const entries = [...(await entriesFromMeals(meals)), ...(await entriesFromExtras(extras))]
   const pantry = await db.pantryItems.toArray()
 
-  const generated = aggregateGroceries({ entries, pantry })
+  const generated = aggregateGroceries({
+    entries,
+    pantry,
+    manualItems: await routineItems(meals),
+  })
   const items =
     existing && options.keepChecked !== false
       ? mergeGroceryLists(existing.items, generated)

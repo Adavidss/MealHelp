@@ -6,6 +6,7 @@ import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
 import { addPlannedMeal, deletePlannedMeal, getOrCreatePlan } from '@/db/plans'
 import type { Recipe } from '@/models'
+import { defaultSlot } from '@/models'
 import { useToast } from '@/components/common/Toast'
 import { mealArt } from '@/components/meal/mealArtwork'
 import {
@@ -41,6 +42,8 @@ export function QuickPlanBar({ recipe, onClose }: QuickPlanBarProps) {
   const { toast } = useToast()
   const navigate = useNavigate()
 
+  // Whatever the kitchen treats as its cooking meal — dinner, for most.
+  const slot = defaultSlot(settings)
   const today = todayISO()
   const thisWeek = startOfWeek(today, settings.weekStartsOn)
   const [weekStart, setWeekStart] = useState(thisWeek)
@@ -68,7 +71,8 @@ export function QuickPlanBar({ recipe, onClose }: QuickPlanBarProps) {
       const meal = await addPlannedMeal({
         planId: plan.id,
         date,
-        mealType: settings.visibleMealTypes[0] ?? 'dinner',
+        mealType: slot.type,
+        slotId: slot.id,
         kind: 'recipe',
         recipeId: recipe.id,
         servings: recipe.servings ?? settings.defaultServings,
