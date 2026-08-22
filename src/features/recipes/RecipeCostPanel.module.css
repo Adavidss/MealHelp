@@ -1,0 +1,154 @@
+/* The cost of cooking this, folded away until asked for. */
+.panel {
+  margin: var(--space-4) 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-3);
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.head:hover {
+  background: var(--surface-sunk);
+}
+
+.headText {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.headText > svg {
+  color: var(--accent);
+  flex: none;
+}
+
+.headText > span {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  text-align: left;
+}
+
+.headText strong {
+  font-size: 1rem;
+}
+
+.perServing {
+  font-weight: 400;
+  color: var(--ink-soft);
+}
+
+.headText small {
+  color: var(--ink-faint);
+  font-size: 0.78rem;
+}
+
+.body {
+  padding: 0 var(--space-3) var(--space-3);
+  border-top: 1px solid var(--line);
+  padding-top: var(--space-3);
+}
+
+.lines {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  list-style: none;
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: 0.86rem;
+  color: var(--ink-soft);
+}
+
+.pantryLine {
+  opacity: 0.72;
+}
+
+.lineName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tag {
+  flex: none;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.price {
+  flex: none;
+  min-height: 32px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.price:hover {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.ownPrice {
+  font-weight: 700;
+  color: var(--sage-ink);
+}
+
+.editor {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.currency {
+  color: var(--ink-faint);
+}
+
+.priceInput {
+  width: 84px;
+  min-height: 34px;
+}
+
+.note,
+.caveat {
+  margin: var(--space-3) 0 0;
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.caveat {
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}

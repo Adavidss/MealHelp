@@ -49,6 +49,7 @@ import {
   ingredientsAsText,
   scaleLabel,
 } from './ingredientDisplay'
+import { RecipeCostPanel } from './RecipeCostPanel'
 import styles from './RecipeDetailPage.module.css'
 
 export function RecipeDetailPage() {
@@ -350,6 +351,10 @@ export function RecipeDetailPage() {
             </ul>
           </div>
         ))}
+
+        {/* Under the ingredients, because that is what it is adding up — and
+            it follows the same ½×–2× scale they are shown at. */}
+        <RecipeCostPanel recipe={recipe} scale={scale} />
       </section>
 
       <section>

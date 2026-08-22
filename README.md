@@ -170,6 +170,15 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   Photographs lead; recipes without one fold into a section with a visible
   count. Plus instant search across titles, ingredients, tags, notes and
   cooking methods, and a compact list view when you would rather scan names.
+- **What a recipe costs** — on its own page, under the ingredients: about
+  £19.70, £3.29 a serving, with every line priced. It follows the ½×–2× scale,
+  so doubling the batch doubles the total and leaves the per-serving figure
+  alone. Costed as the *amount used* — two tablespoons of oil are two
+  tablespoons of a bottle, not a bottle — which is the same rule the week's
+  shop uses, so a recipe and the list it lands on can never tell different
+  stories. Things you said you always have are counted separately, because
+  "what will this cost me" is not the same question as "what does this
+  contain". Tap any line to use your price instead, and it is remembered.
 - **One standard recipe view** — once a recipe is in MealHelp you should never
   need the original page again. Scaling (½× to 2×), ingredient checkboxes,
   numbered directions, notes, equipment, and a link back to the source. And
