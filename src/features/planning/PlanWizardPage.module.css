@@ -375,3 +375,35 @@
   text-transform: uppercase;
   color: var(--accent);
 }
+
+/* The roll of the dice, beside the presets: same size, different promise. */
+.presetSurprise {
+  grid-column: 1 / -1;
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.presetSurprise strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.presetSurprise small,
+.presetSurprise:hover small {
+  color: inherit;
+}
+
+.fromWebNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+}

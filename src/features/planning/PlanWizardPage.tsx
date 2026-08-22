@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   ArrowLeft,
   ChevronDown,
+  Dices,
   ChevronUp,
   Lock,
   LockOpen,
@@ -16,6 +17,7 @@ import {
 import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
 import { getOrCreatePlan, listPlannedMeals, replacePlanMeals } from '@/db/plans'
+import { saveRecipe } from '@/db/recipes'
 import { recordPlanned, recordRejection } from '@/db/cookEvents'
 import { generateGroceryList } from '@/db/grocery'
 import { pantryKeySet } from '@/db/pantry'
@@ -35,6 +37,7 @@ import {
   type Recipe,
   type VarietyMode,
 } from '@/models'
+import { useWebWeek, isProvisional } from './useWebWeek'
 import {
   generateWeek,
   replaceCookSlot,
@@ -43,6 +46,7 @@ import {
   type WeekSlotPlan,
 } from '@/services/plannerEngine'
 import { contextFromRequest } from '@/services/recommendationEngine'
+import { weekNeeds, weekQueries } from '@/services/recipeDiscovery'
 import {
   dayName,
   dayNameShort,
@@ -151,6 +155,8 @@ export function PlanWizardPage() {
   const [passedOver, setPassedOver] = useState<Record<string, string[]>>({})
   /** True from arrival until the one-tap plan is on screen. */
   const [quickPending, setQuickPending] = useState(quick || Boolean(presetId))
+  /** Recipes fetched for a surprise week: not saved until the plan is. */
+  const [fromWeb, setFromWeb] = useState<Recipe[]>([])
 
   // Keep the number of chosen days in step with "how many meals do you need".
   useEffect(() => {
@@ -224,6 +230,10 @@ export function PlanWizardPage() {
       })),
   })
 
+  const webWeek = useWebWeek(
+    useMemo(() => ({ spoonacularKey: settings.spoonacularKey?.trim() }), [settings.spoonacularKey]),
+  )
+
   const engineContext = {
     pantryKeys: pantry,
     equipmentOwned: settings.equipmentOwned,
@@ -238,7 +248,7 @@ export function PlanWizardPage() {
    * the one people mean when they say "how often do you cook". Any other
    * cooking slot keeps whatever it was configured with in Settings.
    */
-  const generateWith = (using: Preferences, keepLocked = false) => {
+  const generateWith = (using: Preferences, keepLocked = false, library?: Recipe[]) => {
     const locked = keepLocked ? (plans ?? []).flatMap((plan) => plan.meals) : []
     const request = buildRequest(using, locked)
     const types = PLAN_SCOPE_TYPES[using.scope]
@@ -252,7 +262,7 @@ export function PlanWizardPage() {
       slots: planningSlots,
       dates: [...using.selectedDates].sort(),
       request,
-      library: recipes ?? [],
+      library: library ?? recipes ?? [],
       context: engineContext,
       defaultServings: using.servingsPerMeal,
     })
@@ -296,6 +306,52 @@ export function PlanWizardPage() {
           plan.slot.id === slotId ? { ...plan, meals: update(plan.meals) } : plan,
         ) ?? null,
     )
+
+  /**
+   * A week of recipes nobody owns yet.
+   *
+   * The ordinary planner picks from the library, which is the right default
+   * and no use on the evening you are bored of everything in it. This asks
+   * the recipe databases instead — in the words of the preferences already on
+   * screen, and only for the slots the scope covers — then plans with what
+   * comes back. Nothing is saved until the plan is accepted, exactly as with
+   * any other week.
+   */
+  const surpriseFromWeb = async () => {
+    const types = PLAN_SCOPE_TYPES[prefs.scope]
+    const inScope = types ? mealSlots.filter((slot) => types.includes(slot.type)) : mealSlots
+    const dates = [...prefs.selectedDates].sort()
+    const scoped = inScope.map((slot, index) =>
+      slot.fill === 'cook' && index === inScope.findIndex((entry) => entry.fill === 'cook')
+        ? { ...slot, cookSessions: prefs.targetCookSessions, servings: prefs.servingsPerMeal }
+        : slot,
+    )
+
+    const needs = weekNeeds(scoped, dates)
+    if (!needs.recipes) {
+      toast('Nothing in this week needs a recipe chosen for it.')
+      return
+    }
+
+    const found = await webWeek.gather(
+      weekQueries({
+        preferredMethods: prefs.preferredMethods,
+        requiredMethods: prefs.requiredMethods,
+        preferredEffort: prefs.preferredEffort,
+        budgetPreference: prefs.budgetPreference,
+        useUpIngredients: prefs.useUp.split(',').map((entry) => entry.trim()).filter(Boolean),
+        mealTypes: needs.cookSlots.map((slot) => slot.type),
+      }),
+      // A little more than the week needs, so the planner has a choice and a
+      // recipe that will not load is not a hole in the week.
+      needs.recipes + 2,
+    )
+
+    if (!found.length) return
+    setFromWeb(found)
+    generateWith(prefs, false, found)
+    setQuickPending(false)
+  }
 
   const toggleLock = (slotId: string, date: string) =>
     patchPlan(slotId, (meals) =>
@@ -357,6 +413,27 @@ export function PlanWizardPage() {
       const plan = await getOrCreatePlan(weekStart)
       const existing = await listPlannedMeals(plan.id)
 
+      /*
+       * A surprise week is planned from recipes nobody owns yet, so accepting
+       * it is the moment they become the user's — saved once each, and only
+       * the ones the week actually used. Until here, nothing was written.
+       */
+      const saved = new Map<string, string>()
+      for (const meal of plans.flatMap((entry) => entry.meals)) {
+        if (!meal.recipeId || !isProvisional(meal.recipeId) || saved.has(meal.recipeId)) continue
+        const recipe = fromWeb.find((entry) => entry.id === meal.recipeId)
+        if (!recipe) continue
+        const { id: _provisionalId, ...draft } = recipe
+        const stored = await saveRecipe(draft)
+        saved.set(meal.recipeId, stored.id)
+      }
+      if (saved.size) {
+        toast(
+          `Saved ${saved.size} new recipe${saved.size === 1 ? '' : 's'} to your library.`,
+          { tone: 'success' },
+        )
+      }
+
       const meals = plans.flatMap((entry) =>
         entry.meals
           .filter((meal) => !meal.unfilled)
@@ -366,7 +443,7 @@ export function PlanWizardPage() {
             mealType: entry.slot.type,
             slotId: entry.slot.id,
             kind: meal.kind,
-            recipeId: meal.recipeId,
+            recipeId: meal.recipeId ? (saved.get(meal.recipeId) ?? meal.recipeId) : undefined,
             customName: meal.customName,
             servings: meal.servings,
             isLeftover: meal.kind === 'leftover',
@@ -385,7 +462,7 @@ export function PlanWizardPage() {
         plans
           .flatMap((entry) => entry.meals)
           .filter((meal) => meal.kind === 'recipe' && meal.recipeId)
-          .map((meal) => meal.recipeId as string),
+          .map((meal) => saved.get(meal.recipeId as string) ?? (meal.recipeId as string)),
       )
 
       const savedMeals = await listPlannedMeals(plan.id)
@@ -506,6 +583,24 @@ export function PlanWizardPage() {
                   {prefs.targetCookSessions}× — your usual
                 </small>
               </button>
+              <button
+                type="button"
+                className={`${styles.preset} ${styles.presetSurprise}`}
+                onClick={() => void surpriseFromWeb()}
+                disabled={webWeek.busy}
+              >
+                <strong>
+                  <Dices size={15} aria-hidden="true" /> Surprise me
+                </strong>
+                <small>
+                  {webWeek.busy
+                    ? `Finding recipes… ${webWeek.progress?.found ?? 0} of ${webWeek.progress?.wanted ?? 0}`
+                    : `A week of new recipes from the web — ${PLAN_SCOPE_LABELS[
+                        prefs.scope
+                      ].toLowerCase()}`}
+                </small>
+              </button>
+
               {PLAN_PRESETS.map((preset) => (
                 <button
                   key={preset.id}
@@ -763,6 +858,16 @@ export function PlanWizardPage() {
               Nothing is saved until you accept the plan.
             </p>
           </div>
+
+          {fromWeb.length ? (
+            <p className={styles.fromWebNote}>
+              <Dices size={14} aria-hidden="true" />
+              New recipes from the recipe databases. Nothing is saved until you accept
+              — and then they join your library.
+            </p>
+          ) : null}
+
+          {webWeek.error ? <p className={styles.warning}>{webWeek.error}</p> : null}
 
           {warnings.map((warning) => (
             <p key={warning} className={styles.warning}>

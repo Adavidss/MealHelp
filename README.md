@@ -85,6 +85,13 @@ stands, with whatever you have already turned down for that night kept out —
 and if that night feeds the leftover nights after it, they follow, and the batch
 is sized for all of them.
 
+**Or let it surprise you with a week you have never cooked.** *Surprise me* on
+the planning screen asks the recipe databases rather than your library, in the
+words of the preferences already on screen — what you want to use up, the
+appliances you leaned towards, budget, effort — and plans the week from what
+comes back, for whichever meals the scope covers. Nothing is saved until you
+accept, and then the new recipes join your library with their sources.
+
 **You choose how much of the day gets planned.** *Just dinners*, *dinners +
 lunches*, or *every meal* — a kitchen can have breakfast, lunch, dinner and a
 snack set up and still only want this week's dinners decided. Whatever is out

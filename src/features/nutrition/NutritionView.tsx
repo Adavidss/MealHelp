@@ -65,7 +65,9 @@ export function NutritionView() {
 
   const week = useMemo(
     () => dates.map((day) => dayTotals(day, meals ?? [], recipesById, log ?? [], routineNutrition)),
-    [dates, meals, recipesById, log],
+    // routineNutrition included: setting what a standing meal contains has to
+    // change the day it is eaten on, not the next time something else does.
+    [dates, meals, recipesById, log, routineNutrition],
   )
   const day = week.find((entry) => entry.date === date) ?? week[0]
 

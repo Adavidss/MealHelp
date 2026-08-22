@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { parseIngredient, parseIngredientLines } from './parseIngredient'
-import { normalizeIngredientKey, singularize } from './normalize'
+import { displayIngredientName, normalizeIngredientKey, singularize } from './normalize'
 
 describe('parseIngredient', () => {
   it('splits the example from the spec into its parts', () => {
@@ -142,5 +142,25 @@ describe('normalizeIngredientKey', () => {
   it('leaves words that only look plural alone', () => {
     expect(singularize('asparagus')).toBe('asparagus')
     expect(singularize('couscous')).toBe('couscous')
+  })
+})
+
+describe('displayIngredientName, pluralised', () => {
+  it('pluralises the head word', () => {
+    expect(displayIngredientName('yellow onion', { plural: true })).toBe('Yellow onions')
+  })
+
+  it('leaves an already-plural name alone, rather than making "eggses"', () => {
+    expect(displayIngredientName('eggs', { plural: true })).toBe('Eggs')
+  })
+
+  /**
+   * A real recipe wrote "green cooking bananas (plantains)", and the list
+   * showed "(plantains)s". Only a word can take an s.
+   */
+  it('does not pluralise something that does not end in a word', () => {
+    expect(displayIngredientName('green cooking bananas (plantains)', { plural: true })).toBe(
+      'Green cooking bananas (plantains)',
+    )
   })
 })

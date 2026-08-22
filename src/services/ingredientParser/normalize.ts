@@ -132,8 +132,14 @@ export function displayIngredientName(
 
   if (options.plural) {
     const head = words[words.length - 1]
-    // Already plural is left alone: pluralising "eggs" gives "eggses".
-    if (singularize(head) === head.toLowerCase()) {
+    /*
+     * Only a word can be pluralised. A recipe that writes "green cooking
+     * bananas (plantains)" ends its name in a bracket, and adding an "s" to
+     * that gives "(plantains)s" — which is how it read on a real shopping
+     * list. Already-plural heads are left alone too, or "eggs" becomes
+     * "eggses".
+     */
+    if (/[a-z]$/i.test(head) && singularize(head) === head.toLowerCase()) {
       words[words.length - 1] = pluralize(head)
     }
   }

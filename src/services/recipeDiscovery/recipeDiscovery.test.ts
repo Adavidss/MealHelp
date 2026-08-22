@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { moodQuery, similarQuery } from './queries'
+import { weekNeeds, weekQueries } from './surpriseWeek'
+import type { MealSlotConfig } from '@/models'
 import {
   composeIngredientLine,
   ingredientLinesFrom,
@@ -288,5 +290,63 @@ describe('moodQuery', () => {
 
   it('still has something to ask for a mood it has never heard of', () => {
     expect(moodQuery('retired-mood')).toBeTruthy()
+  })
+})
+
+describe('weekNeeds', () => {
+  const week = ['2026-08-17', '2026-08-18', '2026-08-19', '2026-08-20', '2026-08-21']
+  const slot = (over: Partial<MealSlotConfig>): MealSlotConfig => ({
+    id: 'x', label: 'X', type: 'dinner', fill: 'cook', ...over,
+  })
+
+  it('counts cooking sessions, not meals', () => {
+    expect(weekNeeds([slot({ cookSessions: 3 })], week).recipes).toBe(3)
+  })
+
+  it('asks for nothing on behalf of routines and leftovers', () => {
+    const needs = weekNeeds(
+      [slot({ id: 'b', fill: 'routine' }), slot({ id: 'l', fill: 'leftovers' })],
+      week,
+    )
+    expect(needs.recipes).toBe(0)
+    expect(needs.cookSlots).toEqual([])
+  })
+
+  it('adds up several cooking slots', () => {
+    const needs = weekNeeds(
+      [slot({ id: 'd', cookSessions: 3 }), slot({ id: 'l', type: 'lunch', cookSessions: 2 })],
+      week,
+    )
+    expect(needs.recipes).toBe(5)
+    expect(needs.cookSlots).toHaveLength(2)
+  })
+
+  it('never needs more recipes than there are days for the slot', () => {
+    // Cooking "seven times" on a slot that only happens twice is still twice.
+    expect(weekNeeds([slot({ cookSessions: 7, daysOfWeek: [1, 2] })], week).recipes).toBe(2)
+  })
+})
+
+describe('weekQueries', () => {
+  it('leads with what the cook actually named', () => {
+    const queries = weekQueries({
+      useUpIngredients: ['spinach'],
+      requiredMethods: ['slow-cooker'],
+      budgetPreference: '$',
+    })
+    expect(queries[0]).toBe('spinach dinner')
+    expect(queries).toContain('slow cooker dinner')
+    expect(queries).toContain('budget dinner')
+  })
+
+  it('asks for lunches when lunches are being planned', () => {
+    expect(weekQueries({ mealTypes: ['lunch'] })).toContain('easy lunch')
+  })
+
+  /** A week with no preferences still has to find something to cook. */
+  it('always has something to ask for', () => {
+    const queries = weekQueries({})
+    expect(queries.length).toBeGreaterThan(2)
+    expect(new Set(queries).size).toBe(queries.length)
   })
 })
