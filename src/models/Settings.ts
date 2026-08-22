@@ -217,7 +217,9 @@ export const DEFAULT_SETTINGS: Settings = {
   weekStartsOn: 1,
   hideCompletedGrocery: false,
   planningDefaults: {
-    mealsNeeded: 5,
+    // Seven, not five: a weekly planner that quietly stops on Friday leaves
+    // out the two days most people actually cook on.
+    mealsNeeded: 7,
     targetCookSessions: 3,
     preferLeftovers: true,
     preferredMethods: [],

@@ -437,3 +437,10 @@
   color: var(--ink-faint);
   font-weight: 600;
 }
+
+/* Whole week / weekdays / weekend, beside the heading they change. */
+.dayPresets {
+  display: inline-flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}

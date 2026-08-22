@@ -1,4 +1,5 @@
 import { db } from './database'
+import { recordDeletion } from './deletions'
 import type { Collection } from '@/models'
 import { newId, nowISO } from '@/utils/id'
 
@@ -37,6 +38,7 @@ export async function updateCollection(
 
 export async function deleteCollection(id: string): Promise<void> {
   await db.collections.delete(id)
+  await recordDeletion('collections', id)
 }
 
 export async function toggleRecipeInCollection(

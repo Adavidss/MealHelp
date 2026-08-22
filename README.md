@@ -75,6 +75,11 @@ leftovers", "only 15 min of hands-on work", "haven't cooked it in 6 weeks"), and
 any meal can be locked, swapped or regenerated before you accept it. Nothing is
 saved until you do.
 
+**Weekends included.** The days to plan are yours to pick, with *Whole week*,
+*Weekdays* and *Weekend* a tap away — and the whole week is the default, since
+a planner that quietly stops on Friday leaves out the two days most people
+actually cook on.
+
 **And it is one tap.** *Plan it for me* — on Today, on the planner, on an empty
 week — builds the week from your saved defaults the moment your library is in,
 with no form in the way; *Customise* is the same screen with the form open. The
@@ -146,6 +151,12 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
 
 ### Everything else
 
+- **Cooking together** — two phones, one kitchen. **Settings → Cook together →
+  Start a household** makes a code; *Send an invite* texts the other person a
+  link that joins them in a tap. From then on both phones see the same recipes,
+  the same planned week and the same shopping list — tick something off in the
+  shop and it goes for them too. Nothing to sign into, and no data of yours on
+  anybody's server in a readable form: see [Cooking together](#cooking-together).
 - **Favourites** — tap the heart on anything and it lands in its own tab: the
   shortlist you actually cook from, with a shelf of ideas from the recipe
   databases underneath, because what you favourite says more about your taste
@@ -228,6 +239,10 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   whole recipe from its page without planning it: it shows up as "also
   shopping for", its quantities merge with the plan's, and it survives the
   list being rebuilt.
+- **Send the list to whoever is going** — *Share* → **Send as a text** puts the
+  whole list, by aisle, into a message, with a link to the tickable version
+  underneath. Whoever is in the shop can read it without installing anything;
+  if they have MealHelp too, link phones instead and their ticks come back.
 - **Pantry** — the things you always have are pulled into a short "check the
   pantry" list instead of being assumed or silently dropped.
 - **Meal ideas from the trolley** — the grocery list has its own *Surprise me*,
@@ -429,8 +444,9 @@ Everything is in IndexedDB on the device that created it: recipes, meal plans,
 planned meals, cook events, grocery lists, pantry items, collections, feedback
 and settings. `localStorage` is not used for anything that matters.
 
-Nothing is sent anywhere. There is no analytics, no account and no sync. The
-flip side is that clearing your browser data deletes your recipes, so:
+There is no analytics and no account. Nothing is sent anywhere unless you link
+a household (below), and even then it goes up encrypted. The flip side of local
+storage is that clearing your browser data deletes your recipes, so:
 
 ## Backup and restore
 
@@ -443,6 +459,73 @@ flip side is that clearing your browser data deletes your recipes, so:
   one action that can lose data you did not choose to delete.
 
 The file is plain JSON on purpose: it can be read, diffed and salvaged by hand.
+
+---
+
+## Cooking together
+
+Two people planning the same week need the same data on two phones, and
+MealHelp has no accounts and no server. What it does have is the Worker in
+`worker/` — so a household is a shared key into that Worker's store, and
+everything else happens on the phones.
+
+**Settings → Cook together.** One phone taps *Start a household* and gets a
+code (`5vjj-5dux-nkcq-nw4w`). *Send an invite* opens a text with a link that
+joins the other phone in a tap, or they type the code in by hand. Syncing then
+happens whenever either of you opens MealHelp, and *Sync now* is there for the
+moment in the shop when you want it this second.
+
+### What is shared, and what is not
+
+Shared: recipes, plans, planned meals, cook history, grocery lists, the pantry,
+collections, feedback and the kitchen half of settings — meal slots, servings,
+equipment, budget.
+
+Not shared: your theme, light or dark, your own page fetcher, and your
+nutrition log. A shared kitchen is not a shared screen, and your calories are
+not your partner's.
+
+### How it settles disagreements
+
+Every record carries `updatedAt`, so the newest edit wins. Nothing is merged
+field by field: two people editing one recipe in the same minute is rare, and a
+merge producing a recipe neither of them wrote is worse than one of them
+redoing an edit.
+
+Deletions travel as tombstones. Without them, a recipe one person deletes comes
+back the next time the other syncs — for ever. A tombstone loses to a record
+edited *after* it was deleted, which is how "I deleted it" and "no, I changed
+it" are told apart without asking anybody.
+
+A phone always pulls and merges before it pushes, so a sync never throws away
+what the other one just said.
+
+### What the Worker can see
+
+Nothing. The blob is encrypted on the phone with AES-GCM before it leaves, and
+the household is filed under a SHA-256 of the code rather than the code itself.
+The Worker holds an id it cannot reverse and bytes it cannot open.
+
+Which leaves the code as the whole of the security: **anyone with it can read
+and change your kitchen**. Send it the way you would a spare key. The invite
+link keeps it in the URL fragment, so it never reaches a web server — not even
+the one serving MealHelp — and the app removes it from the address bar the
+moment it has been used.
+
+Unlinking is per-phone and deletes nothing: both devices keep everything they
+had.
+
+### Setting up the sync store
+
+The live Worker needs a KV namespace before any of this works. From `worker/`:
+
+```bash
+npx wrangler kv namespace create HOUSEHOLDS
+```
+
+Uncomment the `[[kv_namespaces]]` block in `wrangler.toml`, paste in the id it
+prints, then `wrangler deploy`. Without the binding the Worker still fetches
+pages and simply says so when asked to sync.
 
 ---
 

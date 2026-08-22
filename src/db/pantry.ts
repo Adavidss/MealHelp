@@ -1,4 +1,5 @@
 import { db } from './database'
+import { recordDeletion } from './deletions'
 import type { GroceryCategory, PantryItem } from '@/models'
 import { categorizeIngredient, normalizeIngredientKey } from '@/services/ingredientParser'
 import { newId, nowISO } from '@/utils/id'
@@ -65,6 +66,7 @@ export async function togglePantryStaple(id: string): Promise<void> {
 
 export async function deletePantryItem(id: string): Promise<void> {
   await db.pantryItems.delete(id)
+  await recordDeletion('pantryItems', id)
 }
 
 export async function pantryKeySet(): Promise<Set<string>> {

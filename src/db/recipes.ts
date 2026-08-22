@@ -1,4 +1,5 @@
 import { db } from './database'
+import { recordDeletion } from './deletions'
 import type { Recipe, RecipeDraft, RecipeIngredient, RecipeInstruction } from '@/models'
 import { newId, nowISO } from '@/utils/id'
 
@@ -70,6 +71,7 @@ export async function updateRecipe(
 
 export async function deleteRecipe(id: string): Promise<void> {
   await db.recipes.delete(id)
+  await recordDeletion('recipes', id)
 }
 
 export async function toggleFavorite(id: string): Promise<void> {

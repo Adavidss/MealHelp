@@ -12,6 +12,7 @@ import {
   ShoppingCart,
 } from 'lucide-react'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
+import { useHouseholdSync } from '@/services/sync/useHouseholdSync'
 import { UpdatePrompt } from '@/components/common/UpdatePrompt'
 import styles from './AppShell.module.css'
 
@@ -56,6 +57,8 @@ function isImmersive(pathname: string): boolean {
 export function AppShell() {
   const location = useLocation()
   const immersive = isImmersive(location.pathname)
+  // Before the hook order matters: a linked household catches up on open.
+  useHouseholdSync()
 
   if (immersive) {
     return (

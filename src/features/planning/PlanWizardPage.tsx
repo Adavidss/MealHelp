@@ -119,6 +119,27 @@ function preferencesFromSettings(
   }
 }
 
+/**
+ * Whole weeks, working weeks and weekends.
+ *
+ * The planner used to default to five meals, which the day grid then filled
+ * from Monday — so a weekend was never planned unless you noticed the grid and
+ * ticked Saturday yourself. Weekends are when most people actually cook.
+ */
+const DAY_PRESETS: Array<{ id: string; label: string; pick: (dates: string[]) => string[] }> = [
+  { id: 'all', label: 'Whole week', pick: (dates) => [...dates] },
+  {
+    id: 'weekdays',
+    label: 'Weekdays',
+    pick: (dates) => dates.filter((date) => ![0, 6].includes(new Date(`${date}T00:00:00`).getDay())),
+  },
+  {
+    id: 'weekend',
+    label: 'Weekend',
+    pick: (dates) => dates.filter((date) => [0, 6].includes(new Date(`${date}T00:00:00`).getDay())),
+  },
+]
+
 /** A preset only changes the constraints it names; everything else stands. */
 function applyPreset(current: Preferences, preset: PlanPreset): Preferences {
   return {
@@ -316,6 +337,10 @@ export function PlanWizardPage() {
     void update({
       planningDefaults: {
         ...settings.planningDefaults,
+        // How many days you plan is a standing choice too — tapping "Whole
+        // week" once should not have to be done again next week.
+        mealsNeeded: using.selectedDates.length || settings.planningDefaults.mealsNeeded,
+        targetCookSessions: using.targetCookSessions,
         planScope: using.scope,
         weekBudget: using.budget,
         maxMinutesPerMeal: using.maxMinutesPerMeal,
@@ -760,7 +785,37 @@ export function PlanWizardPage() {
           </section>
 
           <section>
-            <h2 className="section-title">Which days</h2>
+            <h2 className="section-title">
+              Which days
+              <span className={styles.dayPresets}>
+                {DAY_PRESETS.map((preset) => {
+                  const chosen = preset.pick(dates)
+                  const active =
+                    chosen.length === prefs.selectedDates.length &&
+                    chosen.every((date) => prefs.selectedDates.includes(date))
+                  return (
+                    <button
+                      key={preset.id}
+                      type="button"
+                      className="chip chip-button"
+                      aria-pressed={active}
+                      onClick={() =>
+                        setPrefs((current) => ({
+                          ...current,
+                          selectedDates: chosen,
+                          mealsNeeded: chosen.length,
+                          // Cooking more nights than there are days is not a
+                          // plan, it is an error message waiting to happen.
+                          targetCookSessions: Math.min(current.targetCookSessions, chosen.length),
+                        }))
+                      }
+                    >
+                      {preset.label}
+                    </button>
+                  )
+                })}
+              </span>
+            </h2>
             <div className={styles.days}>
               {dates.map((date) => {
                 const selected = prefs.selectedDates.includes(date)

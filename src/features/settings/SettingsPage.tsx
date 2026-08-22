@@ -24,6 +24,7 @@ import { NUTRIENTS } from '@/models'
 import { ThemePicker } from './ThemePicker'
 import { STARTER_PHOTOS } from '@/features/recipes/starterPhotos'
 import { MealSlotEditor } from './MealSlotEditor'
+import { HouseholdPanel } from './HouseholdPanel'
 import styles from './SettingsPage.module.css'
 
 export function SettingsPage() {
@@ -379,10 +380,16 @@ export function SettingsPage() {
       </section>
 
       <section>
+        <h2 className="section-title">Cook together</h2>
+        <HouseholdPanel />
+      </section>
+
+      <section>
         <h2 className="section-title">Your data</h2>
         <p className="text-sm muted">
-          MealHelp stores everything in this browser. Nothing is uploaded, which
-          also means nothing is backed up unless you export it.
+          MealHelp stores everything in this browser. Unless you link a
+          household above, nothing is uploaded — which also means nothing is
+          backed up unless you export it.
         </p>
 
         <div className={styles.dataActions}>

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Copy } from 'lucide-react'
+import { Copy, MessageSquare } from 'lucide-react'
 import type { GroceryList } from '@/models'
 import { groceryListToText } from '@/db/grocery'
 import {
@@ -7,6 +7,7 @@ import {
   groceryPayload,
   unpurchasedOnly,
 } from '@/services/shareCodec'
+import { formatWeekRange } from '@/utils/date'
 import { Modal } from '@/components/common/Modal'
 import { QRCode } from '@/components/common/QRCode'
 import { useToast } from '@/components/common/Toast'
@@ -31,6 +32,35 @@ export function ShareGroceryDialog({ open, list, onClose }: ShareGroceryDialogPr
     const items = remainingOnly ? unpurchasedOnly(list) : list.items
     return describeShare(groceryPayload(items, list.weekStart))
   }, [list, remainingOnly])
+
+  /**
+   * The list as a message: the words, then the link.
+   *
+   * The words matter more than the link — most people will read it in the
+   * shop rather than open it — so the text leads and the link follows for
+   * whoever wants the tickable version.
+   */
+  const messageText = () => {
+    const items = remainingOnly ? unpurchasedOnly(list) : list.items
+    const lines = groceryListToText({ ...list, items })
+    return `Shopping list — ${formatWeekRange(list.weekStart)}\n\n${lines}\n\nTickable version: ${share.url}`
+  }
+
+  const sendAsText = async () => {
+    const text = messageText()
+    // The share sheet reaches Messages, WhatsApp and the rest; where there is
+    // none, sms: opens the messaging app with the list already written.
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Shopping list', text })
+        return
+      } catch {
+        // Dismissed, or refused: fall through to the sms: link rather than
+        // leaving the tap doing nothing.
+      }
+    }
+    window.location.href = `sms:?&body=${encodeURIComponent(text)}`
+  }
 
   const copy = async (text: string, message: string) => {
     try {
@@ -87,6 +117,20 @@ export function ShareGroceryDialog({ open, list, onClose }: ShareGroceryDialogPr
       </div>
 
       <div className={styles.actions}>
+        {/*
+          The way a list actually gets to somebody: a text message. The share
+          sheet is offered first where the platform has one, because it reaches
+          Messages, WhatsApp and everything else the phone knows about; the
+          sms: link is the fallback for browsers that have no share sheet.
+        */}
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => void sendAsText()}
+        >
+          <MessageSquare size={16} aria-hidden="true" />
+          Send as a text
+        </button>
         <button
           type="button"
           className="btn btn-secondary"
@@ -98,7 +142,7 @@ export function ShareGroceryDialog({ open, list, onClose }: ShareGroceryDialogPr
         <button
           type="button"
           className="btn btn-secondary"
-          onClick={() => void copy(groceryListToText(list), 'List copied as text.')}
+          onClick={() => void copy(messageText(), 'List copied as text.')}
         >
           <Copy size={16} aria-hidden="true" />
           Copy as text

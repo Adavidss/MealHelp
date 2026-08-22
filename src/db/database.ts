@@ -9,6 +9,7 @@ import type {
   PantryItem,
   PlannedMeal,
   PriceBookEntry,
+  Tombstone,
   Recipe,
   Settings,
 } from '@/models'
@@ -29,6 +30,8 @@ export class MealHelpDatabase extends Dexie {
   collections!: EntityTable<Collection, 'id'>
   settings!: EntityTable<Settings, 'id'>
   priceBook!: EntityTable<PriceBookEntry, 'key'>
+  /** What has been deleted, so deletions reach the other phone too. */
+  deletions!: EntityTable<Tombstone, 'id'>
   feedback!: EntityTable<CookFeedback, 'id'>
   nutritionLog!: EntityTable<NutritionLogEntry, 'id'>
 
@@ -54,6 +57,15 @@ export class MealHelpDatabase extends Dexie {
      */
     this.version(2).stores({
       priceBook: 'key, updatedAt',
+    })
+
+    /*
+     * Version 3 adds tombstones. Without them a recipe deleted on one phone
+     * comes back the next time the other one syncs — the classic sync bug
+     * that makes people stop trusting it.
+     */
+    this.version(3).stores({
+      deletions: 'id, table, deletedAt',
     })
 
     // Things eaten outside the plan, for the nutrition overview.

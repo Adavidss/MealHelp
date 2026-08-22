@@ -1,4 +1,5 @@
 import { db } from './database'
+import { recordDeletion, recordDeletions } from './deletions'
 import type { MealPlan, MealType, PlannedMeal, PlannedMealKind } from '@/models'
 import { newId, nowISO } from '@/utils/id'
 
@@ -84,6 +85,7 @@ export async function updatePlannedMeal(
 export async function deletePlannedMeal(id: string): Promise<void> {
   const existing = await db.plannedMeals.get(id)
   await db.plannedMeals.delete(id)
+  await recordDeletion('plannedMeals', id)
   // A leftover night whose source is gone is a night with nothing to eat.
   if (existing) {
     const dependents = await db.plannedMeals
@@ -156,8 +158,9 @@ export async function replacePlanMeals(
     return true
   })
 
-  await db.transaction('rw', db.plannedMeals, db.mealPlans, async () => {
+  await db.transaction('rw', db.plannedMeals, db.mealPlans, db.deletions, async () => {
     await db.plannedMeals.bulkDelete(doomed.map((meal) => meal.id))
+    await recordDeletions('plannedMeals', doomed.map((meal) => meal.id))
     const now = nowISO()
     await db.plannedMeals.bulkPut(
       meals.map((meal) => ({
