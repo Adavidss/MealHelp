@@ -83,19 +83,30 @@
 }
 
 /*
- * Both of these sit at the end of a row that is mostly a big checkbox label, so
- * they stay visually small and borrow `.tap-target` to claim a thumb-sized hit
- * area — otherwise ticking an item off would keep deleting it by accident.
+ * Both of these sit at the end of a row that is mostly a big checkbox label,
+ * so they stay visually small while still being big enough to hit with a
+ * thumb — otherwise ticking an item off would keep deleting it by accident.
+ *
+ * They are sized to a real 40px rather than borrowing an oversized invisible
+ * pseudo-element: a hit area that hangs outside its own button is clipped by
+ * any ancestor that hides overflow, so the tap area silently shrinks back.
  */
 .sourceToggle {
-  min-width: 28px;
-  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  /* Wide enough for up to three overlapping thumbnails and a "+2". */
+  min-width: 40px;
+  min-height: 40px;
+  padding: 2px 6px;
   border-radius: var(--radius-pill);
   border: 1px solid var(--line);
   background: var(--surface-sunk);
   color: var(--ink-faint);
   font-size: 0.72rem;
   font-weight: 700;
+  line-height: 1;
   cursor: pointer;
 }
 
@@ -104,8 +115,8 @@
   background: transparent;
   color: var(--ink-faint);
   cursor: pointer;
-  min-width: 38px;
-  min-height: 38px;
+  min-width: 40px;
+  min-height: 40px;
   display: grid;
   place-items: center;
   border-radius: var(--radius-pill);

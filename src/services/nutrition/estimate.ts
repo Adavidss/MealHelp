@@ -53,6 +53,14 @@ export function gramsOf(ingredient: RecipeIngredient, food: FoodEntry): number |
   const unit = normalizeUnit(ingredient.unit)
 
   if (!unit) {
+    /*
+     * "1 whole chicken, about 4 lbs" parses as a count of one, and counting it
+     * as one piece made a roast dinner 247 kcal. When the line states a weight
+     * the cook can read, that weight is the better answer than any average
+     * piece — so it is used, scaled by the count.
+     */
+    const stated = statedWeight(ingredient.originalText)
+    if (stated != null) return amount * stated
     // "2 eggs", "1 onion": a count of the thing itself.
     return food.grams?.each != null ? amount * food.grams.each : undefined
   }
@@ -97,6 +105,25 @@ function contribution(food: FoodEntry, grams: number): Nutrition {
     sugar: (food.sugar ?? 0) * factor,
     sodium: (food.sodium ?? 0) * factor,
   }
+}
+
+/**
+ * A weight written into the line itself — "about 4 lbs", "(14 oz)", "1 kg".
+ *
+ * Only read when the quantity has no unit of its own, so "2 lbs potatoes" is
+ * never double-counted: there the parser already has the weight.
+ */
+export function statedWeight(originalText: string | undefined): number | undefined {
+  if (!originalText) return undefined
+  const match = /(\d+(?:[.,]\d+)?)\s*(lbs?|pounds?|oz|ounces?|kgs?|kilograms?|grams?|g)\b/i.exec(
+    originalText,
+  )
+  if (!match) return undefined
+  const amount = Number(match[1].replace(',', '.'))
+  if (!Number.isFinite(amount)) return undefined
+  const unit = normalizeUnit(match[2].toLowerCase())
+  if (!unit) return undefined
+  return convert(amount, unit, 'g') ?? undefined
 }
 
 export function estimateNutrition(recipe: Pick<Recipe, 'ingredients' | 'servings'>): NutritionEstimate {

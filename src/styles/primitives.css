@@ -275,24 +275,11 @@
 }
 
 /*
- * A hit area of at least 44px for controls that are visually small — the
- * remove buttons and source counters on the grocery list. The button keeps its
- * size; only the region that responds to a thumb grows.
+ * Small controls are sized to 40px in their own stylesheets rather than
+ * borrowing an oversized invisible pseudo-element: a hit area that hangs
+ * outside its button gets clipped by any ancestor that hides overflow, so the
+ * tap area silently shrinks back to the button.
  */
-.tap-target {
-  position: relative;
-}
-
-.tap-target::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: max(100%, 44px);
-  height: max(100%, 44px);
-  transform: translate(-50%, -50%);
-}
-
 .page-header {
   display: flex;
   align-items: flex-start;

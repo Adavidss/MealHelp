@@ -223,11 +223,22 @@
 }
 
 .remove {
+  display: grid;
+  place-items: center;
+  /* A real thumb-sized button, rather than an invisible hit area hanging
+     outside it that an ancestor's overflow can quietly clip away. */
+  min-width: 40px;
+  min-height: 40px;
   border: 0;
+  border-radius: var(--radius-pill);
   background: transparent;
   color: var(--ink-faint);
   cursor: pointer;
-  padding: 4px;
+}
+
+.remove:hover {
+  background: var(--danger-soft);
+  color: var(--danger);
 }
 
 .uncounted {

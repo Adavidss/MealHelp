@@ -43,6 +43,46 @@ export type ResolvedScheme = 'light' | 'dark'
 
 export const THEMES: Theme[] = [
   {
+    /*
+     * The baseline. White paper, black ink, one blue for anything you can
+     * press — the look an app has when it is not trying to have a look, and
+     * the one that gets out of the way of photographs of food.
+     */
+    id: 'white',
+    name: 'White',
+    blurb: 'Plain white and blue — nothing in the way of the food',
+    light: {
+      paper: '#ffffff',
+      surface: '#ffffff',
+      surfaceSunk: '#f4f5f7',
+      surfaceRaised: '#ffffff',
+      line: '#e3e5e9',
+      lineStrong: '#c9cdd4',
+      ink: '#16181d',
+      inkSoft: '#585d67',
+      inkFaint: '#868c97',
+      accent: '#1b6ef3',
+      accentHover: '#1559cc',
+      accentSoft: '#e8f0fe',
+      accentInk: '#134fb8',
+    },
+    dark: {
+      paper: '#0f1115',
+      surface: '#171a20',
+      surfaceSunk: '#13161b',
+      surfaceRaised: '#1d212a',
+      line: '#282d37',
+      lineStrong: '#3a4150',
+      ink: '#eef1f6',
+      inkSoft: '#b3bac6',
+      inkFaint: '#858d9b',
+      accent: '#5b9dff',
+      accentHover: '#7db0ff',
+      accentSoft: '#152238',
+      accentInk: '#9cc4ff',
+    },
+  },
+  {
     id: 'paper',
     name: 'Paper',
     blurb: 'Warm paper and paprika — the cookbook look',
@@ -288,9 +328,77 @@ export const THEMES: Theme[] = [
       accentInk: '#ffd08e',
     },
   },
+  {
+    id: 'graphite',
+    name: 'Graphite',
+    blurb: 'Grey paper and a green pen — quiet and businesslike',
+    light: {
+      paper: '#f7f7f5', surface: '#ffffff', surfaceSunk: '#eeeeeb', surfaceRaised: '#ffffff',
+      line: '#e0e0db', lineStrong: '#c6c6bf', ink: '#1d1d1b', inkSoft: '#5b5b56',
+      inkFaint: '#8a8a83', accent: '#2f7a55', accentHover: '#256345', accentSoft: '#e4f1ea',
+      accentInk: '#1f5a3d',
+    },
+    dark: {
+      paper: '#141513', surface: '#1d1e1b', surfaceSunk: '#191a17', surfaceRaised: '#242621',
+      line: '#2f312c', lineStrong: '#43463f', ink: '#f0f0ec', inkSoft: '#bfbfb8',
+      inkFaint: '#8f8f88', accent: '#5fbb8b', accentHover: '#7bcda1', accentSoft: '#17291f',
+      accentInk: '#8fd6ae',
+    },
+  },
+  {
+    id: 'rose',
+    name: 'Rose',
+    blurb: 'Soft pink and deep berry — gentle on the eyes',
+    light: {
+      paper: '#fdf7f8', surface: '#ffffff', surfaceSunk: '#f8ecef', surfaceRaised: '#ffffff',
+      line: '#eedbe0', lineStrong: '#dcc0c8', ink: '#2b2126', inkSoft: '#6b5760',
+      inkFaint: '#96808a', accent: '#b83b6d', accentHover: '#9d2f5b', accentSoft: '#fbe6ee',
+      accentInk: '#8f2a4f',
+    },
+    dark: {
+      paper: '#191317', surface: '#221a1e', surfaceSunk: '#1d161a', surfaceRaised: '#2a2025',
+      line: '#382b31', lineStrong: '#4b3a42', ink: '#f6ecf0', inkSoft: '#cbb2bc',
+      inkFaint: '#9c8590', accent: '#f0709f', accentHover: '#f78cb4', accentSoft: '#331924',
+      accentInk: '#f7a3c4',
+    },
+  },
+  {
+    id: 'forest',
+    name: 'Forest',
+    blurb: 'Deep greens and bark — a kitchen with plants in it',
+    light: {
+      paper: '#f6f8f4', surface: '#ffffff', surfaceSunk: '#e9efe6', surfaceRaised: '#ffffff',
+      line: '#d9e3d4', lineStrong: '#bccbb5', ink: '#1c241c', inkSoft: '#4f5c4d',
+      inkFaint: '#7c8a79', accent: '#2f6b3a', accentHover: '#255730', accentSoft: '#e0efe2',
+      accentInk: '#1f4f28',
+    },
+    dark: {
+      paper: '#101410', surface: '#181d18', surfaceSunk: '#141814', surfaceRaised: '#1f251f',
+      line: '#293029', lineStrong: '#3b453b', ink: '#eaf1e8', inkSoft: '#b3c1b0',
+      inkFaint: '#889685', accent: '#63b877', accentHover: '#7fc890',
+      accentSoft: '#16241a', accentInk: '#93d6a4',
+    },
+  },
+  {
+    id: 'contrast',
+    name: 'High contrast',
+    blurb: 'Black on white, heavy lines — for tired eyes and bright kitchens',
+    light: {
+      paper: '#ffffff', surface: '#ffffff', surfaceSunk: '#f0f0f0', surfaceRaised: '#ffffff',
+      line: '#767676', lineStrong: '#1a1a1a', ink: '#000000', inkSoft: '#2b2b2b',
+      inkFaint: '#4a4a4a', accent: '#0b46c4', accentHover: '#08349a', accentSoft: '#dce6ff',
+      accentInk: '#062a80',
+    },
+    dark: {
+      paper: '#000000', surface: '#0b0b0b', surfaceSunk: '#000000', surfaceRaised: '#141414',
+      line: '#8a8a8a', lineStrong: '#e0e0e0', ink: '#ffffff', inkSoft: '#e6e6e6',
+      inkFaint: '#c2c2c2', accent: '#7fb4ff', accentHover: '#a6cbff', accentSoft: '#0a1c38',
+      accentInk: '#cfe2ff',
+    },
+  },
 ]
 
-export const DEFAULT_THEME_ID = 'paper'
+export const DEFAULT_THEME_ID = 'white'
 
 /**
  * The families every theme shares — leftovers are always sage, highlights

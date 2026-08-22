@@ -42,6 +42,18 @@ describe('starter photographs', () => {
    * so it has to be absolute — a relative one resolves differently on
    * /recipes than on /recipes/abc123.
    */
+  /**
+   * A starter with no numbers puts a "not counted" line on the nutrition page
+   * for a recipe the app itself wrote, which is the app failing its own test.
+   */
+  it('ships every starter recipe with estimated nutrition', () => {
+    for (const draft of starterRecipeDrafts()) {
+      expect(draft.nutrition?.calories, `${draft.title} has no calories`).toBeGreaterThan(100)
+      expect(draft.nutrition?.protein, `${draft.title} has no protein`).toBeGreaterThan(0)
+      expect(draft.nutritionSource, draft.title).toBe('estimate')
+    }
+  })
+
   it('builds an absolute path under the app base', () => {
     // Under vitest the base is "/"; the built app serves from "/MealHelp/".
     // What matters either way is that it starts at the root.

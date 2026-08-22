@@ -1,0 +1,133 @@
+/*
+ * A result reads like the meal cards elsewhere: picture first, then what it
+ * is. Sideways rather than stacked, because a search is a list you scan.
+ */
+.card {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.card:hover {
+  border-color: var(--accent);
+  background: var(--surface-sunk);
+}
+
+.art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  min-width: 96px;
+  align-self: stretch;
+  overflow: hidden;
+  background: var(--surface-sunk);
+  color: rgb(255 255 255 / 80%);
+}
+
+.art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: var(--space-3) var(--space-3) var(--space-3) 0;
+}
+
+.host {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.externalBadge,
+.savedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.externalBadge {
+  background: var(--surface-sunk);
+  color: var(--ink-faint);
+}
+
+.savedBadge {
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+}
+
+.title {
+  font-weight: 600;
+  color: var(--ink);
+  /* Two lines, then stop: search titles run long and the card must not. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 1px;
+}
+
+.tag {
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.snippet {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.palette0 { background: linear-gradient(140deg, #c96a2e, #a8441a); }
+.palette1 { background: linear-gradient(140deg, #5c8b6a, #3d6b4d); }
+.palette2 { background: linear-gradient(140deg, #cf9a3c, #a9761f); }
+.palette3 { background: linear-gradient(140deg, #8a5f86, #63406b); }
+.palette4 { background: linear-gradient(140deg, #b0603f, #8a4128); }
+.palette5 { background: linear-gradient(140deg, #4f7f8b, #35606e); }
+
+@media (min-width: 640px) {
+  .art {
+    width: 132px;
+    min-width: 132px;
+  }
+}

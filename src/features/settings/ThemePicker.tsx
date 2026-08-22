@@ -1,6 +1,6 @@
 import { Check, Moon, Sun, SunMoon } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
-import { THEMES, type SchemePreference, type Theme, type ThemePalette } from '@/app/themes'
+import { DEFAULT_THEME_ID, THEMES, type SchemePreference, type Theme, type ThemePalette } from '@/app/themes'
 import styles from './ThemePicker.module.css'
 
 const SCHEMES: Array<{ id: SchemePreference; label: string; icon: typeof Sun }> = [
@@ -16,7 +16,7 @@ const SCHEMES: Array<{ id: SchemePreference; label: string; icon: typeof Sun }> 
  */
 export function ThemePicker() {
   const { settings, update } = useSettings()
-  const current = settings.theme ?? 'paper'
+  const current = settings.theme ?? DEFAULT_THEME_ID
   const scheme = settings.colorScheme ?? 'auto'
 
   const systemDark =

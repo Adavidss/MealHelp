@@ -1,4 +1,5 @@
 import type { BudgetLevel, CookingMethod, EffortLevel, MealType } from './common'
+import { DEFAULT_THEME_ID } from '@/app/themes'
 import type { VarietyMode } from './MealPlan'
 import type { Nutrition, NutritionTargets } from './Nutrition'
 
@@ -208,7 +209,7 @@ export const DEFAULT_SETTINGS: Settings = {
   importSettings: {
     useSharedFetchers: true,
   },
-  theme: 'paper',
+  theme: DEFAULT_THEME_ID,
   colorScheme: 'auto',
   updatedAt: new Date(0).toISOString(),
 }

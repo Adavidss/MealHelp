@@ -1,6 +1,7 @@
 import type { RecipeDraft } from '@/models'
 import { toRecipeDraft } from '@/services/recipeImport'
 import { starterPhotoUrl } from './starterPhotos'
+import { STARTER_NUTRITION } from './starterNutrition'
 
 /**
  * A dozen recipes to start from.
@@ -472,6 +473,9 @@ export function starterRecipeDrafts(): RecipeDraft[] {
 
     return {
       ...draft,
+      // Estimated once, from these very ingredients — see starterNutrition.
+      nutrition: STARTER_NUTRITION[seed.photo],
+      nutritionSource: STARTER_NUTRITION[seed.photo] ? ('estimate' as const) : undefined,
       cookingMethods: seed.methods,
       mealTypes: seed.mealTypes ?? ['dinner'],
       equipment: seed.equipment,

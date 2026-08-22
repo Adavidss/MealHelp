@@ -218,7 +218,7 @@ export function NutritionView() {
                 {item.kind === 'log' ? (
                   <button
                     type="button"
-                    className={`${styles.remove} tap-target`}
+                    className={styles.remove}
                     onClick={() => {
                       const entry = (log ?? []).find((e) => e.id === item.id)
                       if (entry) void remove(entry)

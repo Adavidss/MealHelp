@@ -42,6 +42,9 @@ export const FOOD_TABLE: FoodEntry[] = [
   // ---- Proteins ----
   { match: ['chicken thigh'], kcal: 177, protein: 19, carbs: 0, fat: 10.9, grams: G(110) },
   { match: ['chicken breast', 'chicken'], kcal: 120, protein: 22.5, carbs: 0, fat: 2.6, grams: G(170) },
+  // Roasted with the skin on, and weighed as a bird rather than a fillet: a
+  // whole chicken was matching "chicken breast" and counting 170 g.
+  { match: ['whole chicken', 'roast chicken', 'roasting chicken'], kcal: 215, protein: 25, carbs: 0, fat: 12.6, grams: G(1600) },
   { match: ['chicken wing'], kcal: 203, protein: 18, carbs: 0, fat: 14, grams: G(45) },
   { match: ['ground beef', 'beef mince', 'minced beef', 'hamburger'], kcal: 215, protein: 19, carbs: 0, fat: 15, grams: G(undefined, 225) },
   { match: ['beef stew', 'chuck roast', 'chuck', 'stewing beef', 'beef'], kcal: 200, protein: 20, carbs: 0, fat: 13, grams: G(undefined, 225) },
@@ -81,6 +84,9 @@ export const FOOD_TABLE: FoodEntry[] = [
   { match: ['all-purpose flour', 'plain flour', 'all purpose flour', 'flour'], kcal: 364, protein: 10, carbs: 76, fat: 1, fiber: 2.7, grams: G(undefined, 125, 8, 2.6) },
   { match: ['bread crumbs', 'breadcrumbs', 'panko'], kcal: 395, protein: 13, carbs: 72, fat: 5, sodium: 730, grams: G(undefined, 108, 7) },
   { match: ['white rice', 'jasmine rice', 'basmati rice', 'rice'], kcal: 365, protein: 7, carbs: 80, fat: 0.7, grams: G(undefined, 185, 12) },
+  // Cooked rice is mostly water: counting a cup of it as dry rice trebles it,
+  // and "4 cups cooked rice" is how every fried rice recipe is written.
+  { match: ['cooked rice', 'leftover rice', 'steamed rice'], kcal: 130, protein: 2.7, carbs: 28, fat: 0.3, grams: G(undefined, 158, 10) },
   { match: ['brown rice'], kcal: 370, protein: 7.5, carbs: 77, fat: 2.7, fiber: 3.5, grams: G(undefined, 190) },
   { match: ['quinoa'], kcal: 368, protein: 14, carbs: 64, fat: 6, fiber: 7, grams: G(undefined, 170) },
   { match: ['oats', 'oatmeal', 'rolled oats'], kcal: 389, protein: 17, carbs: 66, fat: 7, fiber: 10.6, grams: G(undefined, 80, 5) },
@@ -110,6 +116,10 @@ export const FOOD_TABLE: FoodEntry[] = [
   { match: ['carrot'], kcal: 41, protein: 0.9, carbs: 9.6, fat: 0.2, fiber: 2.8, sugar: 4.7, grams: G(61, 128) },
   { match: ['celery'], kcal: 14, protein: 0.7, carbs: 3, fat: 0.2, fiber: 1.6, grams: { stalk: 40, each: 40, cup: 100 } },
   { match: ['bell pepper', 'red pepper', 'capsicum', 'pepper'], kcal: 26, protein: 1, carbs: 6, fat: 0.3, fiber: 2, grams: G(120, 150) },
+  // A pinch of heat, not a vegetable — this was matching "red pepper".
+  { match: ['red pepper flakes', 'chili flakes', 'crushed red pepper'], kcal: 282, protein: 12, carbs: 50, fat: 14, grams: G(undefined, 46, 3, 1) },
+  // Woody herbs, sold and used by the sprig.
+  { match: ['rosemary', 'thyme', 'sage leaves'], kcal: 131, protein: 3.3, carbs: 21, fat: 5.9, grams: G(1, 15, 1) },
   { match: ['jalapeño', 'jalapeno', 'chili', 'chilli', 'serrano'], kcal: 29, protein: 0.9, carbs: 6.5, fat: 0.4, grams: G(14) },
   { match: ['tomato paste'], kcal: 82, protein: 4.3, carbs: 19, fat: 0.5, sodium: 60, grams: G(undefined, 262, 16) },
   { match: ['crushed tomato', 'diced tomato', 'canned tomato', 'tomato sauce', 'passata', 'tomatoes'], kcal: 32, protein: 1.6, carbs: 7, fat: 0.3, fiber: 1.9, sodium: 130, grams: { cup: 240, can: 400, each: 400 } },

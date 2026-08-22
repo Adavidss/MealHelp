@@ -23,7 +23,10 @@ and then a feed to browse: mood chips — *comforting, fresh, very easy, big
 batch, cheap, good for leftovers, use what I have, something different* — and a
 wall of picture cards under them.
 
-The twelve recipes MealHelp ships with come with real photographs of the food
+The twelve recipes MealHelp ships with come with nutrition already estimated
+from their own ingredients, so the nutrition page is useful in the first week
+rather than after twelve trips to twelve recipe pages. They also come with real
+photographs of the food
 — freely licensed pictures from Wikimedia Commons, bundled with the app rather
 than linked, so they work offline and no photo site learns what you are
 cooking. Credits are in **Settings → Photo credits** and below.
@@ -147,7 +150,11 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   See [Discovery](#discovery).
 - **Browser** — a web browser inside MealHelp, the way Mela has one. Search the
   web or open a recipe site, read the page as itself, and when the page has a
-  recipe on it an **Add** button appears. Nothing to set up, nothing leaves the
+  recipe on it an **Add** button appears. Results are drawn as cards, not blue
+  links: each carries the picture the page publishes for people who link to it,
+  and two or three tags read out of its own title — *Crock-Pot*, *One pan*,
+  *30 min*, *Budget*. Pictures are fetched only for results you scroll to, two
+  at a time, and never invented: a title that claims nothing gets no tags. Nothing to set up, nothing leaves the
   device but the page request. See [The built-in browser](#the-built-in-browser).
 - **Cooking mode** — full screen, big type, one step at a time, ingredient
   checklist, servings adjustment, one-tap timers detected from the steps

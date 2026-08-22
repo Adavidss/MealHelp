@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
-import { Check, ExternalLink, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { isWalledHost, type WebSearchPage, type WebSearchResult } from '@/services/pageBrowser'
+import { ResultCard } from './ResultCard'
 import styles from './SearchResults.module.css'
 
 interface SearchResultsProps {
@@ -38,31 +39,13 @@ export function SearchResults({
   }, [page.results])
 
   const renderResult = (result: WebSearchResult, external: boolean) => (
-    <li key={result.url}>
-      <button
-        type="button"
-        className={styles.result}
-        onClick={() => (external ? onOpenExternal(result.url) : onOpen(result.url))}
-      >
-        <span className={styles.resultHost}>
-          {result.host}
-          {external ? (
-            <span className={styles.externalBadge}>
-              <ExternalLink size={11} aria-hidden="true" />
-              opens in your browser
-            </span>
-          ) : null}
-          {savedUrls.has(stripHash(result.url)) ? (
-            <span className={styles.savedBadge}>
-              <Check size={11} aria-hidden="true" />
-              in your recipes
-            </span>
-          ) : null}
-        </span>
-        <span className={styles.resultTitle}>{result.title}</span>
-        {result.snippet ? <span className={styles.resultSnippet}>{result.snippet}</span> : null}
-      </button>
-    </li>
+    <ResultCard
+      key={result.url}
+      result={result}
+      external={external}
+      saved={savedUrls.has(stripHash(result.url))}
+      onOpen={external ? onOpenExternal : onOpen}
+    />
   )
 
   return (
