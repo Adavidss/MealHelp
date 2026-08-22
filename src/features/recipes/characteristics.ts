@@ -174,14 +174,6 @@ export function characteristicById(id: string): Characteristic | undefined {
   return BY_ID.get(id)
 }
 
-/** The badges a card should show, most telling first. */
-export function badgesFor(recipe: Recipe, limit = 3): string[] {
-  return CHARACTERISTICS.filter((entry) => entry.badge && entry.matches(recipe))
-    .sort((a, b) => a.priority - b.priority)
-    .slice(0, limit)
-    .map((entry) => entry.label)
-}
-
 /**
  * How many recipes each characteristic would leave. Shown next to every filter
  * so the ones that lead nowhere are visibly empty before they are tapped.

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 import {
   CHARACTERISTICS,
   TILE_PALETTES,
-  badgesFor,
   characteristicById,
   countCharacteristics,
   filterByCharacteristics,
@@ -61,26 +60,6 @@ describe('characteristics', () => {
     expect(characteristicById('big-batch')?.matches(CROCK_POT)).toBe(true)
     expect(characteristicById('leftovers')?.matches(CROCK_POT)).toBe(true)
     expect(characteristicById('leftovers')?.matches(FIDDLY)).toBe(false)
-  })
-})
-
-describe('badgesFor', () => {
-  it('puts the most telling thing first', () => {
-    // What it is cooked in beats how it turns out.
-    expect(badgesFor(CROCK_POT)[0]).toBe('Crock-Pot')
-  })
-
-  it('shows a few, not everything true about a recipe', () => {
-    expect(badgesFor(CROCK_POT).length).toBeLessThanOrEqual(3)
-  })
-
-  it('claims only what is true of a long, fiddly recipe', () => {
-    // A roast for eight really is a big batch; it is not simple or quick.
-    const badges = badgesFor(FIDDLY)
-    expect(badges).toContain('Big batch')
-    expect(badges).not.toContain('Simple')
-    expect(badges).not.toContain('Quick')
-    expect(badges).not.toContain('Great leftovers')
   })
 })
 

@@ -34,13 +34,13 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { Modal } from '@/components/common/Modal'
 import { StarRating } from '@/components/common/StarRating'
 import { useToast } from '@/components/common/Toast'
-import { AddToPlanDialog } from '@/features/planner/AddToPlanDialog'
+import { useQuickPlan } from '@/app/QuickPlanContext'
 import { AddToGroceryDialog } from '@/features/grocery/AddToGroceryDialog'
 import { CollectionPickerDialog } from '@/features/collections/CollectionPickerDialog'
 import { FinishCookingDialog } from '@/features/cooking/FinishCookingDialog'
 import { ShareRecipeDialog } from '@/features/sharing/ShareRecipeDialog'
 import { NutritionPanel } from '@/features/nutrition/NutritionPanel'
-import { RecipeCard } from './RecipeCard'
+import { MealCard } from '@/components/meal/MealCard'
 import {
   SCALE_OPTIONS,
   displayIngredientSections,
@@ -53,6 +53,7 @@ export function RecipeDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { toast } = useToast()
+  const { planMeal } = useQuickPlan()
   const { settings } = useSettings()
 
   const recipe = useLiveQuery(() => (id ? db.recipes.get(id) : undefined), [id])
@@ -61,7 +62,6 @@ export function RecipeDetailPage() {
   const [scale, setScale] = useState(1)
   const [checked, setChecked] = useState<Set<string>>(new Set())
   const [confirmDelete, setConfirmDelete] = useState(false)
-  const [planOpen, setPlanOpen] = useState(false)
   const [groceryOpen, setGroceryOpen] = useState(false)
   const [collectionsOpen, setCollectionsOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -261,7 +261,7 @@ export function RecipeDetailPage() {
           <button
             type="button"
             className="btn btn-secondary"
-            onClick={() => setPlanOpen(true)}
+            onClick={() => planMeal(recipe)}
           >
             <CalendarPlus size={17} aria-hidden="true" />
             Add to plan
@@ -426,7 +426,11 @@ export function RecipeDetailPage() {
           <ul className={styles.alternatives}>
             {alternatives.map((alternative) => (
               <li key={alternative.recipe.id}>
-                <RecipeCard recipe={alternative.recipe} view="list" />
+                <MealCard
+                  recipe={alternative.recipe}
+                  size="compact"
+                  to={`/recipes/${alternative.recipe.id}`}
+                />
               </li>
             ))}
           </ul>
@@ -455,12 +459,6 @@ export function RecipeDetailPage() {
           void remove()
         }}
         onCancel={() => setConfirmDelete(false)}
-      />
-
-      <AddToPlanDialog
-        open={planOpen}
-        recipe={recipe}
-        onClose={() => setPlanOpen(false)}
       />
 
       <AddToGroceryDialog

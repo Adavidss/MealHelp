@@ -5,7 +5,7 @@ import { db } from '@/db/database'
 import type { MealType, Recipe } from '@/models'
 import { filterRecipes } from '@/features/recipes/filterRecipes'
 import { rankRecipes } from '@/services/recommendationEngine'
-import { RecipeCard } from '@/features/recipes/RecipeCard'
+import { MealCard } from '@/components/meal/MealCard'
 import { EmptyState } from '@/components/common/EmptyState'
 import styles from './RecipePicker.module.css'
 
@@ -64,7 +64,7 @@ export function RecipePicker({ onSelect, mealType, excludeIds = [] }: RecipePick
         <ul className={styles.list}>
           {results.slice(0, 40).map((recipe) => (
             <li key={recipe.id}>
-              <RecipeCard recipe={recipe} view="list" onSelect={onSelect} />
+              <MealCard recipe={recipe} size="compact" onSelect={onSelect} />
             </li>
           ))}
         </ul>

@@ -1,0 +1,219 @@
+/*
+ * Seven days, seven pictures.
+ *
+ * On a phone the week is a horizontal carousel of full-width-ish cards — the
+ * alternative, seven columns squeezed into 375px, is how a planner turns into
+ * a spreadsheet. On a wide screen it becomes a grid, where the photographs get
+ * the room they deserve.
+ */
+.week {
+  display: flex;
+  gap: var(--space-3);
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  margin-inline: calc(var(--space-4) * -1);
+  padding: var(--space-1) var(--space-4) var(--space-3);
+}
+
+.week::-webkit-scrollbar {
+  display: none;
+}
+
+.day {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  flex: 0 0 auto;
+  width: 210px;
+  scroll-snap-align: start;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+}
+
+.isToday {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* A day that has been and gone is still readable, just not competing. */
+.isPast {
+  opacity: 0.62;
+}
+
+.dropTarget {
+  border-color: var(--accent);
+  border-style: dashed;
+  background: var(--accent-soft);
+}
+
+.dayHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0 var(--space-1);
+}
+
+.dayName {
+  font-size: 0.95rem;
+}
+
+.dayShort {
+  display: none;
+}
+
+.dayDate {
+  font-size: 0.76rem;
+  color: var(--ink-faint);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.groupLabel {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.draggable {
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}
+
+/*
+ * A leftover night. It carries the same photograph as the night that cooked
+ * it — that is the link — and a dashed edge so the week reads as "cooked
+ * here, eaten again there" without a legend.
+ */
+.leftoverCard {
+  border-style: dashed;
+  border-color: var(--sage);
+}
+
+.fromLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--sage-ink);
+}
+
+.slotMeta {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink-faint);
+}
+
+.feedsLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 2px 0 0;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--sage-ink);
+}
+
+/* Eating out, or a meal with no recipe behind it. */
+.plain {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.plain:hover {
+  border-color: var(--line-strong);
+}
+
+.add {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--ink-faint);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+@media (min-width: 760px) {
+  .week {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    overflow: visible;
+    margin-inline: 0;
+    padding-inline: 0;
+  }
+
+  .day {
+    width: auto;
+  }
+}
+
+/* Seven across only when there is genuinely room for seven photographs. */
+@media (min-width: 1240px) {
+  .week {
+    grid-template-columns: repeat(7, 1fr);
+  }
+
+  .dayLong {
+    display: none;
+  }
+
+  .dayShort {
+    display: inline;
+  }
+}
+
+@media print {
+  .week {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    overflow: visible;
+  }
+}
+
+/*
+ * An empty day is a gap you should want to fill, so it takes the space a meal
+ * would have taken rather than collapsing to a thin line and leaving the week
+ * with a ragged skyline.
+ */
+.addEmpty {
+  min-height: 128px;
+  flex-direction: column;
+}
+
+.group {
+  flex: 1;
+}

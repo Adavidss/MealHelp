@@ -30,16 +30,17 @@ interface NavItem {
  * databases live inside the Browser next to the web.
  */
 const PRIMARY_NAV: NavItem[] = [
+  { to: '/', label: 'Home', icon: Home, end: true },
   { to: '/recipes', label: 'Recipes', icon: BookOpen },
   { to: '/browser', label: 'Browser', icon: Globe },
   { to: '/plan', label: 'Plan', icon: CalendarDays },
   { to: '/grocery', label: 'Grocery', icon: ShoppingCart },
-  { to: '/more', label: 'More', icon: Ellipsis },
 ]
 
 /** Desktop has room for the few things More holds. */
 const SECONDARY_NAV: NavItem[] = [
   { to: '/import', label: 'Import', icon: Download },
+  { to: '/more', label: 'More', icon: Ellipsis },
   { to: '/print', label: 'Print week', icon: Printer },
   { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]

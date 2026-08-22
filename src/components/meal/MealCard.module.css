@@ -1,0 +1,428 @@
+/*
+ * One meal, four sizes.
+ *
+ * The rule that holds all four together: the picture is the card. Nothing —
+ * no badge, no button, no caption — is allowed to push the photograph below
+ * half the card's height, because a wall of these is meant to be skimmed by
+ * eye and picked from, which text cannot support.
+ */
+
+.card {
+  position: relative;
+  /* Cards live in grids, carousels and day columns of very different widths,
+     so what fits is a question about the card and not about the screen. */
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  min-width: 0;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.card:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+.face {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.art {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--surface-sunk);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.icon {
+  color: rgb(255 255 255 / 78%);
+}
+
+.corner {
+  position: absolute;
+  top: var(--space-2);
+  left: var(--space-2);
+  display: flex;
+  gap: 4px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-3);
+  min-width: 0;
+}
+
+.eyebrow {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.title {
+  font-size: 1rem;
+  line-height: 1.25;
+  /* Two lines, then an ellipsis: a long title must not shove the next card
+     down and break the grid's rhythm. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cost {
+  font-weight: 700;
+  color: var(--sage-ink);
+  letter-spacing: 0.02em;
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  list-style: none;
+  margin-top: 2px;
+}
+
+.badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  background: var(--surface-sunk);
+  color: var(--ink-soft);
+}
+
+/* Badge colours carry meaning: time, appliance, keeping, thrift, nutrition. */
+.time {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.method {
+  background: var(--plum-soft);
+  color: var(--plum);
+}
+
+.keeps {
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+}
+
+.thrift {
+  background: var(--honey-soft);
+  color: var(--honey-ink, #8a5c08);
+}
+
+.nutrition {
+  background: var(--sage-soft);
+  color: var(--sage-ink);
+}
+
+/* The buttons over the picture's top right: plan first, favourite behind it. */
+.action {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: rgb(28 20 14 / 55%);
+  backdrop-filter: blur(8px);
+  color: #fff;
+  cursor: pointer;
+}
+
+.action:hover {
+  background: var(--accent);
+}
+
+/* Stacked when a card carries both. */
+.actionSecond {
+  top: calc(var(--space-2) + 40px);
+}
+
+.favoriteOn {
+  color: var(--accent);
+  fill: currentColor;
+}
+
+.action:hover .favoriteOn {
+  color: #fff;
+}
+
+/* ---------- hero: tonight, text over the photograph ---------- */
+
+.hero {
+  border-radius: var(--radius-lg);
+}
+
+.hero .art {
+  aspect-ratio: 16 / 10;
+}
+
+.hero .scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgb(18 12 8 / 88%) 0%,
+    rgb(18 12 8 / 45%) 38%,
+    rgb(18 12 8 / 5%) 70%
+  );
+}
+
+/*
+ * The words sit on the picture rather than under it, so the photograph gets
+ * the whole card and the meal still reads at arm's length.
+ *
+ * Stacked with grid rather than positioned absolutely: a long title plus a
+ * Start cooking button can be taller than the picture's own aspect ratio, and
+ * an absolutely positioned block would have that overflow the card and clip
+ * the eyebrow off the top. In one grid cell the taller of the two decides the
+ * height and the photograph stretches to match.
+ */
+.hero .face {
+  display: grid;
+  grid-template-areas: 'stack';
+}
+
+.hero .art,
+.hero .body {
+  grid-area: stack;
+}
+
+.hero .art {
+  height: 100%;
+  min-height: 210px;
+}
+
+.hero .body {
+  align-self: end;
+  padding: var(--space-4);
+  gap: 6px;
+  /* In flow so the grid can size around it, but painted above the picture:
+     .art is positioned, and a positioned sibling paints over a static one
+     however late the static one comes in the source. */
+  position: relative;
+  z-index: 1;
+}
+
+.hero .title {
+  font-size: 1.7rem;
+  color: #fff;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+.hero .eyebrow {
+  color: rgb(255 255 255 / 85%);
+}
+
+.hero .meta {
+  color: rgb(255 255 255 / 88%);
+}
+
+.hero .cost {
+  color: rgb(255 255 255 / 92%);
+}
+
+.hero .badge {
+  background: rgb(255 255 255 / 18%);
+  color: #fff;
+  backdrop-filter: blur(6px);
+}
+
+@media (min-width: 700px) {
+  .hero .art {
+    aspect-ratio: 21 / 9;
+  }
+
+  .hero .title {
+    font-size: 2.1rem;
+  }
+}
+
+/* ---------- slot: one day of the week ---------- */
+
+.slot .art {
+  aspect-ratio: 3 / 2;
+}
+
+.slot .title {
+  font-size: 0.95rem;
+}
+
+.slot .body {
+  padding: var(--space-2) var(--space-3) var(--space-3);
+}
+
+/* ---------- compact: a row in a picker ---------- */
+
+.compact {
+  flex-direction: row;
+  align-items: stretch;
+  border-radius: var(--radius);
+}
+
+.compact .face {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.compact .art {
+  width: 84px;
+  min-width: 84px;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+
+.compact .body {
+  padding: var(--space-2) var(--space-3);
+  flex: 1;
+}
+
+.compact .title {
+  font-size: 0.92rem;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.compact .action {
+  position: static;
+  align-self: center;
+  margin-right: var(--space-2);
+  background: var(--surface-sunk);
+  color: var(--ink-soft);
+  backdrop-filter: none;
+}
+
+.compact .actionSecond {
+  top: auto;
+  margin-right: 0;
+  margin-left: calc(var(--space-2) * -1);
+}
+
+.compact .action:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+/*
+ * Generated artwork for a recipe with no usable photograph. Six warm washes,
+ * picked deterministically from the title, so a library of typed-in recipes
+ * still looks like a shelf of different books rather than a spreadsheet.
+ */
+.palette0,
+.palette1,
+.palette2,
+.palette3,
+.palette4,
+.palette5 {
+  background-image:
+    radial-gradient(circle at 30% 25%, rgb(255 255 255 / 22%), transparent 55%),
+    var(--tile-wash);
+}
+
+.palette0 {
+  --tile-wash: linear-gradient(140deg, #c96a2e, #a8441a);
+}
+
+.palette1 {
+  --tile-wash: linear-gradient(140deg, #5c8b6a, #3d6b4d);
+}
+
+.palette2 {
+  --tile-wash: linear-gradient(140deg, #cf9a3c, #a9761f);
+}
+
+.palette3 {
+  --tile-wash: linear-gradient(140deg, #8a5f86, #63406b);
+}
+
+.palette4 {
+  --tile-wash: linear-gradient(140deg, #b0603f, #8a4128);
+}
+
+.palette5 {
+  --tile-wash: linear-gradient(140deg, #4f7f8b, #35606e);
+}
+
+/*
+ * A narrow card — a day in a seven-across week — has room for one badge. A
+ * second would wrap onto its own line and start pushing the photograph up.
+ */
+@container (max-width: 172px) {
+  .badges li:nth-child(n + 2) {
+    display: none;
+  }
+
+  .title {
+    font-size: 0.88rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card:hover {
+    transform: none;
+  }
+}

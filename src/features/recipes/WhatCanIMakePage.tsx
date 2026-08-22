@@ -5,7 +5,7 @@ import { Plus, X } from 'lucide-react'
 import { db } from '@/db/database'
 import { matchByIngredients } from '@/services/recommendationEngine'
 import { EmptyState } from '@/components/common/EmptyState'
-import { RecipeCard } from './RecipeCard'
+import { MealCard } from '@/components/meal/MealCard'
 import styles from './WhatCanIMakePage.module.css'
 
 /**
@@ -116,10 +116,11 @@ export function WhatCanIMakeView() {
         <ul className={styles.results}>
           {matches.map((match) => (
             <li key={match.recipe.id}>
-              <RecipeCard
+              <MealCard
                 recipe={match.recipe}
-                view="list"
-                footer={
+                size="compact"
+                to={`/recipes/${match.recipe.id}`}
+              >
                   <p className={styles.coverage}>
                     {Math.round(match.coverage * 100)}% of the ingredients
                     {match.missing.length ? (
@@ -130,8 +131,7 @@ export function WhatCanIMakeView() {
                       </span>
                     ) : null}
                   </p>
-                }
-              />
+              </MealCard>
             </li>
           ))}
         </ul>

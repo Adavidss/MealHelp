@@ -101,6 +101,14 @@
  * Two across on a phone, more as the screen allows. Big enough that the picture
  * and the badges do the choosing, rather than the title alone.
  */
+.gallery > li {
+  display: flex;
+}
+
+.gallery > li > * {
+  flex: 1;
+}
+
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));

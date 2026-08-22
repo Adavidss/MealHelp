@@ -3,6 +3,7 @@ import { SettingsProvider } from './SettingsContext'
 import { ToastProvider } from '@/components/common/Toast'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { AppRoutes } from './routes'
+import { QuickPlanProvider } from './QuickPlanContext'
 import { ScrollManager } from './ScrollManager'
 
 /**
@@ -18,8 +19,12 @@ export function App() {
       <HashRouter>
         <SettingsProvider>
           <ToastProvider>
-            <ScrollManager />
-            <AppRoutes />
+            {/* Inside the toast provider: placing a meal confirms itself with
+                an undo, and inside the router: the day strip can open a week. */}
+            <QuickPlanProvider>
+              <ScrollManager />
+              <AppRoutes />
+            </QuickPlanProvider>
           </ToastProvider>
         </SettingsProvider>
       </HashRouter>

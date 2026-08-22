@@ -4,6 +4,7 @@ import { AppShell } from './AppShell'
 
 // The planner and library are what people open the app for, so they ship in
 // the entry chunk. Everything else loads when it is first visited.
+import { HomePage } from '@/features/home/HomePage'
 import { PlannerPage } from '@/features/planner/PlannerPage'
 import { RecipeLibraryPage } from '@/features/recipes/RecipeLibraryPage'
 
@@ -77,7 +78,7 @@ export function AppRoutes() {
     <Suspense fallback={<RouteFallback />}>
       <Routes>
         <Route element={<AppShell />}>
-          <Route path="/" element={<Navigate to="/plan" replace />} />
+          <Route path="/" element={<HomePage />} />
 
           <Route path="/plan" element={<PlannerPage />} />
           <Route path="/plan/:weekStart" element={<PlannerPage />} />

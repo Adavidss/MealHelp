@@ -7,7 +7,7 @@ import { deleteCollection, toggleRecipeInCollection, updateCollection } from '@/
 import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { EmptyState } from '@/components/common/EmptyState'
 import { Modal } from '@/components/common/Modal'
-import { RecipeCard } from '@/features/recipes/RecipeCard'
+import { MealCard } from '@/components/meal/MealCard'
 import { RecipePicker } from '@/features/planner/RecipePicker'
 import styles from './CollectionDetailPage.module.css'
 
@@ -107,7 +107,7 @@ export function CollectionDetailPage() {
           {members.map((recipe) =>
             recipe ? (
               <li key={recipe.id} className={styles.row}>
-                <RecipeCard recipe={recipe} view="list" />
+                <MealCard recipe={recipe} size="compact" to={`/recipes/${recipe.id}`} />
                 <button
                   type="button"
                   className="btn btn-ghost btn-sm"

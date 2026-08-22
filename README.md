@@ -5,14 +5,46 @@ websites, working out which of them make sense together, deciding which nights
 to cook, turning all of it into one grocery list, and then reopening those same
 messy websites while you cook.
 
-MealHelp compresses that into: **choose the kind of week you want → get a
-realistic plan → accept it → shop from one list → cook from recipes that all
-look the same.**
+MealHelp compresses that into: **look at food → put it on a day → shop from
+one list → cook from recipes that all look the same.**
 
 It is a local-first web app. Everything lives in your browser; there is no
 account, no server, and nothing is uploaded.
 
 **Live:** https://kidsdc.org/MealHelp/
+
+---
+
+## What it looks like
+
+It is a board of food, not a calendar. **Home** opens on tonight's meal at the
+size of a photograph, what is coming after it, what is already in the fridge,
+and then a feed to browse: mood chips — *comforting, fresh, very easy, big
+batch, cheap, good for leftovers, use what I have, something different* — and a
+wall of picture cards under them.
+
+Every meal, everywhere in the app, is the same card: the photograph is the
+card, with its name, its hands-on time, a cost mark and at most three badges
+that would actually change your mind (`20 min`, `One pan`, `Slow cooker`,
+`Great leftovers`, `Freezer friendly`, `High protein`, `Budget`, `Easy
+cleanup`). Recipes without a picture get generated artwork drawn from the
+title, so a typed-in library still looks like a shelf of different books.
+
+**Adding a meal to the week is two taps and no screens.** Tap **+** on any card
+— on the home feed, in the library, on a recipe page — and a strip of seven
+days slides up over the tab bar, marking the days that already have something.
+Tap a day; it is done, with an undo in the confirmation.
+
+The week is seven pictures, not a spreadsheet: a carousel on a phone, a row of
+cards on a desktop, today outlined and days gone by faded. Leftovers are drawn
+rather than explained — the night that cooks says *↻ Feeds Fri*, and Friday
+carries the same photograph behind a dashed edge marked *↻ From Thu*. Drag a
+card to another day, or tap it to open what it can do. Breakfast and lunch only
+split a day into rows when you have turned them on.
+
+The grocery list connects back the same way: every line carries small pictures
+of the meals that wanted it, so *Onions ×3* answers "what is this for?" without
+a tap.
 
 ---
 
@@ -53,13 +85,13 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
 ### Everything else
 
 - **Recipe library** — opens on shelves worth browsing: *Easy Crock-Pot meals*,
-  *Easy Instant Pot meals*, *One pot meals*. Below them, a wall of picture tiles
-  where each card says what the recipe *is*: Crock-Pot, Simple, Hands off, Big
-  batch, Great leftovers. Filter by those same words, with a live count on every
-  one so a dead end is visible before you tap it. Photographs lead; recipes
-  without one fold into a section with a visible count. Plus instant search
-  across titles, ingredients, tags, notes and cooking methods, and a compact
-  list view when you would rather scan names.
+  *Easy Instant Pot meals*, *One pot meals*. Under them, mood chips and a wall
+  of picture cards. Narrow by mood first — that is how people actually choose —
+  then by what a recipe *is*: Crock-Pot, Simple, Hands off, Big batch, Great
+  leftovers, each with a live count so a dead end is visible before you tap it.
+  Photographs lead; recipes without one fold into a section with a visible
+  count. Plus instant search across titles, ingredients, tags, notes and
+  cooking methods, and a compact list view when you would rather scan names.
 - **One standard recipe view** — once a recipe is in MealHelp you should never
   need the original page again. Scaling (½× to 2×), ingredient checkboxes,
   numbered directions, notes, equipment, and a link back to the source. And
@@ -160,9 +192,9 @@ src/
   app/          App shell, routing, settings context
   db/           Dexie database and one repository per domain
   models/       Recipe, MealPlan, Grocery, Pantry, Settings
-  features/     One folder per section or view (recipes, browser, planner, planning,
-                cooking, grocery, pantry, import, discover, browser,
-                collections, history, print, sharing, settings)
+  features/     One folder per section or view (home, recipes, browser, planner,
+                planning, cooking, grocery, pantry, import, discover,
+                collections, history, nutrition, print, sharing, settings)
   services/     Pure logic, no React and no database:
                   ingredientParser/    text → structured ingredient
                   unitConversion/      units, safe conversion, formatting
@@ -174,10 +206,18 @@ src/
                   pageBrowser/         page preparation for the frame, web search, known sites
                   shareCodec/          compressed share payloads
                   backup/              export, validation, restore
-  components/   Shared UI
+  components/   Shared UI, including meal/MealCard — the one card every meal
+                is drawn as, at four sizes (hero, feed, slot, compact)
   utils/        Dates, ids, image resizing
   styles/       Design tokens, base, primitives, print
 ```
+
+One card, everywhere. A meal in the home feed, a day of the week, a row in a
+picker and tonight's hero are the same component at different sizes, so a meal
+looks like itself wherever it turns up and a change to how food is presented
+happens in one file. What goes on a card — the badges, and which mood a recipe
+belongs to — is plain, tested logic in `features/recipes/mealBadges.ts` and
+`moods.ts`, next to the rest of the "what is this recipe like" judgements.
 
 Two rules shape the layout. **Domain logic never lives in a component** — the
 recommendation weights, the grocery maths and the planner rules are all plain

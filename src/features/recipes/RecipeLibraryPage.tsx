@@ -14,7 +14,9 @@ import {
   SlidersHorizontal,
 } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
+import { useQuickPlan } from '@/app/QuickPlanContext'
 import { db } from '@/db/database'
+import { pantryKeySet } from '@/db/pantry'
 import { toggleFavorite } from '@/db/recipes'
 import { COOKING_METHODS, COOKING_METHOD_LABELS } from '@/models'
 import type { CookingMethod, Recipe } from '@/models'
@@ -25,14 +27,14 @@ import { SegmentedTabs } from '@/components/common/SegmentedTabs'
 import { useSectionTab } from '@/app/useSectionTab'
 import { CollectionsView } from '@/features/collections/CollectionsPage'
 import { WhatCanIMakeView } from './WhatCanIMakePage'
-import { AddToPlanDialog } from '@/features/planner/AddToPlanDialog'
 import { BrowseRow } from './BrowseRow'
 import { buildBrowseSections, sectionTotal } from './browseSections'
 import { CharacteristicFilters } from './CharacteristicFilters'
 import { filterByCharacteristics } from './characteristics'
+import { MoodChips } from './MoodChips'
+import { applyMood } from './moods'
 import { partitionByPhoto, useBrokenImageVersion } from './photoAvailability'
-import { RecipeCard } from './RecipeCard'
-import { RecipeTile } from './RecipeTile'
+import { MealCard } from '@/components/meal/MealCard'
 import {
   RECIPE_SORTS,
   RECIPE_SORT_LABELS,
@@ -46,6 +48,8 @@ import styles from './RecipeLibraryPage.module.css'
 
 export function RecipeLibraryPage() {
   const { settings, update } = useSettings()
+  const { planMeal } = useQuickPlan()
+  const pantryKeys = useLiveQuery(() => pantryKeySet(), [], new Set<string>())
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], undefined)
   const [query, setQuery] = useState('')
   const [characteristics, setCharacteristics] = useState<string[]>([])
@@ -54,7 +58,7 @@ export function RecipeLibraryPage() {
   const [view, setView] = useState<'gallery' | 'list'>('gallery')
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
-  const [planFor, setPlanFor] = useState<Recipe>()
+  const [mood, setMood] = useState<string>()
   const [tab, setTab] = useSectionTab<'all' | 'collections' | 'make'>(
     ['all', 'collections', 'make'],
     'all',
@@ -70,9 +74,14 @@ export function RecipeLibraryPage() {
     [recipes, filters, query, sort],
   )
 
+  const inMood = useMemo(
+    () => applyMood(searched, mood, { pantryKeys }),
+    [searched, mood, pantryKeys],
+  )
+
   const results = useMemo(
-    () => filterByCharacteristics(searched, characteristics),
-    [searched, characteristics],
+    () => filterByCharacteristics(inMood, characteristics),
+    [inMood, characteristics],
   )
 
   // Re-runs the split when an image turns out to be broken, so a rotted link
@@ -258,8 +267,15 @@ export function RecipeLibraryPage() {
             </button>
           </div>
 
-          <CharacteristicFilters
+          <MoodChips
+            value={mood}
+            onChange={setMood}
             recipes={searched}
+            pantryKeys={pantryKeys}
+          />
+
+          <CharacteristicFilters
+            recipes={inMood}
             selected={characteristics}
             onChange={setCharacteristics}
             compact
@@ -299,6 +315,7 @@ export function RecipeLibraryPage() {
                   setQuery('')
                   setFilters({})
                   setCharacteristics([])
+                  setMood(undefined)
                 }}
               >
                 Clear everything
@@ -313,7 +330,7 @@ export function RecipeLibraryPage() {
                   total={sectionTotal(results, shelf)}
                   onSeeAll={() => setCharacteristics(shelf.characteristics)}
                   onToggleFavorite={(r) => void toggleFavorite(r.id)}
-                  onAddToPlan={setPlanFor}
+                  onAddToPlan={planMeal}
                 />
               ))}
 
@@ -325,10 +342,11 @@ export function RecipeLibraryPage() {
                 <ul className={styles.gallery}>
                   {withPhotos.map((recipe: Recipe) => (
                     <li key={recipe.id}>
-                      <RecipeTile
+                      <MealCard
                         recipe={recipe}
+                        to={`/recipes/${recipe.id}`}
                         onToggleFavorite={(r) => void toggleFavorite(r.id)}
-                        onAddToPlan={setPlanFor}
+                        onPlan={planMeal}
                       />
                     </li>
                   ))}
@@ -360,10 +378,11 @@ export function RecipeLibraryPage() {
                     <ul className={styles.gallery}>
                       {withoutPhotos.map((recipe: Recipe) => (
                         <li key={recipe.id}>
-                          <RecipeTile
+                          <MealCard
                             recipe={recipe}
+                            to={`/recipes/${recipe.id}`}
                             onToggleFavorite={(r) => void toggleFavorite(r.id)}
-                            onAddToPlan={setPlanFor}
+                            onPlan={planMeal}
                           />
                         </li>
                       ))}
@@ -376,10 +395,12 @@ export function RecipeLibraryPage() {
             <ul className={styles.list}>
               {results.map((recipe: Recipe) => (
                 <li key={recipe.id}>
-                  <RecipeCard
+                  <MealCard
                     recipe={recipe}
-                    view="list"
+                    size="compact"
+                    to={`/recipes/${recipe.id}`}
                     onToggleFavorite={(r) => void toggleFavorite(r.id)}
+                    onPlan={planMeal}
                   />
                 </li>
               ))}
@@ -466,13 +487,6 @@ export function RecipeLibraryPage() {
 
       {addMenu}
 
-      {planFor ? (
-        <AddToPlanDialog
-          open
-          recipe={planFor}
-          onClose={() => setPlanFor(undefined)}
-        />
-      ) : null}
     </div>
   )
 }

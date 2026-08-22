@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import type { Recipe } from '@/models'
-import { RecipeTile } from './RecipeTile'
+import { MealCard } from '@/components/meal/MealCard'
 import type { BrowseSection } from './browseSections'
 import styles from './BrowseRow.module.css'
 
@@ -47,10 +47,11 @@ export function BrowseRow({
       <ul className={styles.scroller}>
         {section.recipes.map((recipe) => (
           <li key={recipe.id} className={styles.item}>
-            <RecipeTile
+            <MealCard
               recipe={recipe}
+              to={`/recipes/${recipe.id}`}
               onToggleFavorite={onToggleFavorite}
-              onAddToPlan={onAddToPlan}
+              onPlan={onAddToPlan}
             />
           </li>
         ))}

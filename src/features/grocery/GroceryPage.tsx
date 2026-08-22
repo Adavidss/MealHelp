@@ -14,11 +14,12 @@ import {
   setPantryDecision,
   toggleGroceryItem,
 } from '@/db/grocery'
-import { GROCERY_CATEGORIES, type GroceryItem } from '@/models'
+import { GROCERY_CATEGORIES, type GroceryItem, type Recipe } from '@/models'
 import { categoryRank } from '@/services/groceryAggregator'
 import { formatQuantity } from '@/services/unitConversion'
 import { formatWeekRange, startOfWeek, todayISO } from '@/utils/date'
 import { EmptyState } from '@/components/common/EmptyState'
+import { mealArt } from '@/components/meal/mealArtwork'
 import { SearchField } from '@/components/common/SearchField'
 import { SegmentedTabs } from '@/components/common/SegmentedTabs'
 import { useToast } from '@/components/common/Toast'
@@ -45,6 +46,13 @@ export function GroceryPage() {
     async () => (plan ? db.plannedMeals.where('planId').equals(plan.id).toArray() : []),
     [plan?.id],
     [],
+  )
+
+  // Only for the thumbnails on each line: which meals wanted this ingredient.
+  const recipes = useLiveQuery(() => db.recipes.toArray(), [], [] as Recipe[])
+  const recipesById = useMemo(
+    () => new Map((recipes ?? []).map((recipe) => [recipe.id, recipe])),
+    [recipes],
   )
 
   const [newItem, setNewItem] = useState('')
@@ -271,6 +279,7 @@ export function GroceryPage() {
               <GroceryRow
                 key={item.id}
                 item={item}
+                recipesById={recipesById}
                 onToggle={() => void toggleGroceryItem(weekStart, item.id)}
                 onRemove={() => void removeGroceryItem(weekStart, item.id)}
               />
@@ -296,6 +305,7 @@ export function GroceryPage() {
                   <GroceryRow
                     key={item.id}
                     item={item}
+                    recipesById={recipesById}
                     onToggle={() => void toggleGroceryItem(weekStart, item.id)}
                     onRemove={() => void removeGroceryItem(weekStart, item.id)}
                   />
@@ -325,12 +335,23 @@ export function GroceryPage() {
   )
 }
 
+/**
+ * One line of the shop, and what it is for.
+ *
+ * The thumbnails are the point: "Onions ×3" beside the chili and the tacos
+ * says why the onions are on the list in the time it takes to look, where a
+ * number in a circle only promises an explanation if you tap it. Tapping is
+ * still there — it opens the exact lines the recipes wrote — but the common
+ * question is answered without it.
+ */
 function GroceryRow({
   item,
+  recipesById,
   onToggle,
   onRemove,
 }: {
   item: GroceryItem
+  recipesById: Map<string, Recipe>
   onToggle: () => void
   onRemove: () => void
 }) {
@@ -338,6 +359,16 @@ function GroceryRow({
   const recipeNames = [
     ...new Set(item.sources.map((source) => source.recipeTitle)),
   ]
+
+  // One thumbnail per recipe, in the order they were added, three at most:
+  // beyond that they stop being recognisable and start being noise.
+  const thumbs = [
+    ...new Map(
+      item.sources
+        .filter((source) => source.recipeId)
+        .map((source) => [source.recipeId as string, source]),
+    ).values(),
+  ].slice(0, 3)
 
   return (
     <li className={styles.row}>
@@ -361,9 +392,32 @@ function GroceryRow({
             className={`${styles.sourceToggle} tap-target`}
             onClick={() => setShowSources((open) => !open)}
             aria-expanded={showSources}
-            aria-label={`Why is ${item.name} on the list?`}
+            aria-label={`Why is ${item.name} on the list? ${recipeNames.join(', ')}`}
           >
-            {recipeNames.length}
+            {thumbs.length ? (
+              <span className={styles.thumbs}>
+                {thumbs.map((source) => {
+                  const recipe = recipesById.get(source.recipeId as string)
+                  const art = recipe ? mealArt(recipe) : undefined
+                  return (
+                    <span
+                      key={source.recipeId}
+                      className={`${styles.thumb} ${
+                        art && art.kind === 'generated' ? styles[`palette${art.palette}`] : ''
+                      }`}
+                      title={source.recipeTitle}
+                    >
+                      {art?.kind === 'photo' ? <img src={art.src} alt="" loading="lazy" /> : null}
+                    </span>
+                  )
+                })}
+                {recipeNames.length > thumbs.length ? (
+                  <span className={styles.moreCount}>+{recipeNames.length - thumbs.length}</span>
+                ) : null}
+              </span>
+            ) : (
+              recipeNames.length
+            )}
           </button>
         ) : null}
         <button
