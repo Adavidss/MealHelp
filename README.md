@@ -92,6 +92,16 @@ appliances you leaned towards, budget, effort — and plans the week from what
 comes back, for whichever meals the scope covers. Nothing is saved until you
 accept, and then the new recipes join your library with their sources.
 
+**Brainstorm a week that fits.** Say what it has to fit inside — a budget for
+the week, the longest hands-on night you will accept, a protein goal — and the
+plan is measured against all three the moment it is built: *This week $85 of
+$45*, *Longest night 25 min of 20*, *Protein 76 g of 90*. The two people
+actually act on come with a way to act: **Make it cheaper** leans the planner
+towards budget recipes and the pantry, **Make it quicker** puts a ceiling under
+the longest night. Figures the app could not count in full are shown as a floor
+— "at least 76 g" — and never judged against a goal, because telling someone
+they missed a target you did not measure is worse than saying nothing.
+
 **You choose how much of the day gets planned.** *Just dinners*, *dinners +
 lunches*, or *every meal* — a kitchen can have breakfast, lunch, dinner and a
 snack set up and still only want this week's dinners decided. Whatever is out
@@ -205,6 +215,10 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   list being rebuilt.
 - **Pantry** — the things you always have are pulled into a short "check the
   pantry" list instead of being assumed or silently dropped.
+- **Meal ideas from the trolley** — the grocery list has its own *Surprise me*,
+  which answers the question that page actually raises: not "what shall I eat
+  this week" but "I am buying all this anyway, what else could it be". It ranks
+  your recipes by how much of them the list already covers and picks from those.
 - **What the shop will cost** — the grocery list totals itself, broken down by
   aisle so it is obvious what is driving it, with every line priced. The
   built-in prices are typical US supermarket prices and the panel says so;

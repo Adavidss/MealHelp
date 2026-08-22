@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { Plus, RefreshCw, Share2, Trash2, X } from 'lucide-react'
+import { Dices, Plus, RefreshCw, Share2, Trash2, X } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
 import { db } from '@/db/database'
 import {
@@ -16,6 +16,7 @@ import {
 } from '@/db/grocery'
 import { GROCERY_CATEGORIES, type GroceryItem, type Recipe } from '@/models'
 import { categoryRank } from '@/services/groceryAggregator'
+import { matchByIngredients } from '@/services/recommendationEngine'
 import { formatQuantity } from '@/services/unitConversion'
 import { formatWeekRange, startOfWeek, todayISO } from '@/utils/date'
 import { EmptyState } from '@/components/common/EmptyState'
@@ -27,6 +28,7 @@ import { useSectionTab } from '@/app/useSectionTab'
 import { PantryView } from '@/features/pantry/PantryPage'
 import { ShareGroceryDialog } from '@/features/sharing/ShareGroceryDialog'
 import { CostPanel } from './CostPanel'
+import { SurpriseSheet } from '@/features/discover/SurpriseSheet'
 import styles from './GroceryPage.module.css'
 
 export function GroceryPage() {
@@ -59,6 +61,8 @@ export function GroceryPage() {
   const [newItem, setNewItem] = useState('')
   const [showCompleted, setShowCompleted] = useState(!settings.hideCompletedGrocery)
   const [shareOpen, setShareOpen] = useState(false)
+  const [surprising, setSurprising] = useState(false)
+
 
   // One field does both jobs: typing narrows the list to what matches, and
   // Enter adds what you typed. On a phone there is no room for two.
@@ -68,6 +72,23 @@ export function GroceryPage() {
     if (!needle) return all
     return all.filter((item) => item.name.toLowerCase().includes(needle))
   }, [list, needle])
+
+  /**
+   * Recipes you could make from what is already going in the trolley.
+   *
+   * The question this page raises is not "what shall I eat this week" — that
+   * is answered upstairs — but "I am buying all this anyway, what else could
+   * it be". So the pool is ranked by how much of a recipe the list already
+   * covers, and the surprise is drawn from the ones that overlap most.
+   */
+  const fromTheList = useMemo(() => {
+    const names = items
+      .filter((item) => !item.checked)
+      .map((item) => item.name)
+    if (names.length < 3) return recipes ?? []
+    const matches = matchByIngredients(recipes ?? [], names, { minCoverage: 0.4, limit: 24 })
+    return matches.length ? matches.map((match) => match.recipe) : (recipes ?? [])
+  }, [items, recipes])
 
   const { pantryChecks, toBuy, done } = useMemo(() => {
     const pantryChecks: GroceryItem[] = []
@@ -154,6 +175,15 @@ export function GroceryPage() {
           </p>
         </div>
         <div className="row-tight">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setSurprising(true)}
+            aria-label="Surprise me — a meal from what you are already buying"
+          >
+            <Dices size={17} aria-hidden="true" />
+            Meal idea
+          </button>
           <button
             type="button"
             className="btn btn-secondary btn-icon"
@@ -326,6 +356,13 @@ export function GroceryPage() {
           ) : null}
         </section>
       ) : null}
+
+      <SurpriseSheet
+        open={surprising}
+        pool={fromTheList}
+        poolLabel="what you are already buying"
+        onClose={() => setSurprising(false)}
+      />
 
       {list ? (
         <ShareGroceryDialog

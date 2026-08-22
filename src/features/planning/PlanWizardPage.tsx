@@ -21,6 +21,7 @@ import { saveRecipe } from '@/db/recipes'
 import { recordPlanned, recordRejection } from '@/db/cookEvents'
 import { generateGroceryList } from '@/db/grocery'
 import { pantryKeySet } from '@/db/pantry'
+import { loadPriceBook } from '@/db/prices'
 import {
   COOKING_METHODS,
   COOKING_METHOD_LABELS,
@@ -38,7 +39,10 @@ import {
   type VarietyMode,
 } from '@/models'
 import { useWebWeek, isProvisional } from './useWebWeek'
+import { WeekFitPanel } from './WeekFitPanel'
 import {
+  weekFit,
+  type WeekTargets,
   generateWeek,
   replaceCookSlot,
   suggestAnother,
@@ -81,6 +85,10 @@ interface Preferences {
   useUp: string
   /** Which meals to fill in — the rest of the day is left as it is. */
   scope: PlanScope
+  /** What the week has to fit inside. Any of them may be left unset. */
+  budget?: number
+  maxMinutesPerMeal?: number
+  proteinPerDay?: number
   maxActiveTimeMinutes?: number
   preferredEffort?: PlanningRequest['preferredEffort']
   budgetPreference?: PlanningRequest['budgetPreference']
@@ -105,6 +113,9 @@ function preferencesFromSettings(
     selectedDates: dates.slice(0, defaults.mealsNeeded),
     useUp: '',
     scope: defaults.planScope ?? 'all',
+    budget: defaults.weekBudget,
+    maxMinutesPerMeal: defaults.maxMinutesPerMeal,
+    proteinPerDay: defaults.proteinPerDay,
   }
 }
 
@@ -139,6 +150,9 @@ export function PlanWizardPage() {
   // Undefined until IndexedDB has answered, so a one-tap plan waits for the
   // real library and pantry rather than planning an empty one.
   const recipes = useLiveQuery(() => db.recipes.toArray(), [])
+  // For pricing the week and knowing what is already in the cupboard.
+  const pantryItems = useLiveQuery(() => db.pantryItems.toArray(), [], [])
+  const ownPrices = useLiveQuery(() => loadPriceBook(), [], new Map())
   const pantry = useLiveQuery(() => pantryKeySet(), [])
 
   const [prefs, setPrefs] = useState<Preferences>(() =>
@@ -234,6 +248,35 @@ export function PlanWizardPage() {
     useMemo(() => ({ spoonacularKey: settings.spoonacularKey?.trim() }), [settings.spoonacularKey]),
   )
 
+  const targets: WeekTargets = {
+    budget: prefs.budget,
+    maxMinutesPerMeal: prefs.maxMinutesPerMeal,
+    proteinPerDay: prefs.proteinPerDay,
+  }
+
+  const fit = useMemo(
+    () =>
+      plans
+        ? weekFit({
+            slots: plans.flatMap((plan) => plan.meals),
+            pantry: pantryItems ?? [],
+            ownPrices: ownPrices ?? new Map(),
+            targets,
+            dayCount: new Set(plans.flatMap((plan) => plan.meals.map((meal) => meal.date))).size,
+            // The standing meals have no recipe, so their numbers come from
+            // the slot that defines them — the same ones the nutrition page uses.
+            standingMeals: plans
+              .filter((plan) => plan.slot.fill === 'routine' && plan.slot.routine?.nutrition)
+              .map((plan) => ({
+                nutrition: plan.slot.routine!.nutrition!,
+                count: plan.meals.filter((meal) => !meal.unfilled).length,
+              })),
+          })
+        : undefined,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [plans, pantryItems, ownPrices, prefs.budget, prefs.maxMinutesPerMeal, prefs.proteinPerDay],
+  )
+
   const engineContext = {
     pantryKeys: pantry,
     equipmentOwned: settings.equipmentOwned,
@@ -269,6 +312,16 @@ export function PlanWizardPage() {
     setPlans(result.plans)
     setWarnings(result.warnings)
     setPassedOver({})
+    // What the week had to fit inside is a standing preference, not a one-off.
+    void update({
+      planningDefaults: {
+        ...settings.planningDefaults,
+        planScope: using.scope,
+        weekBudget: using.budget,
+        maxMinutesPerMeal: using.maxMinutesPerMeal,
+        proteinPerDay: using.proteinPerDay,
+      },
+    })
   }
 
   const generate = (keepLocked = false) => generateWith(prefs, keepLocked)
@@ -351,6 +404,29 @@ export function PlanWizardPage() {
     setFromWeb(found)
     generateWith(prefs, false, found)
     setQuickPending(false)
+  }
+
+  /**
+   * The two things people ask for when a week does not fit, expressed in the
+   * levers the planner already has: cheaper means preferring budget recipes
+   * and the pantry, quicker means a hard ceiling on hands-on minutes below
+   * whatever the longest night just came out at.
+   */
+  const nudge = (towards: 'cheaper' | 'quicker') => {
+    const next: Preferences =
+      towards === 'cheaper'
+        ? { ...prefs, budgetPreference: '$', usePantryFirst: true }
+        : {
+            ...prefs,
+            preferredEffort: 'low',
+            maxActiveTimeMinutes: Math.max(
+              15,
+              (prefs.maxMinutesPerMeal ?? fit?.longestMeal.value ?? 45) - 5,
+            ),
+          }
+    setPrefs(next)
+    generateWith(next, true, fromWeb.length ? fromWeb : undefined)
+    toast(towards === 'cheaper' ? 'Leaning cheaper.' : 'Leaning quicker.')
   }
 
   const toggleLock = (slotId: string, date: string) =>
@@ -501,6 +577,7 @@ export function PlanWizardPage() {
   const cookCount = allMeals.filter((meal) => meal.kind === 'recipe' && !meal.unfilled).length
   const leftoverCount = allMeals.filter((meal) => meal.kind === 'leftover').length
   const routineCount = allMeals.filter((meal) => meal.kind === 'custom' && !meal.unfilled).length
+
 
   /** The preview reads day by day, with each of the day's slots under it. */
   const previewDays = [...new Set(allMeals.map((meal) => meal.date))].sort()
@@ -730,6 +807,84 @@ export function PlanWizardPage() {
           </section>
 
           <section>
+            <h2 className="section-title">
+              What does it have to fit?
+              <span className="text-sm faint">Leave any of them blank</span>
+            </h2>
+            <div className={styles.fitInputs}>
+              <label className={styles.fitField}>
+                <span className="field-label">Budget for the week</span>
+                <span className={styles.fitInput}>
+                  <span className={styles.prefix}>{settings.currency ?? '$'}</span>
+                  <input
+                    className="input"
+                    type="number"
+                    min={0}
+                    step={5}
+                    inputMode="numeric"
+                    placeholder="no limit"
+                    value={prefs.budget ?? ''}
+                    onChange={(event) =>
+                      set('budget', event.target.value === '' ? undefined : Number(event.target.value))
+                    }
+                  />
+                </span>
+                <span className="field-hint">Estimated from typical shop prices.</span>
+              </label>
+
+              <label className={styles.fitField}>
+                <span className="field-label">Longest night</span>
+                <span className={styles.fitInput}>
+                  <input
+                    className="input"
+                    type="number"
+                    min={0}
+                    step={5}
+                    inputMode="numeric"
+                    placeholder="no limit"
+                    value={prefs.maxMinutesPerMeal ?? ''}
+                    onChange={(event) =>
+                      set(
+                        'maxMinutesPerMeal',
+                        event.target.value === '' ? undefined : Number(event.target.value),
+                      )
+                    }
+                  />
+                  <span className={styles.suffix}>min</span>
+                </span>
+                <span className="field-hint">Hands-on time, not time in the oven.</span>
+              </label>
+
+              <label className={styles.fitField}>
+                <span className="field-label">Protein a day</span>
+                <span className={styles.fitInput}>
+                  <input
+                    className="input"
+                    type="number"
+                    min={0}
+                    step={5}
+                    inputMode="numeric"
+                    placeholder="no goal"
+                    value={prefs.proteinPerDay ?? ''}
+                    onChange={(event) =>
+                      set(
+                        'proteinPerDay',
+                        event.target.value === '' ? undefined : Number(event.target.value),
+                      )
+                    }
+                  />
+                  <span className={styles.suffix}>g</span>
+                </span>
+                <span className="field-hint">Counted per person, per day.</span>
+              </label>
+            </div>
+            <p className="field-hint">
+              These are checked once the week is built, with a way to nudge it
+              cheaper or quicker if it misses.
+            </p>
+          </section>
+
+          <section>
             <h2 className="section-title">What kind of week</h2>
 
             <div className="field">
@@ -858,6 +1013,16 @@ export function PlanWizardPage() {
               Nothing is saved until you accept the plan.
             </p>
           </div>
+
+          {fit ? (
+            <WeekFitPanel
+              fit={fit}
+              targets={targets}
+              currency={settings.currency}
+              onCheaper={() => nudge('cheaper')}
+              onQuicker={() => nudge('quicker')}
+            />
+          ) : null}
 
           {fromWeb.length ? (
             <p className={styles.fromWebNote}>

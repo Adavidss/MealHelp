@@ -38,6 +38,16 @@ export interface PlanningDefaults {
   servingsPerMeal: number
   /** Which meals the planner fills in; the rest are left alone. */
   planScope?: PlanScope
+
+  /**
+   * What a week has to fit inside. Any of them may be left unset, and an
+   * unset one is simply not checked — a planner that invented a budget would
+   * be answering a question nobody asked.
+   */
+  weekBudget?: number
+  /** The most hands-on minutes any single night should take. */
+  maxMinutesPerMeal?: number
+  proteinPerDay?: number
 }
 
 export interface PrintOptions {
