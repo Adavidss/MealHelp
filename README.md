@@ -517,15 +517,17 @@ had.
 
 ### Setting up the sync store
 
-The live Worker needs a KV namespace before any of this works. From `worker/`:
+The live Worker's namespace is already made and bound, so this works on
+kidsdc.org as it stands. Running your own copy takes one command from
+`worker/`:
 
 ```bash
 npx wrangler kv namespace create HOUSEHOLDS
 ```
 
-Uncomment the `[[kv_namespaces]]` block in `wrangler.toml`, paste in the id it
-prints, then `wrangler deploy`. Without the binding the Worker still fetches
-pages and simply says so when asked to sync.
+Put the id it prints in the `[[kv_namespaces]]` block in `wrangler.toml`, then
+`wrangler deploy`. Without the binding the Worker still fetches pages and
+simply says so when asked to sync.
 
 ---
 

@@ -49,14 +49,14 @@ in the path is a SHA-256 of the household code, which the Worker never sees —
 so it holds an id it cannot reverse and bytes it cannot open. All the merging
 happens in the app (`src/services/sync/`).
 
-This needs a KV namespace. Once:
+The live Worker's namespace is already made and bound. For your own copy, once:
 
 ```bash
 npx wrangler kv namespace create HOUSEHOLDS
 ```
 
-Uncomment `[[kv_namespaces]]` in `wrangler.toml`, paste in the id it prints,
-and `wrangler deploy`. Until then the Worker still fetches pages and answers
+Put the id it prints in the `[[kv_namespaces]]` block in `wrangler.toml`, and
+`wrangler deploy`. Until then the Worker still fetches pages and answers
 sync requests with a 501 that the app turns into a plain explanation.
 
 Blobs expire a year after the last push, and the clock restarts on every push.

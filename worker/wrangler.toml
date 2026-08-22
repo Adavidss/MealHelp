@@ -7,10 +7,11 @@ compatibility_date = "2025-06-01"
 # an open proxy for anyone who finds the address. Comma-separated.
 ALLOWED_ORIGINS = "https://kidsdc.org,https://www.kidsdc.org,http://localhost:3140"
 
-# Where linked phones keep their sealed household blob. Create it once with:
+# Where linked phones keep their sealed household blob. Blobs are encrypted on
+# the phone, so this namespace holds nothing readable. Yours is made once with:
 #   npx wrangler kv namespace create HOUSEHOLDS
-# then paste the id it prints below. Without this binding the Worker still
-# fetches pages; it just answers 501 to sync.
-# [[kv_namespaces]]
-# binding = "HOUSEHOLDS"
-# id = "paste-the-id-wrangler-printed"
+# Without this binding the Worker still fetches pages; it just answers 501 to
+# sync, which the app repeats in plain words.
+[[kv_namespaces]]
+binding = "HOUSEHOLDS"
+id = "768f550886ce4710b302dfe5059a3690"
