@@ -67,9 +67,25 @@ export default defineConfig({
       workbox: {
         // Recipes, plans and the grocery list all live in IndexedDB, so
         // precaching the shell is enough to make the whole app work offline.
+        // The starter photographs are deliberately *not* in here: nearly a
+        // megabyte of pictures for recipes many people delete does not belong
+        // in an install. They are cached the first time they are seen instead.
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         cleanupOutdatedCaches: true,
         navigateFallback: `${BASE}index.html`,
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes('/starters/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'mealhelp-starter-photos',
+              // Twelve files today; the cap is only a backstop against a
+              // cache that grows quietly for ever.
+              expiration: { maxEntries: 40, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
       },
     }),
   ],

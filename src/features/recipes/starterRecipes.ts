@@ -1,5 +1,6 @@
 import type { RecipeDraft } from '@/models'
 import { toRecipeDraft } from '@/services/recipeImport'
+import { starterPhotoUrl } from './starterPhotos'
 
 /**
  * A dozen recipes to start from.
@@ -13,6 +14,8 @@ import { toRecipeDraft } from '@/services/recipeImport'
 
 interface Seed {
   title: string
+  /** The bundled photograph in public/starters — see starterPhotos.ts. */
+  photo: string
   description: string
   servings: number
   prep: number
@@ -36,6 +39,7 @@ interface Seed {
 const SEEDS: Seed[] = [
   {
     title: 'Slow Cooker Chicken Curry',
+    photo: 'chicken-curry',
     description:
       'Everything goes in before you leave in the morning. It gets better the next day.',
     servings: 6,
@@ -73,6 +77,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Instant Pot Beef Chili',
+    photo: 'beef-chili',
     description: 'A whole pot of chili in about forty minutes, most of it unattended.',
     servings: 6,
     prep: 15,
@@ -108,6 +113,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Sheet Pan Chicken and Vegetables',
+    photo: 'sheet-pan-chicken',
     description: 'One pan, one temperature, almost no cleanup.',
     servings: 6,
     prep: 15,
@@ -143,6 +149,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Grilled Cheese and Tomato Soup',
+    photo: 'grilled-cheese-tomato-soup',
     description: 'The twenty-minute answer to a Friday.',
     servings: 4,
     prep: 5,
@@ -176,6 +183,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'One Pot Creamy Sausage Pasta',
+    photo: 'sausage-pasta',
     description: 'The pasta cooks in the sauce, so there is nothing to drain.',
     servings: 4,
     prep: 10,
@@ -208,6 +216,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Slow Cooker Pulled Pork',
+    photo: 'pulled-pork',
     description: 'One shoulder, one night, and lunches for the rest of the week.',
     servings: 10,
     prep: 15,
@@ -242,6 +251,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Weeknight Fried Rice',
+    photo: 'fried-rice',
     description: 'Built for leftover rice and whatever vegetables are going soft.',
     servings: 4,
     prep: 10,
@@ -274,6 +284,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Instant Pot Lentil Soup',
+    photo: 'lentil-soup',
     description: 'Cheap, filling, and it freezes flat.',
     servings: 8,
     prep: 10,
@@ -311,6 +322,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Black Bean Quesadillas',
+    photo: 'quesadilla',
     description: 'Fifteen minutes, mostly pantry.',
     servings: 4,
     prep: 10,
@@ -341,6 +353,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Roast Chicken with Potatoes',
+    photo: 'roast-chicken-potatoes',
     description: 'Sunday dinner that turns into Monday lunch.',
     servings: 6,
     prep: 20,
@@ -375,6 +388,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Big Batch Turkey Meatballs',
+    photo: 'turkey-meatballs',
     description: 'Make a tray on Sunday, eat them four different ways.',
     servings: 8,
     prep: 20,
@@ -409,6 +423,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Overnight Oats',
+    photo: 'overnight-oats',
     description: 'Five minutes tonight, breakfast for four mornings.',
     servings: 4,
     prep: 5,
@@ -447,6 +462,7 @@ export function starterRecipeDrafts(): RecipeDraft[] {
       servings: seed.servings,
       prepTimeMinutes: seed.prep,
       cookTimeMinutes: seed.cook,
+      image: starterPhotoUrl(seed.photo),
       ingredientLines: seed.ingredients,
       instructionTexts: seed.steps,
       tags: seed.tags,

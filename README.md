@@ -23,6 +23,11 @@ and then a feed to browse: mood chips — *comforting, fresh, very easy, big
 batch, cheap, good for leftovers, use what I have, something different* — and a
 wall of picture cards under them.
 
+The twelve recipes MealHelp ships with come with real photographs of the food
+— freely licensed pictures from Wikimedia Commons, bundled with the app rather
+than linked, so they work offline and no photo site learns what you are
+cooking. Credits are in **Settings → Photo credits** and below.
+
 Every meal, everywhere in the app, is the same card: the photograph is the
 card, with its name, its hands-on time, a cost mark and at most three badges
 that would actually change your mind (`20 min`, `One pan`, `Slow cooker`,
@@ -598,3 +603,31 @@ grocery delivery, restaurant discovery, and a chatbot.
 ## Licence
 
 Personal project. Recipes shipped with the app were written for it.
+
+### Starter recipe photographs
+
+The pictures on those recipes are not. Each is freely licensed, from Wikimedia
+Commons, resized to 800×600 WebP and bundled under `public/starters/`. CC BY
+and CC BY-SA require attribution, which is given here and in the app under
+**Settings → Photo credits**; `src/features/recipes/starterPhotos.ts` holds the
+same list in code, and a test fails if a photograph is shipped without credit
+or credited without being shipped.
+
+| Recipe | Photographer | Licence |
+| --- | --- | --- |
+| Slow Cooker Chicken Curry | Serial Number 54129 | CC BY-SA 4.0 |
+| Instant Pot Beef Chili | cyclonebill | CC BY-SA 2.0 |
+| Sheet Pan Chicken and Vegetables | Sharon Chen | CC BY 2.0 |
+| Grilled Cheese and Tomato Soup | HarshLight | CC BY 2.0 |
+| One Pot Creamy Sausage Pasta | Sarah Stierch | CC0 |
+| Slow Cooker Pulled Pork | Shreveport-Bossier CTB | CC BY 2.0 |
+| Weeknight Fried Rice | Stacy Spensley | CC BY 2.0 |
+| Instant Pot Lentil Soup | Andy Li | CC0 |
+| Black Bean Quesadillas | Sarah Stierch | CC BY 4.0 |
+| Roast Chicken with Potatoes | Biso | CC BY 3.0 |
+| Big Batch Turkey Meatballs | Sarah Stierch | CC BY 4.0 |
+| Overnight Oats | David Stewart | CC BY 2.0 |
+
+They are deliberately left out of the service worker's precache — nearly a
+megabyte of pictures for recipes many people delete does not belong in an
+install — and cached the first time they are seen instead.

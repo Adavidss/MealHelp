@@ -25,6 +25,7 @@ import { Modal } from '@/components/common/Modal'
 import { useToast } from '@/components/common/Toast'
 import { NUTRIENTS } from '@/models'
 import { ThemePicker } from './ThemePicker'
+import { STARTER_PHOTOS } from '@/features/recipes/starterPhotos'
 import styles from './SettingsPage.module.css'
 
 export function SettingsPage() {
@@ -417,6 +418,33 @@ export function SettingsPage() {
           Delete everything
         </button>
       </section>
+
+      <section>
+        <h2 className="section-title">Photo credits</h2>
+        <p className="text-sm muted">
+          The photographs on the recipes MealHelp ships with are freely licensed
+          and bundled with the app — no photo site is contacted, and nothing
+          about what you cook leaves this device.
+        </p>
+        <details className={styles.credits}>
+          <summary>Who took them</summary>
+          <ul>
+            {STARTER_PHOTOS.map((photo) => (
+              <li key={photo.slug}>
+                <strong>{photo.recipe}</strong> — {photo.author},{' '}
+                <a href={photo.licenseUrl} target="_blank" rel="noreferrer">
+                  {photo.license}
+                </a>{' '}
+                ·{' '}
+                <a href={photo.sourceUrl} target="_blank" rel="noreferrer">
+                  source
+                </a>
+              </li>
+            ))}
+          </ul>
+        </details>
+      </section>
+
 
       <Modal
         open={Boolean(pendingRestore?.ok)}
