@@ -1,6 +1,6 @@
 import type { BudgetLevel, CookingMethod, EffortLevel, MealType } from './common'
 import type { VarietyMode } from './MealPlan'
-import type { NutritionTargets } from './Nutrition'
+import type { Nutrition, NutritionTargets } from './Nutrition'
 
 export interface PlanningDefaults {
   mealsNeeded: number
@@ -47,6 +47,16 @@ export const SLOT_FILL_LABELS: Record<SlotFill, string> = {
 /** The same thing every day — "a bowl of Special K", "toast and coffee". */
 export interface MealRoutine {
   name: string
+  /**
+   * What one of them contains, per serving.
+   *
+   * A routine has no recipe to read numbers off, so without this a day of
+   * cereal, leftovers and dinner reports two thirds of what was eaten — and
+   * the nutrition page would tell you to "open the recipe" for something that
+   * has none. Optional: a routine with no numbers is still counted as a meal
+   * and still says it is missing them.
+   */
+  nutrition?: Nutrition
   /**
    * What that costs at the shop, written the way you would buy it — "1 box
    * Special K", "2 L milk". Added to the list once for the week rather than

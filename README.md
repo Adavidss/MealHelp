@@ -99,6 +99,10 @@ Tuesday and Wednesday lunches too, and the plan says so ("Cooks 16 servings —
 enough to eat again later in the week"). It will not serve a portion twice, and
 it will not offer Monday's lunch the leftovers of Monday's dinner.
 
+A standing meal can carry its own numbers — calories, protein, carbs, fat, off
+the packet — because a routine has no recipe to read them from. Without that a
+day of cereal, leftovers and dinner reported two thirds of what was eaten.
+
 **And you can read the recipes before you commit to them.** Every meal in the
 plan preview is a photograph, and *Look at it* opens the whole recipe in
 place — ingredients scaled to the servings the plan actually intends, the

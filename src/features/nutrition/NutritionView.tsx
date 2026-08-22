@@ -49,11 +49,22 @@ export function NutritionView() {
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], [] as Recipe[])
   const log = useLiveQuery(() => listNutritionLog(dates), [dates], [] as NutritionLogEntry[])
 
+  /** What each standing meal contains, by slot, so routines count too. */
+  const routineNutrition = useMemo(
+    () =>
+      new Map(
+        settings.mealSlots
+          .filter((slot) => slot.routine?.nutrition)
+          .map((slot) => [slot.id, slot.routine!.nutrition!]),
+      ),
+    [settings.mealSlots],
+  )
+
   const recipesById = useMemo(() => new Map((recipes ?? []).map((r) => [r.id, r])), [recipes])
   const targets = useMemo(() => resolveTargets(settings.nutritionTargets), [settings.nutritionTargets])
 
   const week = useMemo(
-    () => dates.map((day) => dayTotals(day, meals ?? [], recipesById, log ?? [])),
+    () => dates.map((day) => dayTotals(day, meals ?? [], recipesById, log ?? [], routineNutrition)),
     [dates, meals, recipesById, log],
   )
   const day = week.find((entry) => entry.date === date) ?? week[0]
@@ -184,11 +195,19 @@ export function NutritionView() {
                   )}
                   <small>
                     {item.kind === 'log' ? 'Logged' : 'Planned meal'}
-                    {item.missing ? ' · no nutrition on this recipe' : ''}
+                    {item.missing
+                      ? item.slotId
+                        ? ' · no nutrition set for this meal'
+                        : ' · no nutrition on this recipe'
+                      : ''}
                   </small>
                 </span>
                 {item.missing && item.recipeId ? (
                   <Link to={`/recipes/${item.recipeId}`} className="btn btn-ghost btn-sm">
+                    Add numbers
+                  </Link>
+                ) : item.missing && item.slotId ? (
+                  <Link to="/settings" className="btn btn-ghost btn-sm">
                     Add numbers
                   </Link>
                 ) : (
@@ -215,8 +234,8 @@ export function NutritionView() {
         )}
         {day.uncounted ? (
           <p className={styles.uncounted}>
-            {day.uncounted} meal{day.uncounted === 1 ? '' : 's'} not counted — open the recipe and
-            estimate or enter its nutrition.
+            {day.uncounted} meal{day.uncounted === 1 ? '' : 's'} not counted — add numbers to the
+            recipe, or to the standing meal in Settings.
           </p>
         ) : null}
       </section>

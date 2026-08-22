@@ -48,6 +48,8 @@ export interface DayContribution {
   /** Set for meals whose recipe has no numbers, so the day can say so. */
   missing?: boolean
   recipeId?: string
+  /** Set instead of recipeId when the gap is a routine — fixed in Settings. */
+  slotId?: string
   nutrition: Nutrition
 }
 
@@ -70,6 +72,13 @@ export function dayTotals(
   meals: PlannedMeal[],
   recipesById: Map<string, Recipe>,
   log: NutritionLogEntry[],
+  /**
+   * What the day's standing meals contain, by slot id. A routine — the cereal
+   * you have every morning — has no recipe to read numbers off, so without
+   * this a day of cereal, leftovers and dinner reports two thirds of what was
+   * eaten.
+   */
+  routines: Map<string, Nutrition> = new Map(),
 ): DayTotals {
   let total: Nutrition = {}
   const contributions: DayContribution[] = []
@@ -80,9 +89,27 @@ export function dayTotals(
     if (meal.kind === 'skip' || meal.kind === 'eating-out') continue
     const recipe = meal.recipeId ? recipesById.get(meal.recipeId) : undefined
     const label = recipe?.title ?? meal.customName ?? 'Meal'
+
+    // A standing meal counts from what the user said it contains.
+    const routine = !recipe && meal.slotId ? routines.get(meal.slotId) : undefined
+    if (routine && hasNutrition(routine)) {
+      contributions.push({ id: meal.id, label, kind: 'meal', nutrition: routine })
+      total = addNutrition(total, routine)
+      continue
+    }
+
     if (!recipe || !hasNutrition(recipe.nutrition)) {
       uncounted++
-      contributions.push({ id: meal.id, label, kind: 'meal', missing: true, recipeId: recipe?.id, nutrition: {} })
+      contributions.push({
+        id: meal.id,
+        label,
+        kind: 'meal',
+        missing: true,
+        recipeId: recipe?.id,
+        // Nothing to open: the fix for this one is in Settings, not a recipe.
+        slotId: recipe ? undefined : meal.slotId,
+        nutrition: {},
+      })
       continue
     }
     contributions.push({ id: meal.id, label, kind: 'meal', recipeId: recipe.id, nutrition: recipe.nutrition })

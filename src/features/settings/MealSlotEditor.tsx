@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react'
-import type { MealSlotConfig, MealType, SlotFill } from '@/models'
-import { MEAL_TYPES, MEAL_TYPE_LABELS, SLOT_FILL_LABELS } from '@/models'
+import type { MealSlotConfig, MealType, NutrientKey, SlotFill } from '@/models'
+import { MEAL_TYPES, MEAL_TYPE_LABELS, NUTRIENTS, SLOT_FILL_LABELS } from '@/models'
 import { newId } from '@/utils/id'
 import styles from './MealSlotEditor.module.css'
 
@@ -12,6 +12,14 @@ interface MealSlotEditorProps {
 }
 
 const DAY_INITIALS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+
+/**
+ * The four a label leads with. A routine has no recipe to read numbers off, so
+ * without them a day of cereal, leftovers and dinner reports two thirds of
+ * what was eaten — but nobody is typing nine nutrients in for a bowl of
+ * cereal, so this asks for the four that matter and leaves the rest empty.
+ */
+const ROUTINE_NUTRIENTS = NUTRIENTS.filter((nutrient) => nutrient.headline)
 
 /** Sensible starting points, so adding a meal is one tap and not a form. */
 const PRESETS: Array<{ label: string; make: () => MealSlotConfig }> = [
@@ -190,6 +198,7 @@ export function MealSlotEditor({ slots, onChange, defaultServings }: MealSlotEdi
                           onChange={(event) =>
                             patch(slot.id, {
                               routine: {
+                                ...slot.routine,
                                 name: event.target.value,
                                 groceryLines: slot.routine?.groceryLines ?? [],
                               },
@@ -198,6 +207,45 @@ export function MealSlotEditor({ slots, onChange, defaultServings }: MealSlotEdi
                           placeholder="A bowl of Kellogg's Strawberry Special K"
                         />
                       </label>
+                      <div className="field">
+                        <span className="field-label">What one contains, roughly</span>
+                        <div className={styles.nutrients}>
+                          {ROUTINE_NUTRIENTS.map((nutrient) => (
+                            <label key={nutrient.key} className={styles.nutrient}>
+                              <span>{nutrient.label}</span>
+                              <input
+                                className="input"
+                                type="number"
+                                min={0}
+                                inputMode="numeric"
+                                value={slot.routine?.nutrition?.[nutrient.key] ?? ''}
+                                onChange={(event) => {
+                                  const value = Number(event.target.value)
+                                  patch(slot.id, {
+                                    routine: {
+                                      name: slot.routine?.name ?? '',
+                                      groceryLines: slot.routine?.groceryLines ?? [],
+                                      nutrition: {
+                                        ...slot.routine?.nutrition,
+                                        [nutrient.key as NutrientKey]:
+                                          event.target.value === '' || !Number.isFinite(value)
+                                            ? undefined
+                                            : value,
+                                      },
+                                    },
+                                  })
+                                }}
+                              />
+                              <small>{nutrient.unit}</small>
+                            </label>
+                          ))}
+                        </div>
+                        <span className="field-hint">
+                          Optional, and off the packet is fine. Without it the nutrition
+                          page counts this meal but has nothing to add for it.
+                        </span>
+                      </div>
+
                       <label className="field">
                         <span className="field-label">What that needs from the shop</span>
                         <textarea
@@ -207,6 +255,7 @@ export function MealSlotEditor({ slots, onChange, defaultServings }: MealSlotEdi
                           onChange={(event) =>
                             patch(slot.id, {
                               routine: {
+                                ...slot.routine,
                                 name: slot.routine?.name ?? '',
                                 groceryLines: event.target.value
                                   .split('\n')

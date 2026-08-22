@@ -140,3 +140,30 @@
   flex-direction: column;
   gap: var(--space-2);
 }
+
+/* Four small numbers, on one line where there is room for them. */
+.nutrients {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: var(--space-2);
+}
+
+.nutrient {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.nutrient span {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.nutrient small {
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+}

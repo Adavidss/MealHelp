@@ -90,6 +90,32 @@ describe('dayTotals', () => {
     expect(day.contributions.find((c) => c.label === 'Mystery')?.missing).toBe(true)
   })
 
+  /**
+   * The day people actually eat now includes standing meals — the cereal every
+   * morning, the afternoon snack — which have no recipe behind them. Counting
+   * them as zero reported two thirds of a day and told the user to "open the
+   * recipe" for something that has none.
+   */
+  it('counts a standing meal from what the slot says it contains', () => {
+    const meals = [
+      makePlannedMeal({ date: '2026-08-17', kind: 'custom', slotId: 'breakfast', customName: 'Bowl of Special K' }),
+      makePlannedMeal({ date: '2026-08-17', kind: 'custom', slotId: 'snack', customName: 'Apple' }),
+    ]
+    const routines = new Map([['breakfast', { calories: 220, protein: 8 }]])
+
+    const day = dayTotals('2026-08-17', meals, new Map(), [], routines)
+
+    expect(day.total.calories).toBe(220)
+    expect(day.total.protein).toBe(8)
+    // The snack has no numbers yet, so it is listed and flagged — not dropped.
+    expect(day.uncounted).toBe(1)
+    const snack = day.contributions.find((entry) => entry.label === 'Apple')
+    expect(snack?.missing).toBe(true)
+    // And the fix for it is in Settings, not in a recipe that does not exist.
+    expect(snack?.slotId).toBe('snack')
+    expect(snack?.recipeId).toBeUndefined()
+  })
+
   it('measures against the Daily Value unless the user set their own', () => {
     const targets = resolveTargets({ calories: 1800 })
     expect(targets.calories).toBe(1800)
