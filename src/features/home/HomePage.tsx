@@ -17,7 +17,9 @@ import type { CookEvent, PlannedMeal, Recipe } from '@/models'
 import { MealCard } from '@/components/meal/MealCard'
 import { EmptyState } from '@/components/common/EmptyState'
 import { MoodChips } from '@/features/recipes/MoodChips'
-import { applyMood } from '@/features/recipes/moods'
+import { applyMood, moodById } from '@/features/recipes/moods'
+import { OnlineIdeas } from '@/features/discover/OnlineIdeas'
+import { moodQuery } from '@/services/recipeDiscovery'
 import { StarterRecipesButton } from '@/features/recipes/StarterRecipesButton'
 import { mealTitle } from '@/features/planner/mealTitle'
 import { addDays, relativeDayLabel, startOfWeek, todayISO } from '@/utils/date'
@@ -28,6 +30,11 @@ const LOOKAHEAD_DAYS = 6
 
 /** Enough to scroll, not so many that the page never ends. */
 const FEED_SIZE = 24
+
+/** The mood's own word, for a heading that reads like the chip you tapped. */
+function moodLabel(moodId: string): string {
+  return moodById(moodId)?.label ?? 'More'
+}
 
 function greeting(): string {
   const hour = new Date().getHours()
@@ -50,6 +57,8 @@ export function HomePage() {
   const { planMeal } = useQuickPlan()
   const today = todayISO()
   const [mood, setMood] = useState<string>()
+  /** Bumped by "other ideas", so asking again asks differently. */
+  const [ideaAttempt, setIdeaAttempt] = useState(0)
 
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], [] as Recipe[])
   const pantryKeys = useLiveQuery(() => pantryKeySet(), [], new Set<string>())
@@ -275,10 +284,23 @@ export function HomePage() {
             </ul>
           ) : (
             <p className={styles.feedEmpty}>
-              Nothing in your recipes fits that right now.{' '}
-              <Link to="/browser">Find something online</Link>.
+              Nothing in your recipes fits that right now — have a look at what the
+              recipe databases suggest.
             </p>
           )}
+
+          {/*
+            The moods narrow your own shelf; this asks the same loose question
+            of the wider world. Same tap, more food — and nothing is fetched
+            until it is pressed.
+          */}
+          <OnlineIdeas
+            title={mood ? `${moodLabel(mood)} ideas from the web` : 'Ideas from the web'}
+            blurb="Free recipe databases — save anything you like and it becomes yours"
+            query={moodQuery(mood, ideaAttempt)}
+            onAnother={() => setIdeaAttempt((current) => current + 1)}
+            excludeTitles={(recipes ?? []).map((recipe) => recipe.title)}
+          />
         </section>
       ) : null}
 

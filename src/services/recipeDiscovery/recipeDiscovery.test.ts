@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { moodQuery, similarQuery } from './queries'
 import {
   composeIngredientLine,
   ingredientLinesFrom,
@@ -254,5 +255,38 @@ describe('discoverByIngredients', () => {
       'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h',
     ])
     expect(asked).toHaveLength(6)
+  })
+})
+
+describe('similarQuery', () => {
+  it('asks for the dish, not the appliance you already chose', () => {
+    expect(similarQuery('Slow Cooker Chicken Curry')).toBe('chicken curry')
+    expect(similarQuery('Instant Pot Beef Chili')).toBe('beef chili')
+    expect(similarQuery('One Pot Creamy Sausage Pasta')).toBe('creamy sausage pasta')
+  })
+
+  it('keeps it to a few words, because a sentence finds nothing', () => {
+    expect(similarQuery('Big Batch Turkey Meatballs with Marinara and Basil').split(' ').length)
+      .toBeLessThanOrEqual(3)
+  })
+
+  /** "Easy Weeknight Dinner" is all noise; a vague search beats an empty one. */
+  it('falls back to the title when every word was noise', () => {
+    expect(similarQuery('Easy Weeknight')).toBe('Easy Weeknight')
+  })
+})
+
+describe('moodQuery', () => {
+  it('asks in the words recipes are written with, not in metrics', () => {
+    expect(moodQuery('cheap')).toMatch(/budget|cheap|pantry/)
+    expect(moodQuery('fresh')).toMatch(/salad|bowl/)
+  })
+
+  it('varies, so asking again is not the same row again', () => {
+    expect(moodQuery('cheap', 0)).not.toBe(moodQuery('cheap', 1))
+  })
+
+  it('still has something to ask for a mood it has never heard of', () => {
+    expect(moodQuery('retired-mood')).toBeTruthy()
   })
 })

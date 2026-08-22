@@ -41,6 +41,8 @@ import { FinishCookingDialog } from '@/features/cooking/FinishCookingDialog'
 import { ShareRecipeDialog } from '@/features/sharing/ShareRecipeDialog'
 import { NutritionPanel } from '@/features/nutrition/NutritionPanel'
 import { MealCard } from '@/components/meal/MealCard'
+import { OnlineIdeas } from '@/features/discover/OnlineIdeas'
+import { similarQuery } from '@/services/recipeDiscovery'
 import {
   SCALE_OPTIONS,
   displayIngredientSections,
@@ -420,9 +422,16 @@ export function RecipeDetailPage() {
         <p className={`${styles.source} faint text-sm`}>From {recipe.sourceName}</p>
       ) : null}
 
+      <OnlineIdeas
+        title="More like this from the web"
+        blurb={`Recipes for ${similarQuery(recipe.title)}, from the free recipe databases`}
+        query={similarQuery(recipe.title)}
+        excludeTitles={(library ?? []).map((entry) => entry.title)}
+      />
+
       {alternatives.length ? (
         <section>
-          <h2 className="section-title">Similar recipes</h2>
+          <h2 className="section-title">Similar recipes you have</h2>
           <ul className={styles.alternatives}>
             {alternatives.map((alternative) => (
               <li key={alternative.recipe.id}>

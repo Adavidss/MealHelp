@@ -28,6 +28,9 @@ import {
   VARIETY_MODES,
   type CookingMethod,
   type DayLoad,
+  PLAN_SCOPE_LABELS,
+  PLAN_SCOPE_TYPES,
+  type PlanScope,
   type PlanningRequest,
   type Recipe,
   type VarietyMode,
@@ -72,6 +75,8 @@ interface Preferences {
   dayLoads: Record<string, DayLoad>
   selectedDates: string[]
   useUp: string
+  /** Which meals to fill in — the rest of the day is left as it is. */
+  scope: PlanScope
   maxActiveTimeMinutes?: number
   preferredEffort?: PlanningRequest['preferredEffort']
   budgetPreference?: PlanningRequest['budgetPreference']
@@ -95,6 +100,7 @@ function preferencesFromSettings(
     dayLoads: {},
     selectedDates: dates.slice(0, defaults.mealsNeeded),
     useUp: '',
+    scope: defaults.planScope ?? 'all',
   }
 }
 
@@ -111,7 +117,7 @@ function applyPreset(current: Preferences, preset: PlanPreset): Preferences {
 export function PlanWizardPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { settings, ready: settingsReady } = useSettings()
+  const { settings, ready: settingsReady, update } = useSettings()
   const { toast } = useToast()
 
   const weekStart =
@@ -235,8 +241,10 @@ export function PlanWizardPage() {
   const generateWith = (using: Preferences, keepLocked = false) => {
     const locked = keepLocked ? (plans ?? []).flatMap((plan) => plan.meals) : []
     const request = buildRequest(using, locked)
-    const planningSlots = mealSlots.map((slot, index) =>
-      slot.fill === 'cook' && index === mealSlots.findIndex((s) => s.fill === 'cook')
+    const types = PLAN_SCOPE_TYPES[using.scope]
+    const inScope = types ? mealSlots.filter((slot) => types.includes(slot.type)) : mealSlots
+    const planningSlots = inScope.map((slot, index) =>
+      slot.fill === 'cook' && index === inScope.findIndex((s) => s.fill === 'cook')
         ? { ...slot, cookSessions: using.targetCookSessions, servings: using.servingsPerMeal }
         : slot,
     )
@@ -445,6 +453,41 @@ export function PlanWizardPage() {
         <>
           <section>
             <h2 className="section-title">
+              What should MealHelp plan?
+              <span className="text-sm faint">The rest of the day is left as it is</span>
+            </h2>
+            <div className="row-tight">
+              {(Object.keys(PLAN_SCOPE_LABELS) as PlanScope[]).map((scope) => {
+                const types = PLAN_SCOPE_TYPES[scope]
+                const covered = types
+                  ? mealSlots.filter((slot) => types.includes(slot.type))
+                  : mealSlots
+                return (
+                  <button
+                    key={scope}
+                    type="button"
+                    className="chip chip-button"
+                    aria-pressed={prefs.scope === scope}
+                    // Offering "dinners + lunches" to a kitchen that only has
+                    // dinners set up would be a choice with no effect.
+                    disabled={covered.length === 0}
+                    onClick={() => {
+                      set('scope', scope)
+                      void update({
+                        planningDefaults: { ...settings.planningDefaults, planScope: scope },
+                      })
+                    }}
+                  >
+                    {PLAN_SCOPE_LABELS[scope]}
+                    <span className="text-sm faint">{covered.length}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
+
+          <section>
+            <h2 className="section-title">
               Build a week in one tap
               <span className="text-sm faint">You can still change anything after</span>
             </h2>
@@ -458,7 +501,9 @@ export function PlanWizardPage() {
                   <Zap size={15} aria-hidden="true" /> Just plan it
                 </strong>
                 <small>
-                  {prefs.mealsNeeded} dinners, cook {prefs.targetCookSessions}× — your usual
+                  {prefs.mealsNeeded} days of{' '}
+                  {PLAN_SCOPE_LABELS[prefs.scope].toLowerCase()}, cook{' '}
+                  {prefs.targetCookSessions}× — your usual
                 </small>
               </button>
               {PLAN_PRESETS.map((preset) => (
@@ -725,9 +770,9 @@ export function PlanWizardPage() {
             </p>
           ))}
 
-          <ol className={styles.days}>
+          <ol className={styles.previewDays}>
             {previewDays.map((date) => (
-              <li key={date} className={styles.day}>
+              <li key={date} className={styles.previewDay}>
                 <div className={styles.dayHead}>
                   <strong>{dayName(date)}</strong>
                   <small>{monthDay(date)}</small>

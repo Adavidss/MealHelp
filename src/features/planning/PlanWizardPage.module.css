@@ -279,15 +279,19 @@
 /*
  * The preview, read as days rather than as one long list of dinners: with
  * breakfast, lunch and dinner in play, "Monday" is the unit people check.
+ *
+ * Named `previewDay`, not `day`: the form above has its own `.days` grid for
+ * picking which nights to plan, and a second `.days` later in the same
+ * stylesheet quietly won and collapsed it into one column.
  */
-.days {
+.previewDays {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
   list-style: none;
 }
 
-.day {
+.previewDay {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);

@@ -3,6 +3,28 @@ import { DEFAULT_THEME_ID } from '@/app/themes'
 import type { VarietyMode } from './MealPlan'
 import type { Nutrition, NutritionTargets } from './Nutrition'
 
+/**
+ * How much of the day "Plan my week" fills in.
+ *
+ * A kitchen can have breakfast, lunch, dinner and a snack set up and still
+ * only want the dinners decided this week — so the day you *eat* and the day
+ * you want *planned* are two different questions.
+ */
+export type PlanScope = 'dinner' | 'dinner-lunch' | 'all'
+
+export const PLAN_SCOPE_LABELS: Record<PlanScope, string> = {
+  dinner: 'Just dinners',
+  'dinner-lunch': 'Dinners + lunches',
+  all: 'Every meal',
+}
+
+/** The meal types each scope covers; `all` means whatever the day has. */
+export const PLAN_SCOPE_TYPES: Record<PlanScope, MealType[] | null> = {
+  dinner: ['dinner'],
+  'dinner-lunch': ['dinner', 'lunch'],
+  all: null,
+}
+
 export interface PlanningDefaults {
   mealsNeeded: number
   targetCookSessions: number
@@ -14,6 +36,8 @@ export interface PlanningDefaults {
   usePantryFirst: boolean
   avoidRecentlyCooked: boolean
   servingsPerMeal: number
+  /** Which meals the planner fills in; the rest are left alone. */
+  planScope?: PlanScope
 }
 
 export interface PrintOptions {
@@ -191,6 +215,7 @@ export const DEFAULT_SETTINGS: Settings = {
     usePantryFirst: false,
     avoidRecentlyCooked: true,
     servingsPerMeal: 4,
+    planScope: 'all',
   },
   printOptions: {
     includeMealQr: true,

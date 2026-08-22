@@ -32,6 +32,8 @@ import { buildBrowseSections, sectionTotal } from './browseSections'
 import { CharacteristicFilters } from './CharacteristicFilters'
 import { filterByCharacteristics } from './characteristics'
 import { MoodChips } from './MoodChips'
+import { OnlineIdeas } from '@/features/discover/OnlineIdeas'
+import { similarQuery } from '@/services/recipeDiscovery'
 import { applyMood } from './moods'
 import { partitionByPhoto, useBrokenImageVersion } from './photoAvailability'
 import { MealCard } from '@/components/meal/MealCard'
@@ -59,9 +61,16 @@ export function RecipeLibraryPage() {
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const [mood, setMood] = useState<string>()
-  const [tab, setTab] = useSectionTab<'all' | 'collections' | 'make'>(
-    ['all', 'collections', 'make'],
+  /** Which favourite the "more like this" shelf is currently asking about. */
+  const [favoriteIdea, setFavoriteIdea] = useState(0)
+  const [tab, setTab] = useSectionTab<'all' | 'favorites' | 'collections' | 'make'>(
+    ['all', 'favorites', 'collections', 'make'],
     'all',
+  )
+
+  const favorites = useMemo(
+    () => (recipes ?? []).filter((recipe) => recipe.favorite),
+    [recipes],
   )
 
   const tags = useMemo(() => collectTags(recipes ?? []), [recipes])
@@ -189,6 +198,7 @@ export function RecipeLibraryPage() {
     <SegmentedTabs
       tabs={[
         { id: 'all', label: 'All', count: recipes.length || undefined },
+        { id: 'favorites', label: 'Favourites', count: favorites.length || undefined },
         { id: 'collections', label: 'Collections' },
         { id: 'make', label: 'What can I make?' },
       ]}
@@ -199,11 +209,23 @@ export function RecipeLibraryPage() {
   )
 
   if (tab !== 'all') {
+    const heading =
+      tab === 'collections'
+        ? 'Collections'
+        : tab === 'favorites'
+          ? 'Favourites'
+          : 'What can I make?'
+
     return (
       <div className="page">
         <header className="page-header">
           <div>
-            <h1 className="page-title">{tab === 'collections' ? 'Collections' : 'What can I make?'}</h1>
+            <h1 className="page-title">{heading}</h1>
+            {tab === 'favorites' ? (
+              <p className="page-subtitle">
+                The ones you keep coming back to
+              </p>
+            ) : null}
           </div>
           <button type="button" className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
             <Plus size={16} aria-hidden="true" />
@@ -211,7 +233,52 @@ export function RecipeLibraryPage() {
           </button>
         </header>
         <div className={styles.tabRow}>{tabs}</div>
-        {tab === 'collections' ? <CollectionsView /> : <WhatCanIMakeView />}
+
+        {tab === 'favorites' ? (
+          favorites.length ? (
+            <>
+              <ul className={styles.gallery}>
+                {favorites.map((recipe: Recipe) => (
+                  <li key={recipe.id}>
+                    <MealCard
+                      recipe={recipe}
+                      to={`/recipes/${recipe.id}`}
+                      onToggleFavorite={(entry) => void toggleFavorite(entry.id)}
+                      onPlan={planMeal}
+                    />
+                  </li>
+                ))}
+              </ul>
+
+              {/* Favourites say more about what you like than any filter can,
+                  so this is the best place in the app to ask for more of it. */}
+              <OnlineIdeas
+                title="More like your favourites"
+                blurb={`Recipes for ${similarQuery(favorites[0].title)}, from the free recipe databases`}
+                query={similarQuery(favorites[favoriteIdea % favorites.length].title)}
+                onAnother={() => setFavoriteIdea((current) => current + 1)}
+                excludeTitles={(recipes ?? []).map((entry) => entry.title)}
+              />
+            </>
+          ) : (
+            <EmptyState
+              title="Nothing favourited yet"
+              description="Tap the heart on any recipe and it lands here — the shortlist you actually cook from."
+            >
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setTab('all')}
+              >
+                Browse your recipes
+              </button>
+            </EmptyState>
+          )
+        ) : tab === 'collections' ? (
+          <CollectionsView />
+        ) : (
+          <WhatCanIMakeView />
+        )}
         {addMenu}
       </div>
     )

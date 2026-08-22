@@ -85,6 +85,11 @@ stands, with whatever you have already turned down for that night kept out —
 and if that night feeds the leftover nights after it, they follow, and the batch
 is sized for all of them.
 
+**You choose how much of the day gets planned.** *Just dinners*, *dinners +
+lunches*, or *every meal* — a kitchen can have breakfast, lunch, dinner and a
+snack set up and still only want this week's dinners decided. Whatever is out
+of scope is left exactly as it was, and the choice is remembered.
+
 **The day is yours to describe.** Settings → Your day lists the meals you
 actually eat, in order, each with a rule for how it gets filled: *cook
 something* (the planner decides, N times a week), *the same thing every day*
@@ -119,6 +124,17 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
 
 ### Everything else
 
+- **Favourites** — tap the heart on anything and it lands in its own tab: the
+  shortlist you actually cook from, with a shelf of ideas from the recipe
+  databases underneath, because what you favourite says more about your taste
+  than any filter does.
+- **Discovery without the effort** — the mood chips (*comforting, fresh, very
+  easy, cheap…*) narrow your own shelf and then ask the same loose question of
+  the free recipe databases: **"Comforting ideas from the web"** sits under the
+  feed, one tap, with *Other ideas* for a different answer. Every recipe page
+  carries the same shelf — **more like this from the web**, searched for the
+  dish rather than the appliance, so "Slow Cooker Chicken Curry" finds chicken
+  curry. Nothing is fetched until you press it.
 - **Recipe library** — opens on shelves worth browsing: *Easy Crock-Pot meals*,
   *Easy Instant Pot meals*, *One pot meals*. Under them, mood chips and a wall
   of picture cards. Narrow by mood first — that is how people actually choose —
