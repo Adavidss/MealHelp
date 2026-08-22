@@ -179,3 +179,31 @@ describe('matchByIngredients', () => {
     expect(matchByIngredients([barelyRelated], ['chicken'])).toHaveLength(0)
   })
 })
+
+describe('meal types', () => {
+  /**
+   * Almost nobody tags recipes as lunches, so treating meal types as separate
+   * worlds meant anyone who asked the planner for lunches got "nothing fit
+   * this day" every day of the week.
+   */
+  it('lets a dinner recipe fill a lunch, and prefers a real lunch to it', () => {
+    const dinner = makeRecipe({ id: 'dinner', mealTypes: ['dinner'] })
+    const lunch = makeRecipe({ id: 'lunch', mealTypes: ['lunch'] })
+
+    const ranked = rankRecipes([dinner, lunch], { mealType: 'lunch' })
+
+    expect(ranked.map((entry) => entry.recipe.id)).toEqual(['lunch', 'dinner'])
+  })
+
+  it('keeps breakfast to itself, where standing in is a stretch', () => {
+    const chili = makeRecipe({ id: 'chili', mealTypes: ['dinner'] })
+    expect(rankRecipes([chili], { mealType: 'breakfast' })).toEqual([])
+  })
+
+  it('lets a recipe that says nothing about when it is eaten go anywhere', () => {
+    const anything = makeRecipe({ id: 'anything', mealTypes: [] })
+    for (const mealType of ['breakfast', 'lunch', 'dinner'] as const) {
+      expect(rankRecipes([anything], { mealType })).toHaveLength(1)
+    }
+  })
+})

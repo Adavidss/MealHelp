@@ -11,6 +11,35 @@ export const MEAL_TYPE_LABELS: Record<MealType, string> = {
   other: 'Other',
 }
 
+/**
+ * Which meals a recipe written for one can stand in for.
+ *
+ * Meal types were a hard filter, which is wrong about how people eat:
+ * yesterday's dinner is today's lunch — the planner models exactly that with
+ * leftovers — and a soup written for dinner is a perfectly good lunch. The
+ * effect of treating them as separate worlds was that anyone who asked the
+ * planner for lunches got "nothing fit this day" every day, because almost
+ * nobody tags recipes as lunches.
+ *
+ * Breakfast is the one that really is its own thing, so it stands alone: a
+ * chili at eight in the morning is not a near miss.
+ */
+export const MEAL_TYPE_NEIGHBOURS: Record<MealType, MealType[]> = {
+  breakfast: ['breakfast'],
+  lunch: ['lunch', 'dinner', 'snack', 'other'],
+  dinner: ['dinner', 'lunch', 'other'],
+  snack: ['snack', 'lunch', 'breakfast', 'other'],
+  other: MEAL_TYPES as unknown as MealType[],
+}
+
+/** True when a recipe written for `recipeTypes` can fill a `slot` meal. */
+export function mealTypeFits(slot: MealType, recipeTypes: MealType[]): boolean {
+  // A recipe that says nothing about when it is eaten fits anywhere.
+  if (!recipeTypes.length) return true
+  if (recipeTypes.includes(slot)) return true
+  return recipeTypes.some((type) => MEAL_TYPE_NEIGHBOURS[slot]?.includes(type))
+}
+
 export const COOKING_METHODS = [
   'stovetop',
   'oven',

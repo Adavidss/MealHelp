@@ -100,7 +100,21 @@ export function generateWeek(options: GenerateWeekOptions): GeneratedWeek {
       context: options.context,
     })
     plans.set(slot.id, { slot, meals: result.slots })
-    warnings.push(...result.warnings)
+
+    /*
+     * One warning per slot rather than one per day: "nothing fit Tuesday,
+     * nothing fit Wednesday, nothing fit Thursday" is the same fact three
+     * times, and the fix — more recipes for that meal — is the same too.
+     */
+    const empty = result.slots.filter((meal) => meal.unfilled).length
+    if (empty) {
+      warnings.push(
+        `Nothing in your library fits ${empty} ${slot.label.toLowerCase()}${
+          empty === 1 ? '' : 's'
+        } this week — add recipes for it, or use Surprise me to plan from the web.`,
+      )
+    }
+    warnings.push(...result.warnings.filter((warning) => !/^Nothing in your library fit/.test(warning)))
     for (const meal of result.slots) {
       if (meal.kind === 'recipe' && !meal.unfilled) cookingMeals.push({ meal, perMeal })
     }

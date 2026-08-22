@@ -16,6 +16,7 @@ import { activeMinutes } from '@/services/recipeMetrics'
 import { mealBadges } from '@/features/recipes/mealBadges'
 import { markImageBroken, useBrokenImageVersion } from '@/features/recipes/photoAvailability'
 import { formatMinutes } from '@/utils/date'
+import { useServingCost } from './useServingCost'
 import { mealArt } from './mealArtwork'
 import styles from './MealCard.module.css'
 
@@ -90,6 +91,7 @@ export function MealCard({
   const badges = mealBadges(recipe, size === 'compact' || size === 'slot' ? 2 : 3)
   const Icon = METHOD_ICON[art.method as CookingMethod] ?? UtensilsCrossed
   const minutes = formatMinutes(Math.round(activeMinutes(recipe)))
+  const perServing = useServingCost(recipe)
 
   const picture = (
     <div
@@ -120,7 +122,16 @@ export function MealCard({
           <Clock size={13} aria-hidden="true" />
           {minutes ?? '—'}
         </span>
-        {recipe.costTier ? (
+        {/*
+          What it costs to cook, per serving — the figure worth comparing two
+          recipes on. Falls back to the recipe's own $/$$/$$$ when the
+          ingredients are not ones the price table knows.
+        */}
+        {perServing != null ? (
+          <span className={styles.cost} title="Estimated cost a serving">
+            {perServing} a serving
+          </span>
+        ) : recipe.costTier ? (
           <span className={styles.cost} title="Roughly what it costs">
             {recipe.costTier}
           </span>

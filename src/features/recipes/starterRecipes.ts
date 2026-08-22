@@ -150,6 +150,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Grilled Cheese and Tomato Soup',
+    mealTypes: ['lunch', 'dinner'],
     photo: 'grilled-cheese-tomato-soup',
     description: 'The twenty-minute answer to a Friday.',
     servings: 4,
@@ -252,6 +253,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Weeknight Fried Rice',
+    mealTypes: ['lunch', 'dinner'],
     photo: 'fried-rice',
     description: 'Built for leftover rice and whatever vegetables are going soft.',
     servings: 4,
@@ -285,6 +287,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Instant Pot Lentil Soup',
+    mealTypes: ['lunch', 'dinner'],
     photo: 'lentil-soup',
     description: 'Cheap, filling, and it freezes flat.',
     servings: 8,
@@ -323,6 +326,7 @@ const SEEDS: Seed[] = [
   },
   {
     title: 'Black Bean Quesadillas',
+    mealTypes: ['lunch', 'dinner'],
     photo: 'quesadilla',
     description: 'Fifteen minutes, mostly pantry.',
     servings: 4,

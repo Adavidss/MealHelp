@@ -74,11 +74,32 @@ describe('priceOfItem', () => {
   })
 
   /**
-   * And where there is no honest conversion it says so: a number that is
-   * quietly wrong is worse than a dash the shopper can fill in.
+   * Some things are sold by the package and cooked by the piece. Four slices
+   * of a sixteen-slice loaf is a quarter of a loaf — a real fact, not a guess.
+   */
+  it('prices a piece of something sold by the package', () => {
+    const bread = priceOfItem(item({ key: 'bread', quantities: [{ amount: 4, unit: 'slice' }] }))
+    expect(bread.amount).toBeCloseTo(0.88, 2)
+
+    const tortillas = priceOfItem(item({ key: 'tortillas', quantities: [{ amount: 8 }] }))
+    expect(tortillas.amount).toBeCloseTo(3.5 * 0.8, 2)
+  })
+
+  /**
+   * Two pounds of baby potatoes against a price per potato needs to know what
+   * a potato weighs — which the nutrition table does.
+   */
+  it('converts weight into pieces when it knows what one weighs', () => {
+    const price = priceOfItem(item({ key: 'potatoes', quantities: [{ amount: 2, unit: 'lb' }] }))
+    expect(price.amount).toBeGreaterThan(2)
+    expect(price.amount).toBeLessThan(12)
+  })
+
+  /**
+   * And where there is no honest conversion it still says so: a number that
+   * is quietly wrong is worse than a dash the shopper can fill in.
    */
   it('refuses to price a quantity it cannot honestly convert', () => {
-    // Tortillas are priced per pack; "2 cups of tortillas" means nothing.
     const price = priceOfItem(item({ key: 'tortillas', quantities: [{ amount: 2, unit: 'cup' }] }))
     expect(price.amount).toBeUndefined()
     expect(price.reason).toBe('incompatible-unit')

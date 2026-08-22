@@ -22,6 +22,13 @@ export interface PriceEntry {
   unit: string
   /** Other names that mean the same shopping decision. */
   aliases?: string[]
+  /**
+   * How much of a package one is, for the things sold by the package and
+   * cooked by the piece: sixteen slices to a loaf, ten tortillas to a pack.
+   * Without these, "4 slices of bread" has no honest price, because no weight
+   * anybody knows converts slices into loaves.
+   */
+  contains?: Record<string, number>
 }
 
 export const PRICE_TABLE: PriceEntry[] = [
@@ -37,6 +44,8 @@ export const PRICE_TABLE: PriceEntry[] = [
   { key: 'bacon', price: 6.5, unit: 'lb' },
   { key: 'italian sausage', price: 5.5, unit: 'lb', aliases: ['sausage', 'sausages'] },
   { key: 'salmon', price: 12, unit: 'lb', aliases: ['salmon fillet'] },
+  { key: 'cooked turkey', price: 6, unit: 'lb', aliases: ['cooked turkey meat', 'cooked chicken', 'leftover turkey'] },
+  { key: 'beef with bones', price: 4.5, unit: 'lb', aliases: ['soup bones', 'beef shank'] },
   { key: 'shrimp', price: 10, unit: 'lb', aliases: ['prawns'] },
 
   // Dairy and eggs
@@ -49,11 +58,13 @@ export const PRICE_TABLE: PriceEntry[] = [
   { key: 'mozzarella', price: 5, unit: 'lb', aliases: ['shredded mozzarella'] },
   { key: 'cream cheese', price: 3, unit: 'lb' },
   { key: 'yogurt', price: 5, unit: 'qt', aliases: ['greek yogurt', 'yoghurt'] },
+  { key: 'buttermilk', price: 3, unit: 'qt' },
+  { key: 'margarine', price: 3, unit: 'lb', aliases: ['butter or margarine'] },
   { key: 'sour cream', price: 3, unit: 'pt' },
 
   // Produce, mostly by the piece because that is how it is bought
   { key: 'onion', price: 0.9, unit: 'each', aliases: ['onions', 'yellow onion', 'yellow onions', 'red onion'] },
-  { key: 'garlic', price: 0.08, unit: 'clove', aliases: ['garlic clove', 'garlic cloves', 'cloves garlic'] },
+  { key: 'garlic', price: 0.08, unit: 'clove', aliases: ['garlic clove', 'garlic cloves', 'cloves garlic', 'head garlic'] },
   { key: 'carrot', price: 0.4, unit: 'each', aliases: ['carrots'] },
   { key: 'celery', price: 0.3, unit: 'stalk', aliases: ['celery stalk', 'celery stalks'] },
   { key: 'potato', price: 0.8, unit: 'each', aliases: ['potatoes', 'russet potato', 'yukon gold potatoes'] },
@@ -61,8 +72,8 @@ export const PRICE_TABLE: PriceEntry[] = [
   { key: 'bell pepper', price: 1.5, unit: 'each', aliases: ['bell peppers', 'red bell pepper', 'green bell pepper'] },
   { key: 'tomato', price: 0.9, unit: 'each', aliases: ['tomatoes'] },
   { key: 'lemon', price: 0.8, unit: 'each', aliases: ['lemons'] },
-  { key: 'lime', price: 0.5, unit: 'each', aliases: ['limes'] },
-  { key: 'ginger', price: 2, unit: 'each', aliases: ['fresh ginger', 'ginger root'] },
+  { key: 'lime', price: 0.5, unit: 'each', aliases: ['limes', 'lime wedges'] },
+  { key: 'ginger', price: 0.6, unit: 'oz', aliases: ['fresh ginger', 'ginger root', 'grated fresh ginger'] },
   { key: 'broccoli', price: 2.5, unit: 'each', aliases: ['broccoli head', 'broccoli florets'] },
   { key: 'spinach', price: 3.5, unit: 'lb', aliases: ['baby spinach'] },
   { key: 'mushrooms', price: 4, unit: 'lb', aliases: ['mushroom', 'cremini mushrooms', 'button mushrooms'] },
@@ -86,22 +97,26 @@ export const PRICE_TABLE: PriceEntry[] = [
   { key: 'flour', price: 0.9, unit: 'lb', aliases: ['all purpose flour', 'plain flour'] },
   { key: 'sugar', price: 1, unit: 'lb', aliases: ['granulated sugar', 'brown sugar'] },
   { key: 'olive oil', price: 0.55, unit: 'fl oz', aliases: ['extra virgin olive oil'] },
-  { key: 'vegetable oil', price: 0.2, unit: 'fl oz', aliases: ['canola oil', 'sunflower oil'] },
+  { key: 'vegetable oil', price: 0.2, unit: 'fl oz', aliases: ['canola oil', 'sunflower oil', 'a quantity of oil suitable for the desired cooking method (see notes below)'] },
+  { key: 'sesame oil', price: 0.9, unit: 'fl oz' },
   { key: 'soy sauce', price: 0.2, unit: 'fl oz' },
   { key: 'vinegar', price: 0.15, unit: 'fl oz', aliases: ['balsamic vinegar', 'apple cider vinegar', 'rice vinegar'] },
   { key: 'diced tomatoes', price: 1.5, unit: 'can', aliases: ['crushed tomatoes', 'canned tomatoes', 'chopped tomatoes'] },
-  { key: 'tomato paste', price: 1, unit: 'can' },
+  { key: 'tomato paste', price: 1, unit: 'can', contains: { tbsp: 12, cup: 0.75 } },
   { key: 'black beans', price: 1.2, unit: 'can', aliases: ['kidney beans', 'chickpeas', 'cannellini beans', 'pinto beans'] },
   { key: 'coconut milk', price: 2.2, unit: 'can' },
   { key: 'chicken broth', price: 0.06, unit: 'fl oz', aliases: ['chicken stock', 'beef broth', 'vegetable broth', 'stock'] },
   { key: 'lentils', price: 1.8, unit: 'lb', aliases: ['red lentils', 'green lentils'] },
   { key: 'oats', price: 1.5, unit: 'lb', aliases: ['rolled oats', 'porridge oats'] },
-  { key: 'bread', price: 3.5, unit: 'each', aliases: ['loaf', 'sandwich bread', 'sourdough'] },
-  { key: 'tortillas', price: 3.5, unit: 'each', aliases: ['flour tortillas', 'corn tortillas'] },
+  { key: 'bread', price: 3.5, unit: 'loaf', aliases: ['loaf', 'sandwich bread', 'sourdough'], contains: { slice: 16 } },
+  { key: 'tortillas', price: 3.5, unit: 'pack', aliases: ['flour tortillas', 'corn tortillas'], contains: { each: 10 } },
   { key: 'breadcrumbs', price: 3, unit: 'lb', aliases: ['panko'] },
   { key: 'peanut butter', price: 4, unit: 'lb' },
   { key: 'honey', price: 8, unit: 'lb' },
   { key: 'maple syrup', price: 12, unit: 'pt' },
+  { key: 'biscuit dough', price: 3, unit: 'can', aliases: ['frozen biscuit dough', 'refrigerated biscuits'], contains: { each: 8 } },
+  { key: 'chia seeds', price: 0.5, unit: 'oz', aliases: ['flax seeds', 'hemp seeds'] },
+  { key: 'plantain', price: 1, unit: 'each', aliases: ['plantains', 'green cooking bananas (plantains)', 'cooking bananas'] },
   { key: 'cereal', price: 5, unit: 'box', aliases: ['special k', 'special k strawberry', 'cornflakes', 'granola', 'muesli'] },
 
   // Seasonings — pennies per recipe, but they belong on a shop
@@ -116,12 +131,15 @@ export const PRICE_TABLE: PriceEntry[] = [
   { key: 'oregano', price: 0.8, unit: 'oz', aliases: ['dried oregano', 'italian seasoning'] },
   { key: 'cinnamon', price: 0.9, unit: 'oz', aliases: ['ground cinnamon'] },
   { key: 'bay leaves', price: 1, unit: 'oz', aliases: ['bay leaf'] },
+  { key: 'rosemary', price: 1.5, unit: 'oz', aliases: ['thyme', 'fresh rosemary', 'fresh thyme'] },
   { key: 'vanilla', price: 3, unit: 'fl oz', aliases: ['vanilla extract'] },
   { key: 'bbq sauce', price: 0.15, unit: 'fl oz', aliases: ['barbecue sauce'] },
   { key: 'ketchup', price: 0.1, unit: 'fl oz' },
   { key: 'mayonnaise', price: 0.15, unit: 'fl oz', aliases: ['mayo'] },
   { key: 'mustard', price: 0.15, unit: 'fl oz', aliases: ['dijon mustard'] },
   { key: 'salsa', price: 0.2, unit: 'fl oz' },
+  { key: 'ranch dressing', price: 0.12, unit: 'fl oz', aliases: ['salad dressing'] },
+  { key: 'cream of chicken soup', price: 1.6, unit: 'can', aliases: ['cream of mushroom soup', 'condensed soup'] },
 ]
 
 /** "tomatoes" and "tomato" are the same shopping decision. */

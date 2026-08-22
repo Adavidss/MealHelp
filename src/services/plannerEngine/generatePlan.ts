@@ -210,7 +210,9 @@ export function generatePlan(options: GenerateOptions): GeneratedPlan {
 
     if (!chosen) {
       slots.push({ ...emptySlot(date, request.mealType) })
-      warnings.push(`Nothing in your library fit ${dayName(date)}.`)
+      warnings.push(
+        `Nothing in your library fit ${request.mealType === 'dinner' ? '' : `${request.mealType} on `}${dayName(date)}.`,
+      )
       continue
     }
 

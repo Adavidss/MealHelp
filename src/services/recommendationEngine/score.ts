@@ -13,6 +13,7 @@ import {
   DAY_LOAD_ACTIVE_LIMIT,
   EFFORT_RANK,
   METHOD_EQUIPMENT,
+  mealTypeFits,
 } from '@/models'
 import { daysSince, humanAgo } from '@/utils/date'
 import {
@@ -78,6 +79,8 @@ export interface ScoringContext {
 }
 
 const WEIGHTS = {
+  /** Written for this meal, rather than standing in for it. */
+  mealTypeExact: 6,
   favorite: 9,
   ratingPerStar: 4,
   makeAgainPenalty: -40,
@@ -109,6 +112,11 @@ export function scoreRecipe(recipe: Recipe, context: ScoringContext): ScoredReci
   const push = (name: string, points: number, reason?: string) => {
     if (points === 0) return
     factors.push({ name, points, reason })
+  }
+
+  // ---- Written for this meal, or standing in for it ----
+  if (context.mealType && recipe.mealTypes.includes(context.mealType)) {
+    push('meal-type', WEIGHTS.mealTypeExact)
   }
 
   // ---- What the user already thinks of it ----
@@ -306,10 +314,8 @@ function disqualify(recipe: Recipe, context: ScoringContext): string | undefined
     return 'Passed over this time'
   }
 
-  if (context.mealType && recipe.mealTypes.length) {
-    if (!recipe.mealTypes.includes(context.mealType)) {
-      return `Not a ${context.mealType} recipe`
-    }
+  if (context.mealType && !mealTypeFits(context.mealType, recipe.mealTypes)) {
+    return `Not a ${context.mealType} recipe`
   }
 
   if (context.equipmentOwned) {

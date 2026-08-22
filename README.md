@@ -117,7 +117,12 @@ many as you like, name them what you call them, set how many people each feeds
 and which days it happens on — a big weekend breakfast is a different slot from
 a weekday one.
 
-Planning then covers the whole day rather than dinner alone. Each cooking slot
+Planning then covers the whole day rather than dinner alone. A recipe written
+for dinner will happily fill a lunch — yesterday's dinner is today's lunch, and
+almost nobody tags recipes as lunches — while one written for the meal wins
+when there is one. Breakfast stands alone, because a chili at eight in the
+morning is not a near miss, and when the library has no breakfasts the plan
+says so once and points at the web rather than leaving five silent gaps. Each cooking slot
 gets its own rhythm, and a leftovers slot eats from cooking earlier in the week
 — which means the cooking is *sized* for it: cook Monday's chili for the
 Tuesday and Wednesday lunches too, and the plan says so ("Cooks 16 servings —
@@ -170,7 +175,8 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   Photographs lead; recipes without one fold into a section with a visible
   count. Plus instant search across titles, ingredients, tags, notes and
   cooking methods, and a compact list view when you would rather scan names.
-- **What a recipe costs** — on its own page, under the ingredients: about
+- **What a recipe costs** — on the card, per serving, so two recipes can be
+  compared at a glance; and on its own page, under the ingredients: about
   £19.70, £3.29 a serving, with every line priced. It follows the ½×–2× scale,
   so doubling the batch doubles the total and leaves the per-serving figure
   alone. Costed as the *amount used* — two tablespoons of oil are two

@@ -29,19 +29,18 @@ export interface ItemPrice {
   reason?: 'unknown-item' | 'incompatible-unit' | 'no-quantity'
 }
 
-/** A count with no unit — "3 onions" — which prices per item. */
-function isCount(quantity: GroceryQuantity): boolean {
-  return quantity.amount != null && !quantity.unit
-}
-
 /**
  * How many of the priced unit one quantity represents.
  *
- * The awkward case is that shops sell by mass while recipes ask by volume:
- * "2 cups of rice" is not a number of pounds until you know what rice weighs.
- * Rather than invent a density, this borrows the gram weights the nutrition
- * estimator already carries for exactly this problem — real per-cup weights
- * for real foods — and gives up honestly when there is none.
+ * The awkward cases are all mismatches of kind: shops sell mince by the pound
+ * and potatoes by the potato, while recipes ask for two pounds of baby
+ * potatoes, a head of garlic, two tablespoons of tomato paste. None of those
+ * convert arithmetically — they need to know what the food weighs.
+ *
+ * So the gram weights the nutrition estimator already carries do the work in
+ * both directions: a quantity becomes grams, and grams become however the
+ * thing is priced. Where no weight is known it gives up rather than guessing,
+ * because a quietly wrong price is worse than a dash.
  */
 function unitsNeeded(
   quantity: GroceryQuantity,
@@ -50,47 +49,64 @@ function unitsNeeded(
 ): number | undefined {
   const priceUnit = normalizeUnit(entry.unit) ?? entry.unit
   const amount = quantity.amount
-
   if (amount == null) return undefined
 
-  if (isCount(quantity)) {
-    // Priced per item: "3 onions" is three onions. Priced by mass, a count is
-    // only useful if we know what one of them weighs.
-    if (priceUnit === 'each') return amount
-    return viaGrams(amount, undefined, priceUnit, name)
-  }
-
   const from = normalizeUnit(quantity.unit)
-  if (!from) return undefined
 
-  if (priceUnit === 'each') {
-    // "1 can black beans" against a per-can price is a straight count; any
-    // other unit against a per-item price is not something to guess at.
-    return dimensionOf(from) === dimensionOf(priceUnit) ? amount : undefined
+  // Same kind of thing: pounds to ounces, cups to millilitres, cans to cans.
+  if (from && convert(amount, from, priceUnit) != null) {
+    return convert(amount, from, priceUnit) ?? undefined
   }
 
-  const converted = convert(amount, from, priceUnit)
-  if (converted != null) return converted
+  // A bare count against a per-item price: "3 onions" is three onions.
+  if (!from && priceUnit === 'each') return amount
+
+  // Sold by the package, cooked by the piece: four slices of a sixteen-slice
+  // loaf is a quarter of a loaf.
+  const perPackage = entry.contains?.[from ?? 'each']
+  if (perPackage) return amount / perPackage
 
   return viaGrams(amount, quantity.unit, priceUnit, name)
 }
 
-/** Volume or a count into a weight, using the food's own density. */
+/**
+ * Across kinds, by weight.
+ *
+ * `gramsOf` turns a recipe quantity into grams using the food's own density
+ * or piece weight; this then turns grams into whatever the shop sells — a
+ * weight, a piece, a can, a clove.
+ */
 function viaGrams(
   amount: number,
   unit: string | undefined,
   priceUnit: string,
   name: string,
 ): number | undefined {
-  if (dimensionOf(priceUnit) !== 'mass') return undefined
   const food = findFood(name)
   if (!food) return undefined
+
   const grams = gramsOf(
     { id: 'price', originalText: name, ingredientName: name, quantity: amount, unit },
     food,
   )
   if (grams == null) return undefined
-  return convert(grams, 'g', priceUnit) ?? undefined
+
+  // Priced by weight: straight conversion.
+  if (dimensionOf(priceUnit) === 'mass') {
+    return convert(grams, 'g', priceUnit) ?? undefined
+  }
+
+  /*
+   * Priced by the piece, the can, the clove: how many of those weigh this
+   * much. "each" is the piece weight; anything else has to be a unit the
+   * food table knows a weight for, or there is no honest answer.
+   */
+  const perUnit =
+    priceUnit === 'each'
+      ? food.grams?.each
+      : food.grams?.[priceUnit as keyof NonNullable<typeof food.grams>]
+  if (!perUnit) return undefined
+  return grams / perUnit
 }
 
 export function priceOfItem(item: GroceryItem, source: PriceSource = {}): ItemPrice {
