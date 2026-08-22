@@ -10,6 +10,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
+import { useQuickPlan } from '@/app/QuickPlanContext'
 import { copyWeek, movePlannedMeal } from '@/db/plans'
 import { generateGroceryList } from '@/db/grocery'
 import type { MealType, PlannedMeal } from '@/models'
@@ -22,6 +23,7 @@ import { HistoryView } from '@/features/history/HistoryPage'
 import { NutritionView } from '@/features/nutrition/NutritionView'
 import { AddMealDialog } from './AddMealDialog'
 import { MealActionsDialog } from './MealActionsDialog'
+import { PlanRail } from './PlanRail'
 import { WeekBoard } from './WeekBoard'
 import { usePlannerWeek } from './usePlannerWeek'
 import styles from './PlannerPage.module.css'
@@ -34,6 +36,7 @@ export function PlannerPage() {
   const navigate = useNavigate()
   const { settings } = useSettings()
   const { toast } = useToast()
+  const { planMeal } = useQuickPlan()
 
   const weekStart = weekParam ?? startOfWeek(todayISO(), settings.weekStartsOn)
   const week = usePlannerWeek(weekStart)
@@ -222,16 +225,22 @@ export function PlannerPage() {
         </EmptyState>
       ) : null}
 
-      <WeekBoard
-        dates={week.dates}
-        mealsByDate={week.mealsByDate}
-        recipesById={week.recipesById}
-        mealTypes={mealTypes}
-        today={today}
-        onAdd={(date, mealType) => setAdding({ date, mealType })}
-        onOpenMeal={setSelected}
-        onMove={(mealId, date, mealType) => void movePlannedMeal(mealId, date, mealType)}
-      />
+      <div className={styles.boardRow}>
+        <div className={styles.boardMain}>
+          <WeekBoard
+            dates={week.dates}
+            mealsByDate={week.mealsByDate}
+            recipesById={week.recipesById}
+            mealTypes={mealTypes}
+            today={today}
+            onAdd={(date, mealType) => setAdding({ date, mealType })}
+            onOpenMeal={setSelected}
+            onMove={(mealId, date, mealType) => void movePlannedMeal(mealId, date, mealType)}
+          />
+        </div>
+
+        <PlanRail usedRecipeIds={usedRecipeIds} onPick={planMeal} />
+      </div>
 
       {adding ? (
         <AddMealDialog
@@ -251,7 +260,7 @@ export function PlannerPage() {
         open={Boolean(selected)}
         meal={selected}
         recipe={selected?.recipeId ? week.recipesById.get(selected.recipeId) : undefined}
-        dates={week.dates}
+            dates={week.dates}
         onClose={() => setSelected(null)}
       />
     </div>

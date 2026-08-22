@@ -407,7 +407,14 @@ function GroceryRow({
                       }`}
                       title={source.recipeTitle}
                     >
-                      {art?.kind === 'photo' ? <img src={art.src} alt="" loading="lazy" /> : null}
+                      {art?.kind === 'photo' ? (
+                        <img src={art.src} alt="" loading="lazy" />
+                      ) : (
+                        // No photograph to shrink, so the initial stands in:
+                        // at 22px an icon is mush, and a bare colour says
+                        // "three recipes" without saying which three.
+                        <span aria-hidden="true">{source.recipeTitle.trim().charAt(0)}</span>
+                      )}
                     </span>
                   )
                 })}

@@ -153,3 +153,21 @@
     display: none !important;
   }
 }
+
+/*
+ * Week and discovery, side by side where the screen allows. The week keeps
+ * min-width: 0 so its own carousel can scroll instead of pushing the rail off.
+ */
+.boardRow {
+  display: flex;
+  gap: var(--space-4);
+  align-items: flex-start;
+}
+
+.boardMain {
+  flex: 1;
+  min-width: 0;
+  /* Named so the week can ask how much room *it* has, rather than how wide the
+     window is: with the rail beside it, those are different questions. */
+  container: week / inline-size;
+}

@@ -1,0 +1,80 @@
+/*
+ * The discovery rail. Only on screens with room for the week *and* something
+ * to fill it with — below that it would be taking space from the thing it is
+ * meant to serve.
+ */
+.rail {
+  display: none;
+}
+
+@media (min-width: 1100px) {
+  .rail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    width: 320px;
+    flex: none;
+    align-self: flex-start;
+    position: sticky;
+    top: var(--space-4);
+    max-height: calc(100dvh - var(--space-6));
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--surface-sunk);
+    border: 1px solid var(--line);
+  }
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.title {
+  font-size: 1.05rem;
+}
+
+.all {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--accent-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.all:hover {
+  text-decoration: underline;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  list-style: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  /* Its own scroller, so the week does not move while you shop for it. */
+  min-height: 0;
+  padding-right: 2px;
+}
+
+.alreadyOn {
+  opacity: 0.55;
+}
+
+.onWeek {
+  margin: 2px 0 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--sage-ink);
+}
+
+.empty {
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+}
