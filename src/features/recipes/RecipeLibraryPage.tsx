@@ -11,6 +11,7 @@ import {
   List,
   PencilLine,
   Plus,
+  Dices,
   SlidersHorizontal,
 } from 'lucide-react'
 import { useSettings } from '@/app/SettingsContext'
@@ -33,6 +34,7 @@ import { CharacteristicFilters } from './CharacteristicFilters'
 import { filterByCharacteristics } from './characteristics'
 import { MoodChips } from './MoodChips'
 import { OnlineIdeas } from '@/features/discover/OnlineIdeas'
+import { SurpriseSheet } from '@/features/discover/SurpriseSheet'
 import { similarQuery } from '@/services/recipeDiscovery'
 import { applyMood } from './moods'
 import { partitionByPhoto, useBrokenImageVersion } from './photoAvailability'
@@ -63,6 +65,7 @@ export function RecipeLibraryPage() {
   const [mood, setMood] = useState<string>()
   /** Which favourite the "more like this" shelf is currently asking about. */
   const [favoriteIdea, setFavoriteIdea] = useState(0)
+  const [surprising, setSurprising] = useState(false)
   const [tab, setTab] = useSectionTab<'all' | 'favorites' | 'collections' | 'make'>(
     ['all', 'favorites', 'collections', 'make'],
     'all',
@@ -290,10 +293,21 @@ export function RecipeLibraryPage() {
         <div>
           <h1 className="page-title">Recipes</h1>
         </div>
-        <button type="button" className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
-          <Plus size={16} aria-hidden="true" />
-          Add
-        </button>
+        <div className="row-tight">
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => setSurprising(true)}
+            disabled={results.length === 0}
+          >
+            <Dices size={16} aria-hidden="true" />
+            Surprise me
+          </button>
+          <button type="button" className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
+            <Plus size={16} aria-hidden="true" />
+            Add
+          </button>
+        </div>
       </header>
 
       <div className={styles.tabRow}>{tabs}</div>
@@ -554,6 +568,16 @@ export function RecipeLibraryPage() {
 
       {addMenu}
 
+      <SurpriseSheet
+        open={surprising}
+        // Whatever the search, mood and filters have left on screen: a
+        // surprise drawn from a list you narrowed is still a surprise.
+        pool={results}
+        poolLabel={
+          results.length === recipes.length ? 'your recipes' : 'what you filtered to'
+        }
+        onClose={() => setSurprising(false)}
+      />
     </div>
   )
 }

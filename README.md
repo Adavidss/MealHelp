@@ -128,6 +128,13 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   shortlist you actually cook from, with a shelf of ideas from the recipe
   databases underneath, because what you favourite says more about your taste
   than any filter does.
+- **Surprise me** — for the evening when no mood fits either. One meal,
+  picked at random from whatever is on screen (so a surprise still respects
+  the mood you tapped), with *Put it on a day*, *Another* and *Cook it now*.
+  It remembers the last few picks and refuses to repeat them, because true
+  randomness on a library of a dozen shows the same dinner twice often enough
+  to read as broken. When your own shelf has nothing, it rolls the recipe
+  databases instead.
 - **Discovery without the effort** — the mood chips (*comforting, fresh, very
   easy, cheap…*) narrow your own shelf and then ask the same loose question of
   the free recipe databases: **"Comforting ideas from the web"** sits under the

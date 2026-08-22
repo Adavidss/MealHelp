@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks'
 import {
   ChefHat,
   Compass,
+  Dices,
   Refrigerator,
   Settings as SettingsIcon,
   Sparkles,
@@ -19,6 +20,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { MoodChips } from '@/features/recipes/MoodChips'
 import { applyMood, moodById } from '@/features/recipes/moods'
 import { OnlineIdeas } from '@/features/discover/OnlineIdeas'
+import { SurpriseSheet } from '@/features/discover/SurpriseSheet'
 import { moodQuery } from '@/services/recipeDiscovery'
 import { StarterRecipesButton } from '@/features/recipes/StarterRecipesButton'
 import { mealTitle } from '@/features/planner/mealTitle'
@@ -59,6 +61,7 @@ export function HomePage() {
   const [mood, setMood] = useState<string>()
   /** Bumped by "other ideas", so asking again asks differently. */
   const [ideaAttempt, setIdeaAttempt] = useState(0)
+  const [surprising, setSurprising] = useState(false)
 
   const recipes = useLiveQuery(() => db.recipes.toArray(), [], [] as Recipe[])
   const pantryKeys = useLiveQuery(() => pantryKeySet(), [], new Set<string>())
@@ -103,6 +106,12 @@ export function HomePage() {
   const plannedIds = useMemo(
     () => new Set((upcomingMeals ?? []).map((meal) => meal.recipeId).filter(Boolean) as string[]),
     [upcomingMeals],
+  )
+
+  /** Everything matching the mood — the feed shows a slice, the dice use it all. */
+  const feedPool = useMemo(
+    () => applyMood((recipes ?? []).filter((recipe) => !plannedIds.has(recipe.id)), mood, { pantryKeys }),
+    [recipes, plannedIds, mood, pantryKeys],
   )
 
   const feed = useMemo(() => {
@@ -263,9 +272,19 @@ export function HomePage() {
               <Compass size={16} aria-hidden="true" />
               What sounds good?
             </h2>
-            <Link to="/recipes" className={styles.seeAll}>
-              All recipes
-            </Link>
+            <div className={styles.rowActions}>
+              <button
+                type="button"
+                className={styles.surprise}
+                onClick={() => setSurprising(true)}
+              >
+                <Dices size={15} aria-hidden="true" />
+                Surprise me
+              </button>
+              <Link to="/recipes" className={styles.seeAll}>
+                All recipes
+              </Link>
+            </div>
           </div>
 
           <MoodChips value={mood} onChange={setMood} recipes={recipes ?? []} pantryKeys={pantryKeys} />
@@ -303,6 +322,15 @@ export function HomePage() {
           />
         </section>
       ) : null}
+
+      <SurpriseSheet
+        open={surprising}
+        // Whatever the mood chips have narrowed to, so a surprise still
+        // respects the one loose preference you did express.
+        pool={feedPool}
+        poolLabel={mood ? `${moodLabel(mood).toLowerCase()} recipes` : 'your recipes'}
+        onClose={() => setSurprising(false)}
+      />
 
       {!libraryEmpty ? (
         <p className={styles.footNote}>
