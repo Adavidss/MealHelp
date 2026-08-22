@@ -1,6 +1,9 @@
 /**
  * Picking something at random, in the way people actually mean it.
  *
+ * Used for recipes and for the browser's random dish ideas alike, which is
+ * why it knows nothing about either: anything with an id can be surprised.
+ *
  * "Surprise me" pressed twice must not offer the same thing twice — true
  * randomness does that roughly one time in however many recipes you own, and
  * on a small library it happens constantly, which reads as the button being

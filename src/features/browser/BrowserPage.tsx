@@ -22,12 +22,18 @@ import {
   parseRecipeText,
   type RecipeImportResult,
 } from '@/services/recipeImport'
-import { forgetRecentPages, recentPages, type RecentPage } from '@/services/pageBrowser'
+import {
+  forgetRecentPages,
+  recentPages,
+  surpriseIdeaItems,
+  type RecentPage,
+} from '@/services/pageBrowser'
 import { Modal } from '@/components/common/Modal'
 import { useToast } from '@/components/common/Toast'
 import { ImportPreview } from '@/features/import/ImportPreview'
 import { SegmentedTabs } from '@/components/common/SegmentedTabs'
 import { useSectionTab } from '@/app/useSectionTab'
+import { pickSurprise, rememberPick } from '@/utils/surprise'
 import { DatabasesView } from '@/features/discover/DiscoverPage'
 import { AddressBar } from './AddressBar'
 import { PageFrame } from './PageFrame'
@@ -184,6 +190,24 @@ export function BrowserPage() {
     })
   }
 
+  /**
+   * The web's version of "surprise me".
+   *
+   * There is no list of every recipe on the internet to draw from, so instead
+   * of picking a random recipe this asks a question you would not have thought
+   * to ask — a real dinner, from a spread of cuisines and methods — and shows
+   * what comes back. The picker remembers what it just offered, so rolling
+   * twice does not land on the same dish.
+   */
+  const rolled = useRef<string[]>([])
+  const surprise = useCallback(() => {
+    const idea = pickSurprise(surpriseIdeaItems(), rolled.current)
+    if (!idea) return
+    rolled.current = rememberPick(rolled.current, idea.id)
+    setTab('web')
+    browser.search(idea.id)
+  }, [browser, setTab])
+
   return (
     <div className={styles.screen}>
       <AddressBar
@@ -194,6 +218,7 @@ export function BrowserPage() {
         onBack={browser.back}
         onReload={() => browser.reload()}
         onStop={browser.stop}
+        onSurprise={surprise}
         onMore={() => setMenuOpen(true)}
       />
       <div className={styles.progress} aria-hidden="true">
@@ -225,6 +250,7 @@ export function BrowserPage() {
               recent={recent}
               onOpen={browser.open}
               onSearch={browser.search}
+              onSurprise={surprise}
               onClearRecent={() => {
                 forgetRecentPages()
                 setRecent([])

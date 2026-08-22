@@ -265,3 +265,21 @@
   max-width: var(--content-max);
   margin: 0 auto;
 }
+
+.surpriseButton {
+  flex: none;
+}
+
+/* On a phone the row is tight, so the dice speaks for itself. */
+@media (max-width: 520px) {
+  .surpriseLabel {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+}

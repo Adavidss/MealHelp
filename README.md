@@ -134,7 +134,10 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   It remembers the last few picks and refuses to repeat them, because true
   randomness on a library of a dozen shows the same dinner twice often enough
   to read as broken. When your own shelf has nothing, it rolls the recipe
-  databases instead.
+  databases instead. The browser has the same dice — in the toolbar and on its
+  start page — where it asks the web a question you would not have thought to
+  ask ("tomato and butter bean stew"), and the recipe databases have one that
+  works in a single tap.
 - **Discovery without the effort** — the mood chips (*comforting, fresh, very
   easy, cheap…*) narrow your own shelf and then ask the same loose question of
   the free recipe databases: **"Comforting ideas from the web"** sits under the

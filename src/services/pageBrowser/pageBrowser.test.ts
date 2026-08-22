@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { resultTags } from './resultTags'
 import { previewImageFromHtml } from './preview'
+import { SURPRISE_IDEAS, surpriseIdeaItems } from './surpriseIdeas'
 
 describe('resultTags', () => {
   it('reads the appliance out of the title the page gave itself', () => {
@@ -49,5 +50,24 @@ describe('previewImageFromHtml', () => {
     const twitter = `<meta name="twitter:image" content="https://cdn.example.com/a.jpg">`
     expect(previewImageFromHtml(twitter, 'https://example.com/')).toBe('https://cdn.example.com/a.jpg')
     expect(previewImageFromHtml('<html><body>no picture</body></html>', 'https://example.com/')).toBeUndefined()
+  })
+})
+
+describe('surprise ideas', () => {
+  it('offers real dinners, not curiosities', () => {
+    expect(SURPRISE_IDEAS.length).toBeGreaterThan(20)
+    for (const idea of SURPRISE_IDEAS) {
+      // Two or three words: a search engine finds dishes, not sentences.
+      expect(idea.split(' ').length).toBeLessThanOrEqual(5)
+      expect(idea).toBe(idea.toLowerCase())
+    }
+  })
+
+  it('has no duplicates, which would make a roll feel rigged', () => {
+    expect(new Set(SURPRISE_IDEAS).size).toBe(SURPRISE_IDEAS.length)
+  })
+
+  it('hands the picker something it can identify', () => {
+    expect(surpriseIdeaItems()[0]).toEqual({ id: SURPRISE_IDEAS[0] })
   })
 })

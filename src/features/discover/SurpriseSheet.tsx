@@ -13,7 +13,7 @@ import {
   theMealDbProvider,
   type DiscoveryResult,
 } from '@/services/recipeDiscovery'
-import { pickSurprise, rememberPick } from '@/features/recipes/surprise'
+import { pickSurprise, rememberPick } from '@/utils/surprise'
 import { MealCard } from '@/components/meal/MealCard'
 import { Modal } from '@/components/common/Modal'
 import { useToast } from '@/components/common/Toast'

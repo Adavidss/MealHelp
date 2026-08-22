@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Clock, Globe, X } from 'lucide-react'
+import { Dices, Clock, Globe, X } from 'lucide-react'
 import { STARTING_SITES, type RecentPage } from '@/services/pageBrowser'
 import styles from './StartPage.module.css'
 
@@ -7,6 +7,8 @@ interface StartPageProps {
   recent: RecentPage[]
   onOpen: (url: string) => void
   onSearch: (query: string) => void
+  /** A random dish, searched for you. */
+  onSurprise: () => void
   onClearRecent: () => void
 }
 
@@ -17,12 +19,28 @@ const SUGGESTIONS = ['weeknight chicken', 'slow cooker chili', 'one pot pasta', 
  * who know what they want (search), for people who know where they like to
  * cook from (sites), and for people picking up where they left off (recent).
  */
-export function StartPage({ recent, onOpen, onSearch, onClearRecent }: StartPageProps) {
+export function StartPage({
+  recent,
+  onOpen,
+  onSearch,
+  onSurprise,
+  onClearRecent,
+}: StartPageProps) {
   return (
     <div className={styles.start}>
       <section className={styles.section}>
         <h2 className={styles.heading}>Try searching for</h2>
         <div className={styles.chips}>
+          {/* First, because "what should I even look for" is the hard part
+              of an empty search box. */}
+          <button
+            type="button"
+            className={`chip chip-button ${styles.surprise}`}
+            onClick={onSurprise}
+          >
+            <Dices size={14} aria-hidden="true" />
+            Surprise me
+          </button>
           {SUGGESTIONS.map((suggestion) => (
             <button
               key={suggestion}

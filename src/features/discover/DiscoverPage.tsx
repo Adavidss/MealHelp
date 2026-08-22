@@ -226,7 +226,6 @@ export function DatabasesView() {
           <option value="search">By name</option>
           <option value="pantry">From my pantry</option>
           <option value="browse">Browse</option>
-          <option value="surprise">Surprise me</option>
         </select>
         {mode === 'search' ? (
           <SearchField
@@ -277,17 +276,30 @@ export function DatabasesView() {
             }
           />
         ) : null}
-        {mode === 'surprise' ? (
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => void surprise()}
-            disabled={busy}
-          >
-            {busy ? <Loader2 size={17} aria-hidden="true" /> : <Dices size={17} aria-hidden="true" />}
-            {busy ? 'Looking…' : 'Surprise me'}
-          </button>
-        ) : null}
+        {/*
+          Always here, not only once "Surprise me" has been chosen from the
+          dropdown: picking a mode and then pressing a button is two decisions
+          for the one thing in this view that has none.
+        */}
+        <button
+          type="button"
+          className={`btn ${mode === 'surprise' ? 'btn-primary' : 'btn-secondary'} ${styles.surpriseButton}`}
+          onClick={() => {
+            setMode('surprise')
+            void surprise()
+          }}
+          disabled={busy}
+          aria-label="Surprise me — a handful of recipes at random"
+        >
+          {busy && mode === 'surprise' ? (
+            <Loader2 size={17} aria-hidden="true" />
+          ) : (
+            <Dices size={17} aria-hidden="true" />
+          )}
+          <span className={styles.surpriseLabel}>
+            {busy && mode === 'surprise' ? 'Looking…' : 'Surprise me'}
+          </span>
+        </button>
       </div>
       <p className={styles.sourceLine}>
         {spoonacularKey

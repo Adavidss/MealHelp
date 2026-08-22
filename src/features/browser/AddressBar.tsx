@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Ellipsis, RotateCw, Search, X } from 'lucide-react'
+import { ArrowLeft, Dices, Ellipsis, RotateCw, Search, X } from 'lucide-react'
 import styles from './AddressBar.module.css'
 
 interface AddressBarProps {
@@ -11,6 +11,8 @@ interface AddressBarProps {
   onBack: () => void
   onReload: () => void
   onStop: () => void
+  /** A random dish, searched for you — for when the field is the hard part. */
+  onSurprise: () => void
   onMore: () => void
 }
 
@@ -27,6 +29,7 @@ export function AddressBar({
   onBack,
   onReload,
   onStop,
+  onSurprise,
   onMore,
 }: AddressBarProps) {
   const [editing, setEditing] = useState(false)
@@ -114,6 +117,16 @@ export function AddressBar({
           </button>
         ) : null}
       </form>
+
+      <button
+        type="button"
+        className={styles.iconButton}
+        onClick={onSurprise}
+        aria-label="Surprise me — search for a random dish"
+        title="Surprise me"
+      >
+        <Dices size={19} aria-hidden="true" />
+      </button>
 
       <button type="button" className={styles.iconButton} onClick={onMore} aria-label="More">
         <Ellipsis size={20} aria-hidden="true" />

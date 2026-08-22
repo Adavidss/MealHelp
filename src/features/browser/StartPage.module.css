@@ -150,3 +150,10 @@
   color: var(--ink-faint);
   max-width: 60ch;
 }
+
+/* The way in for "I don't know what I want", which is most evenings. */
+.surprise {
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  background: var(--accent-soft);
+}
