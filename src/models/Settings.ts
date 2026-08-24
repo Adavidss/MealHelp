@@ -247,6 +247,9 @@ export const DEFAULT_SETTINGS: Settings = {
     useSharedFetchers: true,
   },
   theme: DEFAULT_THEME_ID,
-  colorScheme: 'auto',
+  // Light unless asked otherwise. "Follow system" made a phone in night mode
+  // show a dark kitchen to somebody who had just picked a white theme, which
+  // reads as the choice not sticking.
+  colorScheme: 'light',
   updatedAt: new Date(0).toISOString(),
 }

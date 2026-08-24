@@ -17,7 +17,7 @@ import {
 import { GROCERY_CATEGORIES, type GroceryItem, type Recipe } from '@/models'
 import { categoryRank } from '@/services/groceryAggregator'
 import { matchByIngredients } from '@/services/recommendationEngine'
-import { formatQuantity } from '@/services/unitConversion'
+import { formatShoppingQuantity } from '@/services/unitConversion'
 import { formatWeekRange, startOfWeek, todayISO } from '@/utils/date'
 import { EmptyState } from '@/components/common/EmptyState'
 import { mealArt } from '@/components/meal/mealArtwork'
@@ -492,5 +492,5 @@ function GroceryRow({
 }
 
 function quantityText(item: GroceryItem): string {
-  return item.quantities.map(formatQuantity).filter(Boolean).join(' + ')
+  return item.quantities.map(formatShoppingQuantity).filter(Boolean).join(' + ')
 }

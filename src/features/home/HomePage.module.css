@@ -99,6 +99,9 @@
   justify-content: space-between;
   gap: var(--space-3);
   margin-bottom: var(--space-3);
+  /* On a phone the heading and its two actions do not fit on one line, and
+     letting them try turned "What sounds good?" into three stacked words. */
+  flex-wrap: wrap;
 }
 
 .rowTitle {
@@ -106,6 +109,7 @@
   align-items: center;
   gap: 6px;
   font-size: 1.1rem;
+  white-space: nowrap;
 }
 
 .seeAll {

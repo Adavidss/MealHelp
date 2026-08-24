@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { combineQuantities, formatAmount, formatQuantity, scaleAmount } from './quantities'
+import {
+  combineQuantities,
+  formatAmount,
+  formatQuantity,
+  formatShoppingQuantity,
+  scaleAmount,
+} from './quantities'
 import { convert, normalizeUnit, unitsCompatible } from './units'
 
 describe('normalizeUnit', () => {
@@ -125,5 +131,20 @@ describe('scaleAmount', () => {
 
   it('leaves an unknown quantity unknown', () => {
     expect(scaleAmount(undefined, 2)).toBeUndefined()
+  })
+})
+
+describe('shopping quantities', () => {
+  /** Nobody buys 2.7 onions, and a list that says so is a list you stop trusting. */
+  it('rounds counted things up, because a spare onion beats a missing one', () => {
+    expect(formatShoppingQuantity({ amount: 2.7 })).toBe('3')
+    expect(formatShoppingQuantity({ amount: 1.2 })).toBe('2')
+    expect(formatShoppingQuantity({ amount: 3 })).toBe('3')
+  })
+
+  it('leaves measured things exactly as they are', () => {
+    // 2.7 lbs is a real thing to ask for at a counter.
+    expect(formatShoppingQuantity({ amount: 2.7, unit: 'lb' })).toBe('2.7 lbs')
+    expect(formatShoppingQuantity({ freeform: 'a pinch' })).toBe('a pinch')
   })
 })

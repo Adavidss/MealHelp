@@ -1,0 +1,92 @@
+/* Above the tab bar, out of the way of everything else on the page. */
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* Clear of the tab bar, which is 56px of tabs plus the home indicator. */
+  bottom: calc(56px + env(safe-area-inset-bottom, 0px) + var(--space-2));
+  z-index: 40;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0 var(--space-3) var(--space-2);
+  pointer-events: none;
+}
+
+@media (min-width: 900px) {
+  /* The sidebar replaces the tab bar on a wide screen. */
+  .bar {
+    bottom: var(--space-4);
+    left: auto;
+    right: var(--space-4);
+    width: min(22rem, 40vw);
+  }
+}
+
+.timer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-2) 0 var(--space-3);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 6px 18px rgb(0 0 0 / 22%);
+  pointer-events: auto;
+}
+
+/* A finished timer has to be visible from across a kitchen. */
+.done {
+  background: var(--accent);
+  color: #fff;
+}
+
+.face {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.85rem;
+  opacity: 0.85;
+}
+
+.value {
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+}
+
+.dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  background: none;
+  border: 0;
+  color: inherit;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.dismiss:hover {
+  opacity: 1;
+}

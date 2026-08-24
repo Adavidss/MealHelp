@@ -4,7 +4,7 @@ import { ChevronDown, ChevronUp, Wallet } from 'lucide-react'
 import { clearOwnPrice, loadPriceBook, setOwnPrice } from '@/db/prices'
 import type { GroceryItem } from '@/models'
 import { formatMoney, priceBreakdown } from '@/services/pricing'
-import { formatQuantity } from '@/services/unitConversion'
+import { formatShoppingQuantity } from '@/services/unitConversion'
 import styles from './CostPanel.module.css'
 
 interface CostPanelProps {
@@ -94,7 +94,7 @@ export function CostPanel({ items, currency = '$' }: CostPanelProps) {
                   {group.items.map(({ item, price }) => (
                     <li key={item.id} className={styles.line}>
                       <span className={styles.lineName}>
-                        {item.quantities.map(formatQuantity).filter(Boolean).join(' + ')} {item.name}
+                        {item.quantities.map(formatShoppingQuantity).filter(Boolean).join(' + ')} {item.name}
                       </span>
                       {editing?.id === item.id ? (
                         <span className={styles.editor}>

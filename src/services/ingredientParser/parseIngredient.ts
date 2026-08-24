@@ -189,6 +189,42 @@ function matchUnit(text: string): { unit: string; length: number } | undefined {
   return undefined
 }
 
+/**
+ * Containers a shop sells things in that no table can weigh on its own.
+ *
+ * A can is left out on purpose: prices know what a can of tomatoes costs, and
+ * turning it into ounces would send it the long way round through grams.
+ */
+const PACKAGES = new Set([
+  'package', 'packages', 'pkg', 'pack', 'packet', 'bag', 'bags', 'box', 'boxes',
+  'jar', 'jars', 'bottle', 'bottles', 'tub', 'tubs', 'container', 'containers',
+  'pouch', 'carton', 'cartons', 'block', 'blocks',
+])
+
+/** "measured by the finger", which is not a unit but does mean roughly one. */
+const HAND_MEASURES = new Set(['inch', 'inches', 'in', 'piece', 'pieces', 'knob', 'thumb'])
+
+/**
+ * "1 (14-ounce) package firm tofu" is fourteen ounces of tofu.
+ *
+ * Recipe sites write the size in brackets and the container in words, which
+ * parses out as one package — a quantity nothing can price or count calories
+ * for. The bracket is the real measurement, so when the unit turns out to be a
+ * container, the bracket becomes the quantity.
+ */
+const PACKAGE_SIZE = /^(\d+(?:\.\d+)?)\s*[-\s]?\s*(oz|ounce|ounces|g|gram|grams|lb|lbs|pound|pounds|ml|l|liter|liters|litre|litres|kg|fl oz|fluid ounce|fluid ounces)\b/i
+
+function packageSize(notes: string[]): { amount: number; unit: string; note: string } | undefined {
+  for (const note of notes) {
+    const match = PACKAGE_SIZE.exec(note.trim())
+    if (!match) continue
+    const unit = normalizeUnit(match[2].toLowerCase())
+    if (!unit) continue
+    return { amount: Number(match[1]), unit, note }
+  }
+  return undefined
+}
+
 function stripParentheticals(text: string): { rest: string; notes: string[] } {
   const notes: string[] = []
   let rest = text
@@ -315,6 +351,14 @@ export function parseIngredient(raw: string, section?: string): ParsedIngredient
       if (unitMatch) {
         unit = normalizeUnit(unitMatch.unit)
         working = working.slice(unitMatch.length).trimStart()
+      } else {
+        // "1 inch fresh ginger", "2 pieces chicken": not units, but the number
+        // in front of them still counts as one of the thing.
+        const word = /^([a-z]+)\b\.?\s*/i.exec(working)
+        if (word && HAND_MEASURES.has(word[1].toLowerCase())) {
+          notes.push(word[1].toLowerCase())
+          working = working.slice(word[0].length)
+        }
       }
 
       const afterUnit = stripParentheticals(working)
@@ -322,6 +366,17 @@ export function parseIngredient(raw: string, section?: string): ParsedIngredient
       working = afterUnit.rest
 
       working = working.replace(/^of\s+/i, '')
+
+      // A container with its size in brackets: the size is the measurement.
+      if (unit && PACKAGES.has(unit)) {
+        const size = packageSize(notes)
+        if (size) {
+          quantity = (quantity ?? 1) * size.amount
+          quantityMax = quantityMax != null ? quantityMax * size.amount : undefined
+          unit = size.unit
+          notes.splice(notes.indexOf(size.note), 1)
+        }
+      }
     }
   }
 

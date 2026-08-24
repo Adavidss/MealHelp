@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
@@ -14,7 +14,9 @@ import {
   Globe,
   Heart,
   Library,
+  Minus,
   Pencil,
+  Plus,
   Printer,
   Share2,
   ShoppingCart,
@@ -50,6 +52,7 @@ import {
   scaleLabel,
 } from './ingredientDisplay'
 import { RecipeCostPanel } from './RecipeCostPanel'
+import { rememberScale, rememberedScale } from './recipeView'
 import styles from './RecipeDetailPage.module.css'
 
 export function RecipeDetailPage() {
@@ -62,7 +65,15 @@ export function RecipeDetailPage() {
   const recipe = useLiveQuery(() => (id ? db.recipes.get(id) : undefined), [id])
   const library = useLiveQuery(() => db.recipes.toArray(), [], [])
 
-  const [scale, setScale] = useState(1)
+  // Opened again at the scale it was left at — see recipeView.
+  const [scale, setScaleState] = useState(() => rememberedScale(id) ?? 1)
+  const setScale = useCallback(
+    (next: number) => {
+      setScaleState(next)
+      rememberScale(id, next)
+    },
+    [id],
+  )
   const [checked, setChecked] = useState<Set<string>>(new Set())
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [groceryOpen, setGroceryOpen] = useState(false)
@@ -319,6 +330,40 @@ export function RecipeDetailPage() {
             ))}
           </div>
         </div>
+
+        {/* Cooking for five when the recipe says four is not a multiplier
+            anybody wants to work out, so the servings themselves are a dial —
+            and it shows what that came to in ×, since that is the number the
+            ingredient lines were multiplied by. */}
+        {recipe.servings ? (
+          <div className={styles.servingsDial}>
+            <span className={styles.servingsLabel}>Cooking for</span>
+            <button
+              type="button"
+              className="btn btn-secondary btn-icon"
+              aria-label="One fewer serving"
+              disabled={(scaledServings ?? 0) <= 1}
+              onClick={() => setScale(Math.max(1, Math.round(recipe.servings! * scale) - 1) / recipe.servings!)}
+            >
+              <Minus size={16} aria-hidden="true" />
+            </button>
+            <strong className={styles.servingsCount}>{scaledServings}</strong>
+            <button
+              type="button"
+              className="btn btn-secondary btn-icon"
+              aria-label="One more serving"
+              disabled={(scaledServings ?? 0) >= 60}
+              onClick={() => setScale((Math.round(recipe.servings! * scale) + 1) / recipe.servings!)}
+            >
+              <Plus size={16} aria-hidden="true" />
+            </button>
+            <span className={styles.servingsNote}>
+              {scale === 1
+                ? `as written`
+                : `${scaleLabel(Math.round(scale * 10) / 10)} · as written it makes ${recipe.servings}`}
+            </span>
+          </div>
+        ) : null}
 
         {sections.map((section, index) => (
           <div key={section.title ?? index}>

@@ -11,6 +11,7 @@ import { displayIngredientSections } from '@/features/recipes/ingredientDisplay'
 import { Modal } from '@/components/common/Modal'
 import { useToast } from '@/components/common/Toast'
 import { addDays, dayNameShort, formatWeekRange, startOfWeek, todayISO, weekDates } from '@/utils/date'
+import { clearGroceryDraft, readGroceryDraft, saveGroceryDraft } from './groceryDraft'
 import styles from './AddToGroceryDialog.module.css'
 
 interface AddToGroceryDialogProps {
@@ -45,18 +46,33 @@ export function AddToGroceryDialog({
   const [servings, setServings] = useState<number>(defaultServings ?? recipe.servings ?? 0)
   const [excluded, setExcluded] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
+  const [resumed, setResumed] = useState(false)
 
-  // Each opening starts fresh: the page's scale may have changed, and last
-  // time's unticked items are not this time's.
+  /*
+   * Reopened where it was left. Unticking twenty ingredients is real work, and
+   * an interruption should not cost it — see groceryDraft. Only ingredients
+   * the recipe still has are carried over, so an edited recipe cannot leave a
+   * draft excluding lines nobody can see.
+   */
   useEffect(() => {
-    if (open) {
-      setWeek(thisWeek)
-      setServings(defaultServings ?? recipe.servings ?? 0)
-      setExcluded(new Set())
-    }
+    if (!open) return
+    const draft = readGroceryDraft(recipe.id)
+    const known = new Set(recipe.ingredients.map((ingredient) => ingredient.id))
+    const carried = (draft?.excluded ?? []).filter((id) => known.has(id))
+
+    setWeek(draft?.week === nextWeek ? nextWeek : thisWeek)
+    setServings(draft?.servings ?? defaultServings ?? recipe.servings ?? 0)
+    setExcluded(new Set(carried))
+    setResumed(Boolean(draft) && (carried.length > 0 || draft?.week === nextWeek))
     // thisWeek is derived from today; recomputing on open is the point.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultServings, recipe.id])
+
+  // Every change is the draft: closing the dialog is not a decision to discard.
+  useEffect(() => {
+    if (!open) return
+    saveGroceryDraft(recipe.id, { week, servings, excluded: [...excluded] })
+  }, [open, recipe.id, week, servings, excluded])
 
   const scalable = Boolean(recipe.servings && recipe.servings > 0)
   const scale = scalable && servings > 0 ? servings / (recipe.servings as number) : 1
@@ -110,6 +126,7 @@ export function AddToGroceryDialog({
         servings: scalable ? servings : undefined,
         excludedIngredientIds: [...excluded],
       })
+      clearGroceryDraft(recipe.id)
       const label = week === thisWeek ? "this week's" : "next week's"
       toast(`Added ${recipe.title} to ${label} grocery list.`, {
         tone: 'success',
@@ -214,7 +231,10 @@ export function AddToGroceryDialog({
         </p>
       ) : null}
 
-      <p className={styles.hint}>Untick anything you already have.</p>
+      <p className={styles.hint}>
+        Untick anything you already have.
+        {resumed ? ' Picked up where you left off.' : ''}
+      </p>
 
       {sections.map((section, index) => (
         <div key={section.title ?? index}>

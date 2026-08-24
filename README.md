@@ -188,7 +188,7 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   cooking methods, and a compact list view when you would rather scan names.
 - **What a recipe costs** — on the card, per serving, so two recipes can be
   compared at a glance; and on its own page, under the ingredients: about
-  £19.70, £3.29 a serving, with every line priced. It follows the ½×–2× scale,
+  £19.70, £3.29 a serving, with every line priced. It follows the ½×–4× scale,
   so doubling the batch doubles the total and leaves the per-serving figure
   alone. Costed as the *amount used* — two tablespoons of oil are two
   tablespoons of a bottle, not a bottle — which is the same rule the week's
@@ -197,11 +197,15 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   "what will this cost me" is not the same question as "what does this
   contain". Tap any line to use your price instead, and it is remembered.
 - **One standard recipe view** — once a recipe is in MealHelp you should never
-  need the original page again. Scaling (½× to 2×), ingredient checkboxes,
+  need the original page again. Scaling — ½× to 4×, or set the servings
+  themselves for the times you are cooking for five and the recipe says four —
+  and it stays scaled when you come back to it. Counted things stay countable:
+  three times one onion is *3 onions*, not 3.17 onion. Ingredient checkboxes,
   numbered directions, notes, equipment, and a link back to the source. And
   everything you would want to *do* with a recipe is a tap away: start cooking,
   add it to a day, **add its ingredients to the grocery list** (pick the
-  servings, untick what you already have), put it in a collection, rate it,
+  servings, untick what you already have, and pick it back up where you left it
+  if something interrupts), put it in a collection, rate it,
   log that you cooked it, favourite, share, duplicate, copy the ingredients as
   text, open the original in the built-in browser, edit, delete.
 - **Import** — paste a link and MealHelp reads the page's structured recipe
@@ -225,9 +229,19 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   *30 min*, *Budget*. Pictures are fetched only for results you scroll to, two
   at a time, and never invented: a title that claims nothing gets no tags. Nothing to set up, nothing leaves the
   device but the page request. See [The built-in browser](#the-built-in-browser).
-- **Cooking mode** — full screen, big type, one step at a time, ingredient
-  checklist, servings adjustment, one-tap timers detected from the steps
-  ("Bake for 25 minutes" → *Start 25 min timer*), and the screen stays awake.
+- **Cooking mode** — full screen, big type, one step at a time, and the screen
+  stays awake. Each step carries **the amounts it is talking about**: "brown
+  the beef with the onion" comes with *2 lbs ground beef* and *1 yellow onion*
+  under it, tickable, with the rest a tap away — no going back to the list with
+  wet hands. Swipe or tap between steps, tap **Step 3 of 9** for the whole
+  method and jump anywhere in it, and start a timer from any step that names a
+  time ("simmer 20 minutes" → *Start 20 min timer*), whether or not the recipe
+  came with one.
+- **It keeps your place** — where you were in a recipe, which ingredients you
+  had ticked and how much you were making all survive the phone locking, the
+  page reloading, or the app being closed and reopened mid-cook. Timers survive
+  it too, and follow you around the app: start one in the kitchen and it is
+  still counting on the shopping list.
 - **Leftovers as real things** — cooking six servings and eating two leaves four
   in the fridge. Those four can fill Tuesday, and the grocery list does not buy
   the ingredients twice.
@@ -253,7 +267,11 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   aisle so it is obvious what is driving it, with every line priced. The
   built-in prices are typical US supermarket prices and the panel says so;
   correct any line and MealHelp uses your price for that ingredient for ever
-  after. Where a recipe quantity cannot honestly be converted into a shopping
+  after. It reads a shopping line the way a recipe site writes one — the size
+  out of the brackets in "1 (14-ounce) package tofu", "freshly grated Parmesan"
+  as parmesan, an inch of ginger as a piece of ginger — because the app's own
+  starters priced cleanly long before an imported recipe did, which is exactly
+  how a gap like that stays invisible. Where a recipe quantity cannot honestly be converted into a shopping
   one it shows a dash rather than a number, and the total says how much of the
   list it covers.
 - **Ratings and history** — say how a meal went and it changes what gets
@@ -299,12 +317,19 @@ the list and, on Enter, adds what you typed.
 
 ### Themes
 
-Settings → Appearance. Seven palettes — Paper, Sage, Ocean, Plum, Citrus,
-Slate and the dark-only Midnight — each drawn in miniature with its own
-colours so you can see it before you tap, and applied the moment you do.
-Light and dark are a separate choice (follow the system, or force one), and
-every theme has both. The choice is kept in the database and mirrored to
-localStorage so the first paint after a reload is already the right colour.
+Settings → Appearance. Twelve palettes — White, Paper, Sage, Ocean, Plum,
+Citrus, Slate, Graphite, Rose, Forest, High contrast and the dark-only
+Midnight — each drawn in miniature with its own colours so you can see it
+before you tap, and applied the moment you do. The choice is kept in the
+database and mirrored to localStorage so the first paint after a reload is
+already the right colour.
+
+Light and dark is a separate choice, and **light is the default**. Following
+the system sounds tidier and was not: somebody who had just chosen a white
+theme still got a dark kitchen after sunset, which reads as the choice not
+having stuck. *Follow system* is still one tap away in the same row, and a
+phone that was already on it is moved to light exactly once — choosing it
+again afterwards sticks.
 
 ---
 

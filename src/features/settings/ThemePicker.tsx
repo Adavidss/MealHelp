@@ -17,7 +17,7 @@ const SCHEMES: Array<{ id: SchemePreference; label: string; icon: typeof Sun }> 
 export function ThemePicker() {
   const { settings, update } = useSettings()
   const current = settings.theme ?? DEFAULT_THEME_ID
-  const scheme = settings.colorScheme ?? 'auto'
+  const scheme = settings.colorScheme ?? 'light'
 
   const systemDark =
     typeof window !== 'undefined' && window.matchMedia?.('(prefers-color-scheme: dark)').matches

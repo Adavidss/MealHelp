@@ -481,14 +481,14 @@ const STORAGE_KEY = 'mealhelp.appearance'
 export function rememberedAppearance(): Appearance {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return { theme: DEFAULT_THEME_ID, scheme: 'auto' }
+    if (!raw) return { theme: DEFAULT_THEME_ID, scheme: 'light' }
     const parsed = JSON.parse(raw) as Partial<Appearance>
     return {
       theme: themeById(parsed.theme).id,
       scheme: parsed.scheme === 'light' || parsed.scheme === 'dark' ? parsed.scheme : 'auto',
     }
   } catch {
-    return { theme: DEFAULT_THEME_ID, scheme: 'auto' }
+    return { theme: DEFAULT_THEME_ID, scheme: 'light' }
   }
 }
 

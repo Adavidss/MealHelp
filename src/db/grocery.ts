@@ -18,7 +18,7 @@ import {
   normalizeIngredientKey,
   parseIngredient,
 } from '@/services/ingredientParser'
-import { formatQuantity } from '@/services/unitConversion'
+import { formatShoppingQuantity } from '@/services/unitConversion'
 import { newId, nowISO } from '@/utils/id'
 
 export async function getGroceryList(
@@ -344,7 +344,7 @@ export function groceryListToText(list: GroceryList): string {
   for (const [category, items] of byCategory) {
     lines.push(category)
     for (const item of items) {
-      const quantity = item.quantities.map(formatQuantity).filter(Boolean).join(' + ')
+      const quantity = item.quantities.map(formatShoppingQuantity).filter(Boolean).join(' + ')
       lines.push(`  - ${quantity ? `${quantity} ` : ''}${item.name}`)
     }
     lines.push('')

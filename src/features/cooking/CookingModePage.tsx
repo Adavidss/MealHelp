@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
-import { ChevronLeft, ChevronRight, Minus, Plus, Timer, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, List, Minus, Plus, Timer, X } from 'lucide-react'
 import { db } from '@/db/database'
 import { useSettings } from '@/app/SettingsContext'
 import { formatMinutes } from '@/utils/date'
@@ -9,6 +9,9 @@ import { displayIngredientSections } from '@/features/recipes/ingredientDisplay'
 import { FinishCookingDialog } from './FinishCookingDialog'
 import { formatCountdown, useTimers } from './useTimers'
 import { useWakeLock } from './useWakeLock'
+import { clearCookingProgress, readCookingProgress, saveCookingProgress } from './cookingProgress'
+import { ingredientsForStep } from './stepIngredients'
+import { timerFromText } from './stepTimer'
 import styles from './CookingModePage.module.css'
 
 /**
@@ -24,10 +27,13 @@ export function CookingModePage() {
 
   const recipe = useLiveQuery(() => (id ? db.recipes.get(id) : undefined), [id])
 
-  const [step, setStep] = useState(0)
-  const [checked, setChecked] = useState<Set<string>>(new Set())
-  const [servings, setServings] = useState<number>()
+  const saved = useMemo(() => (id ? readCookingProgress(id) : undefined), [id])
+  const [step, setStep] = useState(saved?.step ?? 0)
+  const [checked, setChecked] = useState<Set<string>>(new Set(saved?.checked ?? []))
+  const [servings, setServings] = useState<number>(saved?.servings ?? 0)
   const [finishing, setFinishing] = useState(false)
+  const [showingSteps, setShowingSteps] = useState(false)
+  const [showingIngredients, setShowingIngredients] = useState(false)
 
   const { timers, start, dismiss } = useTimers()
   useWakeLock(settings.keepScreenAwakeWhileCooking)
@@ -36,14 +42,39 @@ export function CookingModePage() {
   const plannedMealId = searchParams.get('plannedMeal') ?? undefined
 
   useEffect(() => {
-    if (servings != null || !recipe) return
+    if (servings || !recipe) return
     setServings(plannedServings ?? recipe.servings ?? settings.defaultServings)
   }, [recipe, servings, plannedServings, settings.defaultServings])
+
+  // Every change is written down: a phone that locks, or a browser that throws
+  // the page away while you are in a timer app, must not cost you your place.
+  useEffect(() => {
+    if (!id || !recipe) return
+    saveCookingProgress(id, { step, checked: [...checked], servings })
+  }, [id, recipe, step, checked, servings])
 
   const scale = useMemo(() => {
     if (!recipe?.servings || !servings) return 1
     return servings / recipe.servings
   }, [recipe, servings])
+
+  /* Swiping is how anybody holds a phone with one clean hand. */
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+  const onTouchStart = (event: React.TouchEvent) => {
+    const touch = event.touches[0]
+    touchStart.current = { x: touch.clientX, y: touch.clientY }
+  }
+  const onTouchEnd = (event: React.TouchEvent) => {
+    const start = touchStart.current
+    touchStart.current = null
+    if (!start) return
+    const touch = event.changedTouches[0]
+    const dx = touch.clientX - start.x
+    const dy = touch.clientY - start.y
+    // Sideways, and clearly so: scrolling a long ingredient list is not a swipe.
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return
+    setStep((current) => (dx < 0 ? current + 1 : Math.max(0, current - 1)))
+  }
 
   const sections = useMemo(
     () => (recipe ? displayIngredientSections(recipe.ingredients, scale) : []),
@@ -86,6 +117,12 @@ export function CookingModePage() {
   const onIngredients = step === 0
   const currentStep = steps[step - 1]
   const atEnd = step > totalSteps
+
+  const allItems = sections.flatMap((section) => section.items)
+  // What this step is talking about, at the scale being cooked.
+  const stepItems = currentStep ? ingredientsForStep(currentStep.text, allItems) : []
+  // A structured timing if the recipe has one, otherwise whatever the sentence says.
+  const timerMinutes = currentStep?.timerMinutes ?? timerFromText(currentStep?.text)
 
   const toggleChecked = (ingredientId: string) => {
     setChecked((current) => {
@@ -144,7 +181,7 @@ export function CookingModePage() {
         />
       </div>
 
-      <main className={styles.body}>
+      <main className={styles.body} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
         {onIngredients ? (
           <>
             <div className={styles.servingsRow}>
@@ -219,24 +256,115 @@ export function CookingModePage() {
           </div>
         ) : (
           <>
-            <p className={styles.stepCount}>
+            <button
+              type="button"
+              className={styles.stepCount}
+              onClick={() => setShowingSteps((open) => !open)}
+              aria-expanded={showingSteps}
+            >
+              <List size={15} aria-hidden="true" />
               Step {step} of {totalSteps}
-            </p>
-            <p className={styles.stepText}>{currentStep?.text}</p>
-            {currentStep?.timerMinutes ? (
+            </button>
+
+            {/* Every step at once, to jump back to the one you half-read. It
+                stands alone while it is open: repeating the current step under
+                it just pushed everything else off the screen. */}
+            {showingSteps ? (
+              <ol className={styles.stepList}>
+                {steps.map((entry, index) => (
+                  <li key={entry.id ?? index}>
+                    <button
+                      type="button"
+                      className={index + 1 === step ? styles.stepLinkCurrent : styles.stepLink}
+                      onClick={() => {
+                        setStep(index + 1)
+                        setShowingSteps(false)
+                      }}
+                    >
+                      <span className={styles.stepLinkNumber}>{index + 1}</span>
+                      <span>{entry.text}</span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+
+            {!showingSteps ? <p className={styles.stepText}>{currentStep?.text}</p> : null}
+
+            {timerMinutes && !showingSteps ? (
               <button
                 type="button"
                 className="btn btn-secondary btn-lg"
-                onClick={() =>
-                  start(
-                    currentStep.timerMinutes as number,
-                    `Step ${step} · ${recipe.title}`,
-                  )
-                }
+                onClick={() => start(timerMinutes, `Step ${step} · ${recipe.title}`, recipe.id)}
               >
                 <Timer size={19} aria-hidden="true" />
-                Start {formatMinutes(currentStep.timerMinutes)} timer
+                Start {formatMinutes(timerMinutes)} timer
               </button>
+            ) : null}
+
+            {/*
+              The amounts, beside the sentence that needs them. "Brown the beef
+              with the onion" is not much use to somebody who cannot remember
+              whether it was one onion or two, and going back to look meant
+              losing the step.
+            */}
+            {stepItems.length && !showingSteps ? (
+              <section className={styles.stepIngredients}>
+                <h2 className={styles.stepIngredientsHeading}>For this step</h2>
+                <ul className={styles.ingredients}>
+                  {stepItems.map((item) => (
+                    <li key={item.id}>
+                      <label className={styles.ingredient}>
+                        <input
+                          type="checkbox"
+                          checked={checked.has(item.id)}
+                          onChange={() => toggleChecked(item.id)}
+                          className={styles.checkbox}
+                        />
+                        <span className={checked.has(item.id) ? styles.struck : undefined}>
+                          {item.quantityText ? <strong>{item.quantityText}</strong> : null}{' '}
+                          {item.name}
+                          {item.preparation ? (
+                            <span className={styles.preparation}>, {item.preparation}</span>
+                          ) : null}
+                        </span>
+                      </label>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            {/* And the rest of them, one tap away, without leaving the step. */}
+            <button
+              type="button"
+              hidden={showingSteps}
+              className={styles.everything}
+              onClick={() => setShowingIngredients((open) => !open)}
+              aria-expanded={showingIngredients}
+            >
+              {showingIngredients ? 'Hide' : 'All'} ingredients
+              {checked.size ? ` · ${checked.size} of ${allItems.length} ticked` : ''}
+            </button>
+            {showingIngredients && !showingSteps ? (
+              <ul className={styles.ingredients}>
+                {allItems.map((item) => (
+                  <li key={item.id}>
+                    <label className={styles.ingredient}>
+                      <input
+                        type="checkbox"
+                        checked={checked.has(item.id)}
+                        onChange={() => toggleChecked(item.id)}
+                        className={styles.checkbox}
+                      />
+                      <span className={checked.has(item.id) ? styles.struck : undefined}>
+                        {item.quantityText ? <strong>{item.quantityText}</strong> : null}{' '}
+                        {item.name}
+                      </span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
             ) : null}
           </>
         )}
@@ -269,7 +397,11 @@ export function CookingModePage() {
         defaultServings={servings ?? recipe.servings ?? 4}
         plannedMealId={plannedMealId}
         onClose={() => setFinishing(false)}
-        onDone={() => navigate(`/recipes/${recipe.id}`)}
+        onDone={() => {
+          // Cooked and logged: there is no half-finished meal to come back to.
+          clearCookingProgress(recipe.id)
+          navigate(`/recipes/${recipe.id}`)
+        }}
       />
     </div>
   )

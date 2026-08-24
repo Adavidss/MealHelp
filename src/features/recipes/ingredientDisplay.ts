@@ -1,4 +1,5 @@
 import type { Recipe, RecipeIngredient } from '@/models'
+import { pluralize, singularize } from '@/services/ingredientParser'
 import { formatQuantityRange, scaleAmount } from '@/services/unitConversion'
 
 /**
@@ -39,19 +40,48 @@ export function displayIngredient(
     }
   }
 
-  const quantity = scaleAmount(ingredient.quantity, scale)
-  const quantityMax = scaleAmount(ingredient.quantityMax, scale)
+  const quantity = countable(scaleAmount(ingredient.quantity, scale), ingredient.unit)
+  const quantityMax = countable(scaleAmount(ingredient.quantityMax, scale), ingredient.unit)
 
   return {
     id: ingredient.id,
     quantityText: formatQuantityRange(quantity, quantityMax, ingredient.unit),
-    name: ingredient.ingredientName,
+    name: counted(ingredient.ingredientName, quantity, ingredient.unit),
     preparation: ingredient.preparation,
     optional: ingredient.optional,
     verbatim: false,
     originalText: ingredient.originalText,
     section: ingredient.section,
   }
+}
+
+/**
+ * Things you count rather than measure.
+ *
+ * Scaling a recipe to nineteen servings gives "3.17 onions", which is not a
+ * number anybody can act on — there is no such thing as a sixth of an onion in
+ * a kitchen. Weights and volumes keep their precision, because 6 1/3 lbs is a
+ * real thing to weigh out.
+ */
+function countable(amount: number | undefined, unit: string | undefined): number | undefined {
+  if (amount == null || unit) return amount
+  const step = amount >= 1 ? 0.5 : 0.25
+  return Math.round(amount / step) * step
+}
+
+/**
+ * "3 large yellow onion" is what doubling a recipe used to produce, and it
+ * reads as a bug even though the arithmetic is right. Only counted things are
+ * touched — "2 lbs ground beef" is already correct — and only when the recipe
+ * itself wrote the word in the singular.
+ */
+function counted(name: string, quantity: number | undefined, unit: string | undefined): string {
+  if (unit || quantity == null || quantity <= 1) return name
+  const words = name.trim().split(/\s+/)
+  const head = words[words.length - 1]
+  if (!head || !/[a-z]$/i.test(head) || singularize(head) !== head.toLowerCase()) return name
+  words[words.length - 1] = pluralize(head)
+  return words.join(' ')
 }
 
 export interface IngredientSection {
@@ -101,12 +131,18 @@ export function ingredientsAsText(
   return lines.join('\n').trim()
 }
 
-export const SCALE_OPTIONS = [0.5, 1, 1.5, 2] as const
+/**
+ * Doubling is the common one; tripling for a freezer batch is the next. The
+ * servings stepper beside these covers everything they do not — cooking for
+ * five when the recipe was written for four is not a multiplier anybody wants
+ * to work out.
+ */
+export const SCALE_OPTIONS = [0.5, 1, 1.5, 2, 3, 4] as const
 
 export function scaleLabel(scale: number): string {
   if (scale === 0.5) return '½×'
   if (scale === 1) return '1×'
   if (scale === 1.5) return '1½×'
-  if (scale === 2) return '2×'
-  return `${Math.round(scale * 100) / 100}×`
+  const rounded = Math.round(scale * 100) / 100
+  return `${rounded}×`
 }

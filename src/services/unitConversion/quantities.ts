@@ -41,6 +41,22 @@ export function formatAmount(value: number): string {
   return String(decimal)
 }
 
+/**
+ * The same quantity, as a shop sells it.
+ *
+ * A list adding up two thirds of an onion here and two there is right about
+ * the cooking and useless in the shop: nobody buys 2.7 onions. Counted things
+ * round up — better a spare onion than a missing one — while anything with a
+ * unit keeps its precision, because 2.7 lbs is a real thing to ask for at a
+ * counter.
+ */
+export function formatShoppingQuantity(quantity: GroceryQuantity): string {
+  if (quantity.freeform || quantity.unit || quantity.amount == null) {
+    return formatQuantity(quantity)
+  }
+  return formatQuantity({ ...quantity, amount: Math.ceil(quantity.amount) })
+}
+
 export function formatQuantity(quantity: GroceryQuantity): string {
   if (quantity.freeform) return quantity.freeform
   if (quantity.amount == null) return quantity.unit ?? ''

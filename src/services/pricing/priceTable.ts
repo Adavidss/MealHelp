@@ -140,6 +140,74 @@ export const PRICE_TABLE: PriceEntry[] = [
   { key: 'salsa', price: 0.2, unit: 'fl oz' },
   { key: 'ranch dressing', price: 0.12, unit: 'fl oz', aliases: ['salad dressing'] },
   { key: 'cream of chicken soup', price: 1.6, unit: 'can', aliases: ['cream of mushroom soup', 'condensed soup'] },
+
+  // Added after checking the estimator against how recipe sites actually write
+  // a shopping line. Every one of these was a dash on somebody's recipe page.
+  { key: 'pork chop', price: 4.5, unit: 'lb', aliases: ['pork chops', 'pork loin', 'pork tenderloin'] },
+  { key: 'steak', price: 11, unit: 'lb', aliases: ['flank steak', 'sirloin', 'skirt steak', 'ribeye', 'strip steak'] },
+  { key: 'white fish', price: 9, unit: 'lb', aliases: ['cod', 'tilapia', 'haddock', 'pollock'] },
+  { key: 'tuna', price: 1.5, unit: 'can', aliases: ['canned tuna'] },
+  { key: 'anchovy', price: 3, unit: 'can', aliases: ['anchovies'] },
+  { key: 'tofu', price: 2.5, unit: 'lb', aliases: ['firm tofu', 'extra firm tofu', 'silken tofu'] },
+  { key: 'feta', price: 7, unit: 'lb' },
+  { key: 'swiss cheese', price: 7, unit: 'lb', aliases: ['provolone', 'gruyere', 'monterey jack', 'pepper jack'] },
+  { key: 'half and half', price: 3.5, unit: 'pt', aliases: ['half-and-half', 'light cream'] },
+  { key: 'cottage cheese', price: 3.5, unit: 'lb', aliases: ['ricotta'] },
+
+  // Produce the table did not have
+  { key: 'asparagus', price: 4, unit: 'lb' },
+  { key: 'green beans', price: 3, unit: 'lb', aliases: ['green bean', 'string beans'] },
+  { key: 'brussels sprouts', price: 3.5, unit: 'lb', aliases: ['brussel sprouts'] },
+  { key: 'butternut squash', price: 1.5, unit: 'lb', aliases: ['acorn squash', 'winter squash'] },
+  { key: 'eggplant', price: 2, unit: 'each', aliases: ['aubergine'] },
+  { key: 'cucumber', price: 1, unit: 'each', aliases: ['english cucumber', 'cucumbers'] },
+  { key: 'jalapeno', price: 0.3, unit: 'each', aliases: ['jalapeño', 'serrano', 'chile pepper', 'chili pepper'] },
+  { key: 'arugula', price: 5, unit: 'lb', aliases: ['rocket', 'mixed greens', 'salad greens', 'spring mix'] },
+  { key: 'basil', price: 2, unit: 'oz', aliases: ['fresh basil', 'mint', 'fresh mint', 'dill', 'fresh dill', 'sage', 'fresh sage'] },
+  { key: 'peas', price: 2, unit: 'lb', aliases: ['frozen peas', 'green peas'] },
+  { key: 'frozen corn', price: 2, unit: 'lb', aliases: ['sweetcorn'] },
+  { key: 'frozen vegetables', price: 2.5, unit: 'lb', aliases: ['mixed vegetables', 'stir fry vegetables'] },
+  { key: 'grapes', price: 3, unit: 'lb', aliases: ['grape'] },
+  { key: 'orange', price: 1, unit: 'each', aliases: ['oranges', 'clementine', 'mandarin'] },
+  { key: 'pineapple', price: 3.5, unit: 'each' },
+  { key: 'raisins', price: 4, unit: 'lb', aliases: ['dried cranberries', 'dried fruit', 'dates'] },
+
+  // Dry goods and the middle aisles
+  { key: 'quinoa', price: 4, unit: 'lb' },
+  { key: 'couscous', price: 3, unit: 'lb', aliases: ['orzo'] },
+  { key: 'barley', price: 2, unit: 'lb', aliases: ['pearl barley', 'farro', 'bulgur'] },
+  { key: 'cornstarch', price: 2, unit: 'lb', aliases: ['corn starch', 'cornflour'] },
+  { key: 'baking powder', price: 3, unit: 'lb', aliases: ['baking soda', 'bicarbonate of soda'] },
+  { key: 'yeast', price: 0.5, unit: 'oz', aliases: ['active dry yeast', 'instant yeast', 'nutritional yeast'] },
+  { key: 'cocoa powder', price: 6, unit: 'lb', aliases: ['cacao powder'] },
+  { key: 'chocolate chips', price: 5, unit: 'lb', aliases: ['chocolate', 'dark chocolate', 'semi sweet chocolate chips'] },
+  { key: 'walnuts', price: 9, unit: 'lb', aliases: ['pecans', 'chopped walnuts', 'chopped pecans'] },
+  { key: 'almonds', price: 8, unit: 'lb', aliases: ['sliced almonds', 'slivered almonds'] },
+  { key: 'cashews', price: 9, unit: 'lb', aliases: ['peanuts', 'mixed nuts'] },
+  { key: 'pine nuts', price: 25, unit: 'lb', aliases: ['pine nut'] },
+  { key: 'sesame seeds', price: 6, unit: 'lb', aliases: ['poppy seeds', 'sunflower seeds', 'pumpkin seeds'] },
+  { key: 'coconut flakes', price: 5, unit: 'lb', aliases: ['shredded coconut', 'desiccated coconut'] },
+  { key: 'hamburger buns', price: 3, unit: 'pack', aliases: ['hot dog buns', 'burger buns', 'rolls', 'dinner rolls'], contains: { each: 8 } },
+  { key: 'pita bread', price: 3, unit: 'pack', aliases: ['naan', 'flatbread'], contains: { each: 6 } },
+
+  // Jars, bottles and the sauces a recipe assumes you have
+  { key: 'tomato sauce', price: 1.2, unit: 'can', aliases: ['passata', 'canned tomato sauce'] },
+  { key: 'marinara sauce', price: 3, unit: 'jar', aliases: ['pasta sauce', 'spaghetti sauce', 'tomato pasta sauce'], contains: { cup: 3 } },
+  { key: 'worcestershire sauce', price: 0.35, unit: 'fl oz' },
+  { key: 'fish sauce', price: 0.4, unit: 'fl oz', aliases: ['oyster sauce'] },
+  { key: 'hot sauce', price: 0.4, unit: 'fl oz', aliases: ['sriracha', 'tabasco', 'chili garlic sauce', 'gochujang'] },
+  { key: 'peanut oil', price: 0.3, unit: 'fl oz', aliases: ['avocado oil', 'coconut oil', 'grapeseed oil'] },
+  { key: 'wine', price: 0.4, unit: 'fl oz', aliases: ['white wine', 'red wine', 'dry white wine', 'cooking wine', 'sherry', 'marsala'] },
+  { key: 'olives', price: 8, unit: 'lb', aliases: ['kalamata olives', 'green olives', 'black olives'] },
+  { key: 'capers', price: 0.9, unit: 'oz' },
+  { key: 'pickles', price: 0.15, unit: 'fl oz', aliases: ['dill pickles', 'relish'] },
+  { key: 'apple cider', price: 0.04, unit: 'fl oz', aliases: ['cider'] },
+  { key: 'pumpkin puree', price: 2, unit: 'can', aliases: ['canned pumpkin'] },
+  { key: 'evaporated milk', price: 1.5, unit: 'can', aliases: ['condensed milk', 'sweetened condensed milk'] },
+  { key: 'corn syrup', price: 0.15, unit: 'fl oz', aliases: ['agave', 'agave nectar', 'molasses'] },
+  { key: 'powdered sugar', price: 1.6, unit: 'lb', aliases: ['confectioners sugar', 'icing sugar'] },
+  { key: 'cinnamon stick', price: 0.4, unit: 'each', aliases: ['cinnamon sticks', 'star anise', 'cardamom pod', 'cardamom pods'] },
+  { key: 'nutmeg', price: 1.2, unit: 'oz', aliases: ['allspice', 'cloves ground', 'ground ginger', 'turmeric', 'coriander seed', 'fennel seed', 'mustard seed', 'celery seed', 'dill weed', 'tarragon', 'marjoram', 'sumac', 'za atar'] },
 ]
 
 /** "tomatoes" and "tomato" are the same shopping decision. */
@@ -167,6 +235,61 @@ for (const entry of PRICE_TABLE) {
   }
 }
 
+/**
+ * Words that say what was done to a thing, not which thing it is.
+ *
+ * A shopping key keeps these on purpose — "dried" and "fresh" are different
+ * decisions on the grocery list — but a *price* does not change because the
+ * parmesan was grated, and "freshly grated parmesan cheese" costs whatever
+ * parmesan costs. So they are stripped here and nowhere else.
+ */
+const PREP_WORDS = new Set([
+  'fresh', 'freshly', 'frozen', 'chopped', 'minced', 'diced', 'sliced', 'shredded',
+  'grated', 'crumbled', 'crushed', 'peeled', 'cooked', 'uncooked', 'raw', 'boneless',
+  'skinless', 'lean', 'thinly', 'roughly', 'finely', 'softened', 'melted', 'packed',
+  'rinsed', 'drained', 'trimmed', 'halved', 'quartered', 'cubed', 'toasted', 'unsalted',
+  'salted', 'low-sodium', 'reduced-sodium', 'low-fat', 'nonfat', 'plain', 'organic',
+  'ripe', 'baby', 'english', 'pitted', 'seeded', 'deveined', 'day-old', 'all-purpose',
+  'all', 'purpose', 'extra-virgin', 'extra', 'virgin', 'free-range', 'cage-free',
+  'grass-fed', 'sweetened', 'unsweetened', 'canned', 'jarred', 'boxed', 'bottled',
+  'prepared', 'homemade', 'store-bought', 'leftover', 'warm', 'cold', 'room-temperature',
+])
+
+/**
+ * Words that only say what shape it was cut into. Dropped from the end,
+ * because "cauliflower florets" is cauliflower and "cod fillets" is cod.
+ */
+const GENERIC_TAILS = new Set([
+  'cheese', 'fillet', 'fillets', 'floret', 'florets', 'piece', 'pieces', 'chunk',
+  'chunks', 'cube', 'cubes', 'strip', 'strips', 'wedge', 'wedges', 'half', 'halves',
+])
+
+/**
+ * The same name, said more plainly each time.
+ *
+ * Tried in order, so an exact entry always wins over a stripped-down guess —
+ * "ground beef" is looked up before "beef", "cream cheese" before "cream".
+ */
+function plainer(needle: string): string[] {
+  const words = needle.split(' ').filter(Boolean)
+  const candidates: string[] = []
+
+  const withoutPrep = words.filter((word) => !PREP_WORDS.has(word))
+  if (withoutPrep.length && withoutPrep.length !== words.length) {
+    candidates.push(withoutPrep.join(' '))
+  }
+
+  // Tails come off one at a time: "shredded mozzarella cheese" → "mozzarella".
+  const base = withoutPrep.length ? withoutPrep : words
+  let trimmed = [...base]
+  while (trimmed.length > 1 && GENERIC_TAILS.has(trimmed[trimmed.length - 1])) {
+    trimmed = trimmed.slice(0, -1)
+    candidates.push(trimmed.join(' '))
+  }
+
+  return candidates
+}
+
 export function findPrice(key: string): PriceEntry | undefined {
   const needle = key.trim().toLowerCase()
   if (!needle) return undefined
@@ -174,6 +297,12 @@ export function findPrice(key: string): PriceEntry | undefined {
   const stem = singular(needle)
   const exact = BY_NAME.get(needle) ?? BY_SINGULAR.get(stem)
   if (exact) return exact
+
+  // Said plainly, it may be something the shelf knows.
+  for (const candidate of plainer(needle)) {
+    const match = BY_NAME.get(candidate) ?? BY_SINGULAR.get(singular(candidate))
+    if (match) return match
+  }
 
   /*
    * Otherwise match on the head noun — the last words — and never on a word

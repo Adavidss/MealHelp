@@ -107,12 +107,18 @@ export const FOOD_TABLE: FoodEntry[] = [
   { match: ['almond', 'walnut', 'cashew', 'pecan', 'pistachio', 'peanut', 'nuts'], kcal: 600, protein: 20, carbs: 20, fat: 50, fiber: 8, grams: G(undefined, 140, 9) },
   { match: ['sesame seed', 'sunflower seed', 'pumpkin seed', 'chia seed', 'flax'], kcal: 560, protein: 20, carbs: 25, fat: 45, fiber: 12, grams: G(undefined, 140, 9, 3) },
 
+  { match: ['couscous', 'orzo', 'bulgur', 'farro', 'barley'], kcal: 376, protein: 12.8, carbs: 77, fat: 0.6, fiber: 5, grams: G(undefined, 173, 11) },
+  { match: ['caper'], kcal: 23, protein: 2.4, carbs: 5, fat: 0.9, sodium: 2350, grams: G(undefined, 145, 9, 3) },
+  { match: ['olive'], kcal: 145, protein: 1, carbs: 4, fat: 15, fiber: 3, sodium: 1550, grams: G(4, 135, 8) },
+  { match: ['pumpkin puree', 'canned pumpkin'], kcal: 34, protein: 1.1, carbs: 8, fat: 0.3, fiber: 3, grams: { cup: 245, can: 425, each: 425 } },
+  { match: ['anchovy'], kcal: 210, protein: 29, carbs: 0, fat: 10, sodium: 3670, grams: { each: 4, can: 50 } },
+
   // ---- Vegetables ----
   { match: ['yellow onion', 'red onion', 'white onion', 'onion'], kcal: 40, protein: 1.1, carbs: 9.3, fat: 0.1, fiber: 1.7, sugar: 4.2, grams: G(110, 160) },
   { match: ['green onion', 'scallion', 'spring onion'], kcal: 32, protein: 1.8, carbs: 7.3, fat: 0.2, fiber: 2.6, grams: G(15, 100) },
   { match: ['shallot'], kcal: 72, protein: 2.5, carbs: 17, fat: 0.1, grams: G(30) },
   { match: ['garlic'], kcal: 149, protein: 6.4, carbs: 33, fat: 0.5, grams: { clove: 3, each: 3, tsp: 3, tbsp: 9 } },
-  { match: ['ginger'], kcal: 80, protein: 1.8, carbs: 18, fat: 0.8, grams: G(undefined, 96, 6, 2) },
+  { match: ['ginger'], kcal: 80, protein: 1.8, carbs: 18, fat: 0.8, grams: G(15, 96, 6, 2) },
   { match: ['carrot'], kcal: 41, protein: 0.9, carbs: 9.6, fat: 0.2, fiber: 2.8, sugar: 4.7, grams: G(61, 128) },
   { match: ['celery'], kcal: 14, protein: 0.7, carbs: 3, fat: 0.2, fiber: 1.6, grams: { stalk: 40, each: 40, cup: 100 } },
   { match: ['bell pepper', 'red pepper', 'capsicum', 'pepper'], kcal: 26, protein: 1, carbs: 6, fat: 0.3, fiber: 2, grams: G(120, 150) },

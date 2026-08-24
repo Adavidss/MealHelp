@@ -13,7 +13,9 @@ import {
 } from 'lucide-react'
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { useHouseholdSync } from '@/services/sync/useHouseholdSync'
+import { useResumeLastPlace } from './useResumeLastPlace'
 import { UpdatePrompt } from '@/components/common/UpdatePrompt'
+import { TimerBar } from '@/features/cooking/TimerBar'
 import styles from './AppShell.module.css'
 
 interface NavItem {
@@ -59,6 +61,8 @@ export function AppShell() {
   const immersive = isImmersive(location.pathname)
   // Before the hook order matters: a linked household catches up on open.
   useHouseholdSync()
+  // A recipe left open on a phone that was put down is still open.
+  useResumeLastPlace()
 
   if (immersive) {
     return (
@@ -111,6 +115,9 @@ export function AppShell() {
           <Outlet />
         </ErrorBoundary>
       </main>
+
+      {/* Whatever is on the hob follows you around the app. */}
+      <TimerBar />
 
       <nav className={styles.tabBar} aria-label="Main">
         <ul className={styles.tabList}>

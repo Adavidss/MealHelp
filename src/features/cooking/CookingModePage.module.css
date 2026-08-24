@@ -62,18 +62,104 @@
 }
 
 .stepCount {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 var(--space-2);
+  margin: 0 0 var(--space-2) calc(var(--space-2) * -1);
   font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--ink-faint);
-  margin-bottom: var(--space-3);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.stepCount:hover {
+  color: var(--ink-soft);
+  background: var(--surface-sunk);
+}
+
+/* Every step at once, for the one you half-read three steps ago. */
+.stepList {
+  list-style: none;
+  margin: 0 0 var(--space-4);
+  padding: var(--space-2);
+  background: var(--surface-sunk);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepLink,
+.stepLinkCurrent {
+  display: flex;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2);
+  text-align: left;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.stepLinkCurrent {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.stepLinkNumber {
+  flex: none;
+  width: 1.5rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+}
+
+/* The amounts the current sentence needs, right under it. */
+.stepIngredients {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+}
+
+.stepIngredientsHeading {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: var(--space-1, 4px);
+}
+
+.everything {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: var(--space-3);
+  padding: 0 var(--space-2);
+  font-size: 0.9rem;
+  color: var(--accent-ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .stepText {
   font-size: 1.45rem;
   line-height: 1.45;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
 .ingredients {
