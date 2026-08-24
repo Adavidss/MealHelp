@@ -59,6 +59,81 @@ export function mergeSettings(local: Record_ | undefined, remote: Record_ | unde
   return merged
 }
 
+interface GroceryItemish {
+  key?: string
+  checked?: boolean
+  haveIt?: boolean
+  note?: string
+  updatedAt?: string
+  [field: string]: unknown
+}
+
+/**
+ * A line's own stamp — empty when nobody has ever touched it.
+ *
+ * Falling back to the list's stamp was the obvious thing and the wrong one: it
+ * made every untouched line on the newer list look freshly ticked, so a list
+ * that happened to be saved a second later beat a real tick made on the other
+ * phone. A line nobody has touched holds no opinion, and loses to one somebody
+ * has.
+ */
+function itemStamp(item: GroceryItemish): string {
+  return (item.updatedAt as string) ?? ''
+}
+
+/**
+ * Two people shopping from one list.
+ *
+ * A grocery list is a single record, so "newest wins" meant the whole list
+ * from one phone replaced the whole list from the other: she ticks milk, he
+ * ticks bread a moment earlier, and his tick is simply gone — in a shop, which
+ * is how people stop trusting a shared list.
+ *
+ * So the two halves of a list are settled differently. *Which lines exist* is
+ * structural — a rebuilt or edited list replaces an older one wholesale, which
+ * is what makes removing a line and regenerating the week work at all. *What
+ * state each line is in* is per line, and the newer tick wins wherever it was
+ * made. A line the other phone removed a moment before yours was rebuilt comes
+ * back, which is visible and fixable; a tick that vanishes is neither.
+ */
+export function mergeGroceryRecords(
+  local: Record_ | undefined,
+  remote: Record_ | undefined,
+): Record_ | undefined {
+  const base = newer(local, remote)
+  if (!base) return undefined
+  const other = base === local ? remote : local
+  if (!other) return base
+
+  const baseItems = (base.items as GroceryItemish[] | undefined) ?? []
+  const otherItems = (other.items as GroceryItemish[] | undefined) ?? []
+  if (!baseItems.length || !otherItems.length) return base
+
+  // Keyed by ingredient, not by id: two phones that each built the week's list
+  // before syncing gave the same onion two different ids.
+  const theirs = new Map<string, GroceryItemish>()
+  for (const item of otherItems) if (item.key) theirs.set(item.key, item)
+
+  let changed = false
+  const items = baseItems.map((item) => {
+    const match = item.key ? theirs.get(item.key) : undefined
+    if (!match) return item
+    const mine = itemStamp(item)
+    const yours = itemStamp(match)
+    if (yours <= mine) return item
+    changed = true
+    return {
+      ...item,
+      checked: match.checked,
+      haveIt: match.haveIt,
+      note: match.note,
+      updatedAt: yours,
+    }
+  })
+
+  return changed ? { ...base, items } : base
+}
+
 export interface MergeResult {
   /** What each table should contain after merging. */
   tables: Record<string, Record_[]>
@@ -94,7 +169,12 @@ function mergeTable(
     const id = recordId(record)
     if (!id) continue
     const mine = byId.get(id)
-    const winner = table === 'settings' ? mergeSettings(mine, record) : newer(mine, record)
+    const winner =
+      table === 'settings'
+        ? mergeSettings(mine, record)
+        : table === 'groceryLists'
+          ? mergeGroceryRecords(mine, record)
+          : newer(mine, record)
     if (!winner) continue
     byId.set(id, winner)
     // Only worth writing if the remote copy is the one that won.

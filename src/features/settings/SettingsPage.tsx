@@ -25,6 +25,7 @@ import { ThemePicker } from './ThemePicker'
 import { STARTER_PHOTOS } from '@/features/recipes/starterPhotos'
 import { MealSlotEditor } from './MealSlotEditor'
 import { HouseholdPanel } from './HouseholdPanel'
+import { StoragePanel } from './StoragePanel'
 import styles from './SettingsPage.module.css'
 
 export function SettingsPage() {
@@ -391,6 +392,8 @@ export function SettingsPage() {
           household above, nothing is uploaded — which also means nothing is
           backed up unless you export it.
         </p>
+
+        <StoragePanel onExport={() => void downloadBackup()} />
 
         <div className={styles.dataActions}>
           <button

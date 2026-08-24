@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   BookOpen,
@@ -14,6 +15,7 @@ import {
 import { ErrorBoundary } from '@/components/common/ErrorBoundary'
 import { useHouseholdSync } from '@/services/sync/useHouseholdSync'
 import { useResumeLastPlace } from './useResumeLastPlace'
+import { useStoragePersistence } from '@/services/storage/useStoragePersistence'
 import { UpdatePrompt } from '@/components/common/UpdatePrompt'
 import { TimerBar } from '@/features/cooking/TimerBar'
 import styles from './AppShell.module.css'
@@ -63,12 +65,16 @@ export function AppShell() {
   useHouseholdSync()
   // A recipe left open on a phone that was put down is still open.
   useResumeLastPlace()
+  // And the browser is asked to keep all of it, once there is some of it.
+  useStoragePersistence()
 
   if (immersive) {
     return (
       <>
         <ErrorBoundary resetKey={location.pathname}>
-          <Outlet />
+          <Suspense fallback={<p className="muted">Loading…</p>}>
+            <Outlet />
+          </Suspense>
         </ErrorBoundary>
         <UpdatePrompt />
       </>
@@ -110,9 +116,12 @@ export function AppShell() {
 
       <main id="main" className={styles.main}>
         {/* Scoped to the page so a failing screen keeps the navigation below
-            it usable, instead of taking the whole app down. */}
+            it usable, instead of taking the whole app down — and so a screen
+            still being fetched does not take the navigation with it. */}
         <ErrorBoundary resetKey={location.pathname}>
-          <Outlet />
+          <Suspense fallback={<p className="muted">Loading…</p>}>
+            <Outlet />
+          </Suspense>
         </ErrorBoundary>
       </main>
 

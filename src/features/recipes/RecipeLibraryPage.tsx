@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
@@ -49,6 +49,9 @@ import {
 } from './filterRecipes'
 import { StarterRecipesButton } from './StarterRecipesButton'
 import styles from './RecipeLibraryPage.module.css'
+
+/** Roughly two phone screens of cards — enough to scroll into, not enough to stall. */
+const PAGE_SIZE = 60
 
 export function RecipeLibraryPage() {
   const { settings, update } = useSettings()
@@ -104,6 +107,20 @@ export function RecipeLibraryPage() {
     [results, brokenVersion],
   )
   const showAll = settings.showRecipesWithoutPhotos
+
+  /*
+   * A wall of picture cards is the point of this screen, and every one of them
+   * is an image the phone has to lay out and decode. A library of a dozen or
+   * fifty never notices; somebody who imports enthusiastically for a year
+   * would scroll five hundred, re-rendered on every keystroke of a search. So
+   * the wall stops at a screenful and says how many more there are.
+   */
+  const [shown, setShown] = useState(PAGE_SIZE)
+  // Any change to what is being asked for starts the count again.
+  useEffect(() => setShown(PAGE_SIZE), [query, mood, characteristics, filters, sort, tab])
+
+  const visiblePhotos = withPhotos.slice(0, shown)
+  const hiddenByPaging = withPhotos.length - visiblePhotos.length
 
   const methodCount = filters.methods?.length ?? 0
   const tagCount = filters.tags?.length ?? 0
@@ -419,9 +436,9 @@ export function RecipeLibraryPage() {
                 <h2 className={styles.everythingHeading}>Everything</h2>
               ) : null}
 
-              {withPhotos.length ? (
+              {visiblePhotos.length ? (
                 <ul className={styles.gallery}>
-                  {withPhotos.map((recipe: Recipe) => (
+                  {visiblePhotos.map((recipe: Recipe) => (
                     <li key={recipe.id}>
                       <MealCard
                         recipe={recipe}
@@ -432,6 +449,19 @@ export function RecipeLibraryPage() {
                     </li>
                   ))}
                 </ul>
+              ) : null}
+
+              {hiddenByPaging > 0 ? (
+                <button
+                  type="button"
+                  className={`btn btn-secondary ${styles.showMore}`}
+                  onClick={() => setShown((count) => count + PAGE_SIZE)}
+                >
+                  Show {Math.min(PAGE_SIZE, hiddenByPaging)} more
+                  <span className={styles.showMoreCount}>
+                    {hiddenByPaging} still to see
+                  </span>
+                </button>
               ) : null}
 
               {withoutPhotos.length ? (
@@ -474,7 +504,7 @@ export function RecipeLibraryPage() {
             </>
           ) : (
             <ul className={styles.list}>
-              {results.map((recipe: Recipe) => (
+              {results.slice(0, shown).map((recipe: Recipe) => (
                 <li key={recipe.id}>
                   <MealCard
                     recipe={recipe}

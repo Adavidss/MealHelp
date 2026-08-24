@@ -1,5 +1,6 @@
 import { ALL_TABLE_NAMES, db, type TableName } from '@/db/database'
 import { nowISO } from '@/utils/id'
+import { recordBackup } from '@/services/storage/backupRecord'
 
 /**
  * Everything lives on the device, so an export is the only copy that survives a
@@ -48,6 +49,8 @@ export async function downloadBackup(): Promise<void> {
   link.click()
   link.remove()
   URL.revokeObjectURL(url)
+  // So Settings can answer "am I covered?" rather than leaving it to memory.
+  recordBackup()
 }
 
 export interface BackupSummary {

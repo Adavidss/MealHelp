@@ -1,6 +1,7 @@
 import { useCallback, useSyncExternalStore } from 'react'
 import { newId } from '@/utils/id'
 import { buzz, playChime, primeChime } from './chime'
+import { askToNotify, notifyTimerDone } from './notifications'
 
 export interface KitchenTimer {
   id: string
@@ -84,6 +85,14 @@ function running(): void {
       alerted.add(timer.id)
       playChime()
       buzz()
+      /*
+       * Only when they are not looking. A cook watching the screen has the
+       * chime and the countdown; adding a notification to that is noise on the
+       * lock screen for something they already know.
+       */
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        notifyTimerDone(timer.label, Date.now() - timer.endsAt)
+      }
     }
     publish(next)
     if (!next.length) stop()
@@ -119,8 +128,10 @@ export function useTimers() {
 
   const start = useCallback((minutes: number, label: string, recipeId?: string) => {
     // Unlocking audio here, inside the tap that starts the timer, is what lets
-    // iOS play the chime when it finishes minutes later.
+    // iOS play the chime when it finishes minutes later — and the same tap is
+    // the only moment a browser will show the notification prompt.
     primeChime()
+    void askToNotify()
     const totalMs = Math.round(minutes * 60_000)
     publish([
       ...timers,

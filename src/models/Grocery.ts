@@ -49,6 +49,17 @@ export interface GroceryItem {
   sources: GrocerySource[]
 
   note?: string
+
+  /**
+   * When this line was last touched — ticked, unticked, said to be in the
+   * cupboard already. Two people shopping from one list are editing different
+   * lines of the same record at the same time, and without a stamp per line
+   * the whole list is one edit and one of them loses their ticks.
+   *
+   * Optional because lists written before this existed have none; those fall
+   * back to the list's own `updatedAt`, which is what they effectively meant.
+   */
+  updatedAt?: string
 }
 
 /**

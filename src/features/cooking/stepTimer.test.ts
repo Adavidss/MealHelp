@@ -21,7 +21,9 @@ describe('timerFromText', () => {
   it('leaves alone what a kitchen timer should not be counting', () => {
     // Nothing to time.
     expect(timerFromText('Season to taste and serve.')).toBeUndefined()
-    // Eight hours in a slow cooker is not a phone's job.
+    // A roast is worth a timer now that a finished one can notify.
+    expect(timerFromText('Roast for 3 hours.')).toBe(180)
+    // Eight hours in a slow cooker still is not a phone's job.
     expect(timerFromText('Cook on low for 8 hours.')).toBeUndefined()
     // "30 seconds of stirring" is not worth a timer, and is not minutes either.
     expect(timerFromText('Stir for 30 seconds.')).toBeUndefined()

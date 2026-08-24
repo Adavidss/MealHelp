@@ -188,7 +188,7 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   cooking methods, and a compact list view when you would rather scan names.
 - **What a recipe costs** — on the card, per serving, so two recipes can be
   compared at a glance; and on its own page, under the ingredients: about
-  £19.70, £3.29 a serving, with every line priced. It follows the ½×–4× scale,
+  $19.70, $3.29 a serving, with every line priced. It follows the ½×–4× scale,
   so doubling the batch doubles the total and leaves the per-serving figure
   alone. Costed as the *amount used* — two tablespoons of oil are two
   tablespoons of a bottle, not a bottle — which is the same rule the week's
@@ -241,7 +241,9 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   had ticked and how much you were making all survive the phone locking, the
   page reloading, or the app being closed and reopened mid-cook. Timers survive
   it too, and follow you around the app: start one in the kitchen and it is
-  still counting on the shopping list.
+  still counting on the shopping list. A timer that finishes while you are in
+  another app sends a notification, and says how long ago it went off if the
+  phone had put MealHelp to sleep.
 - **Leftovers as real things** — cooking six servings and eating two leaves four
   in the fridge. Those four can fill Tuesday, and the grocery list does not buy
   the ingredients twice.
@@ -419,6 +421,8 @@ npm test
 The suite concentrates on the transformations that would silently corrupt
 someone's week if they were wrong: ingredient parsing, unit normalisation and
 conversion, grocery aggregation, serving scaling, leftover arithmetic,
+every screen rendering at all (a seeded database, each route, no error
+boundary — the class of bug that actually shipped),
 recommendation scoring, weekly plan generation, recipe import parsing, share
 encoding and backup validation.
 
@@ -470,8 +474,14 @@ planned meals, cook events, grocery lists, pantry items, collections, feedback
 and settings. `localStorage` is not used for anything that matters.
 
 There is no analytics and no account. Nothing is sent anywhere unless you link
-a household (below), and even then it goes up encrypted. The flip side of local
-storage is that clearing your browser data deletes your recipes, so:
+a household (below), and even then it goes up encrypted.
+
+The flip side of local storage is that a browser treats it as disposable —
+Safari clears the data of a site you have not opened for about a week, Chrome
+clears it under pressure. So MealHelp asks the browser to keep it
+(`navigator.storage.persist()`) the first time there is a recipe worth keeping,
+and **Settings → Your data** says plainly what the browser decided, how much
+space is in use, and when you last exported a backup. Which brings us to:
 
 ## Backup and restore
 
@@ -484,6 +494,9 @@ storage is that clearing your browser data deletes your recipes, so:
   one action that can lose data you did not choose to delete.
 
 The file is plain JSON on purpose: it can be read, diffed and salvaged by hand.
+
+The date of the last export is remembered on the device, and shown next to the
+buttons. Nothing nags: a backup is mentioned where a backup is taken.
 
 ---
 
@@ -524,6 +537,19 @@ it" are told apart without asking anybody.
 
 A phone always pulls and merges before it pushes, so a sync never throws away
 what the other one just said.
+
+The grocery list is the exception that proves the rule. It is one record, so
+"newest record wins" meant one shopper's ticks replaced the other's mid-shop —
+the exact thing households exist for. Its two halves are settled separately:
+*which lines exist* is structural and follows the newer list, so rebuilding a
+week still works; *what state each line is in* is per line, and the newer tick
+wins wherever it was made, with a line nobody has touched losing to one
+somebody has.
+
+And a sync that keeps failing says so. One failure is silent — a phone in a
+lift is a working app with slightly old data — but after three in a row a line
+appears on Today, because two people planning against copies that have quietly
+stopped agreeing is worth interrupting for.
 
 ### What the Worker can see
 

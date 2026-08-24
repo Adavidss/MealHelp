@@ -22,12 +22,15 @@ export function timerFromText(text: string | undefined): number | undefined {
     if (!Number.isFinite(value) || value <= 0) continue
     const minutes = unit.startsWith('h') ? value * 60 : value
     /*
-     * Nobody needs a timer for thirty seconds of stirring. The upper end
-     * matters more: MealHelp's timers live in the open page, so a slow
-     * cooker's eight hours is a promise a phone cannot keep — better no button
-     * than one that quietly dies when the screen locks.
+     * Nobody needs a timer for thirty seconds of stirring. The upper end used
+     * to be two hours, because a timer living in an open page could not
+     * survive longer than somebody would keep it open; now that a finished
+     * timer notifies and says how late it is, a roast is worth offering. A
+     * slow cooker's eight hours still is not: nothing here can be trusted to
+     * count that long, and a button that fails after a whole afternoon is
+     * worse than no button.
      */
-    if (minutes < 1 || minutes > 120) continue
+    if (minutes < 1 || minutes > 240) continue
     if (longest == null || minutes > longest) longest = minutes
   }
   return longest == null ? undefined : Math.round(longest)

@@ -1,4 +1,4 @@
-import { Suspense, lazy } from 'react'
+import { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from './AppShell'
 
@@ -65,18 +65,9 @@ const BrowserPage = lazy(() =>
   import('@/features/browser/BrowserPage').then((m) => ({ default: m.BrowserPage })),
 )
 
-function RouteFallback() {
-  return (
-    <div className="page">
-      <p className="muted">Loading…</p>
-    </div>
-  )
-}
-
 export function AppRoutes() {
   return (
-    <Suspense fallback={<RouteFallback />}>
-      <Routes>
+    <Routes>
         <Route element={<AppShell />}>
           <Route path="/" element={<HomePage />} />
 
@@ -118,6 +109,5 @@ export function AppRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
-    </Suspense>
   )
 }

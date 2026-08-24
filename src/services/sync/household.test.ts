@@ -2,7 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { db } from '@/db/database'
 import { deleteRecipe } from '@/db/recipes'
 import { openSnapshot, sealSnapshot, type SealedSnapshot } from './crypto'
-import { joinHousehold, clearHousehold, householdInviteLink, inviteCodeFromHash, syncNow } from './household'
+import {
+  clearHousehold,
+  householdInviteLink,
+  inviteCodeFromHash,
+  joinHousehold,
+  syncHealth,
+  syncNow,
+} from './household'
 import type { SyncSnapshot } from '@/models'
 import { makeRecipe } from '@/test/factories'
 
@@ -209,5 +216,49 @@ describe('records from an older phone', () => {
     expect(stored?.equipment).toEqual([])
     expect(stored?.ingredients).toEqual([])
     expect(stored?.mealTypes).toEqual([])
+  })
+})
+
+describe('a sync that keeps failing', () => {
+  it('says nothing about the first failure, or the second', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('Failed to fetch') }))
+    await syncNow()
+    expect(syncHealth().failing).toBe(false)
+    await syncNow()
+    expect(syncHealth().failing).toBe(false)
+  })
+
+  /**
+   * Two people planning against copies that have quietly stopped agreeing is
+   * worth one line somewhere they will see it.
+   */
+  it('admits it once it has failed three times in a row', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('Failed to fetch') }))
+    await syncNow()
+    await syncNow()
+    await syncNow()
+    const health = syncHealth()
+    expect(health.failing).toBe(true)
+    expect(health.failures).toBe(3)
+  })
+
+  it('forgets the run as soon as one works', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('Failed to fetch') }))
+    await syncNow()
+    await syncNow()
+    await syncNow()
+    expect(syncHealth().failing).toBe(true)
+
+    vi.stubGlobal('fetch', fakeWorker())
+    await syncNow()
+
+    expect(syncHealth().failing).toBe(false)
+    expect(syncHealth().failures).toBe(0)
+  })
+
+  it('has nothing to say when no household is linked', () => {
+    clearHousehold()
+    expect(syncHealth().linked).toBe(false)
+    expect(syncHealth().failing).toBe(false)
   })
 })

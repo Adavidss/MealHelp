@@ -213,6 +213,11 @@ export async function removeRecipeFromGroceryList(
   return generateGroceryList(weekStart, meals, { planId, extras })
 }
 
+/** A line the shopper just changed, stamped so a sync can tell whose is newer. */
+function touched(item: GroceryItem): GroceryItem {
+  return { ...item, updatedAt: nowISO() }
+}
+
 async function mutate(
   weekStart: string,
   change: (items: GroceryItem[]) => GroceryItem[],
@@ -233,7 +238,7 @@ export async function toggleGroceryItem(
 ): Promise<void> {
   await mutate(weekStart, (items) =>
     items.map((item) =>
-      item.id === itemId ? { ...item, checked: !item.checked } : item,
+      item.id === itemId ? touched({ ...item, checked: !item.checked }) : item,
     ),
   )
 }
@@ -247,7 +252,7 @@ export async function setPantryDecision(
     items.map((item) =>
       item.id === itemId
         ? // "I have it" also ticks it off; there is nothing left to buy.
-          { ...item, haveIt, checked: haveIt ? true : item.checked }
+          touched({ ...item, haveIt, checked: haveIt ? true : item.checked })
         : item,
     ),
   )
@@ -285,6 +290,7 @@ export async function addManualGroceryItem(
     const item: GroceryItem = {
       id: newId('gi'),
       key,
+      updatedAt: nowISO(),
       name: capitalize(parsed.ingredientName || trimmed),
       quantities:
         parsed.quantity != null
@@ -313,7 +319,7 @@ export async function clearCheckedItems(weekStart: string): Promise<void> {
 
 export async function uncheckAll(weekStart: string): Promise<void> {
   await mutate(weekStart, (items) =>
-    items.map((item) => ({ ...item, checked: false, haveIt: undefined })),
+    items.map((item) => touched({ ...item, checked: false, haveIt: undefined })),
   )
 }
 

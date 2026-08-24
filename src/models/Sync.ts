@@ -73,4 +73,10 @@ export interface HouseholdLink {
   /** What this device calls itself in the "last synced by" line. */
   deviceName: string
   lastSyncedAt?: string
+  /**
+   * How many syncs in a row have failed. One failure is a phone in a lift and
+   * worth saying nothing about; ten in a row is two people planning against
+   * copies that have quietly stopped agreeing.
+   */
+  consecutiveFailures?: number
 }

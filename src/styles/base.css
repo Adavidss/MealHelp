@@ -115,7 +115,11 @@ textarea {
   *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+    /* Durations alone leave a delayed animation sitting invisible for its
+       delay and then snapping — which is the jump the setting is about. */
+    animation-delay: 0.001ms !important;
     transition-duration: 0.001ms !important;
+    transition-delay: 0.001ms !important;
     scroll-behavior: auto !important;
   }
 }

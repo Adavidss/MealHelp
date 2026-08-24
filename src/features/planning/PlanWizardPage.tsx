@@ -25,18 +25,14 @@ import { loadPriceBook } from '@/db/prices'
 import {
   COOKING_METHODS,
   COOKING_METHOD_LABELS,
-  DAY_LOADS,
-  DAY_LOAD_LABELS,
   VARIETY_LABELS,
   VARIETY_MODES,
   type CookingMethod,
-  type DayLoad,
   PLAN_SCOPE_LABELS,
   PLAN_SCOPE_TYPES,
   type PlanScope,
   type PlanningRequest,
   type Recipe,
-  type VarietyMode,
 } from '@/models'
 import { useWebWeek, isProvisional } from './useWebWeek'
 import { WeekFitPanel } from './WeekFitPanel'
@@ -68,31 +64,11 @@ import { RecipePicker } from '@/features/planner/RecipePicker'
 import { RecipePeek } from './RecipePeek'
 import { StarterRecipesButton } from '@/features/recipes/StarterRecipesButton'
 import { PLAN_PRESETS, type PlanPreset } from './planPresets'
+import type { Preferences } from './preferences'
+import { WhichDaysSection } from './WhichDaysSection'
+import { FitTargetsSection } from './FitTargetsSection'
 import styles from './PlanWizardPage.module.css'
 
-interface Preferences {
-  mealsNeeded: number
-  targetCookSessions: number
-  preferLeftovers: boolean
-  preferredMethods: CookingMethod[]
-  requiredMethods: CookingMethod[]
-  variety: VarietyMode
-  usePantryFirst: boolean
-  avoidRecentlyCooked: boolean
-  servingsPerMeal: number
-  dayLoads: Record<string, DayLoad>
-  selectedDates: string[]
-  useUp: string
-  /** Which meals to fill in — the rest of the day is left as it is. */
-  scope: PlanScope
-  /** What the week has to fit inside. Any of them may be left unset. */
-  budget?: number
-  maxMinutesPerMeal?: number
-  proteinPerDay?: number
-  maxActiveTimeMinutes?: number
-  preferredEffort?: PlanningRequest['preferredEffort']
-  budgetPreference?: PlanningRequest['budgetPreference']
-}
 
 /** The saved planning defaults, as a fresh set of preferences for a week. */
 function preferencesFromSettings(
@@ -118,27 +94,6 @@ function preferencesFromSettings(
     proteinPerDay: defaults.proteinPerDay,
   }
 }
-
-/**
- * Whole weeks, working weeks and weekends.
- *
- * The planner used to default to five meals, which the day grid then filled
- * from Monday — so a weekend was never planned unless you noticed the grid and
- * ticked Saturday yourself. Weekends are when most people actually cook.
- */
-const DAY_PRESETS: Array<{ id: string; label: string; pick: (dates: string[]) => string[] }> = [
-  { id: 'all', label: 'Whole week', pick: (dates) => [...dates] },
-  {
-    id: 'weekdays',
-    label: 'Weekdays',
-    pick: (dates) => dates.filter((date) => ![0, 6].includes(new Date(`${date}T00:00:00`).getDay())),
-  },
-  {
-    id: 'weekend',
-    label: 'Weekend',
-    pick: (dates) => dates.filter((date) => [0, 6].includes(new Date(`${date}T00:00:00`).getDay())),
-  },
-]
 
 /** A preset only changes the constraints it names; everything else stands. */
 function applyPreset(current: Preferences, preset: PlanPreset): Preferences {
@@ -784,160 +739,13 @@ export function PlanWizardPage() {
             </div>
           </section>
 
-          <section>
-            <h2 className="section-title">
-              Which days
-              <span className={styles.dayPresets}>
-                {DAY_PRESETS.map((preset) => {
-                  const chosen = preset.pick(dates)
-                  const active =
-                    chosen.length === prefs.selectedDates.length &&
-                    chosen.every((date) => prefs.selectedDates.includes(date))
-                  return (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      className="chip chip-button"
-                      aria-pressed={active}
-                      onClick={() =>
-                        setPrefs((current) => ({
-                          ...current,
-                          selectedDates: chosen,
-                          mealsNeeded: chosen.length,
-                          // Cooking more nights than there are days is not a
-                          // plan, it is an error message waiting to happen.
-                          targetCookSessions: Math.min(current.targetCookSessions, chosen.length),
-                        }))
-                      }
-                    >
-                      {preset.label}
-                    </button>
-                  )
-                })}
-              </span>
-            </h2>
-            <div className={styles.days}>
-              {dates.map((date) => {
-                const selected = prefs.selectedDates.includes(date)
-                return (
-                  <div key={date} className={styles.dayColumn}>
-                    <button
-                      type="button"
-                      className={`${styles.dayToggle} ${selected ? styles.dayOn : ''}`}
-                      aria-pressed={selected}
-                      onClick={() =>
-                        set(
-                          'selectedDates',
-                          selected
-                            ? prefs.selectedDates.filter((d) => d !== date)
-                            : [...prefs.selectedDates, date].sort(),
-                        )
-                      }
-                    >
-                      <strong>{dayNameShort(date)}</strong>
-                      <small>{monthDay(date)}</small>
-                    </button>
-                    <select
-                      className={`select ${styles.loadSelect}`}
-                      value={prefs.dayLoads[date] ?? 'normal'}
-                      onChange={(event) =>
-                        set('dayLoads', {
-                          ...prefs.dayLoads,
-                          [date]: event.target.value as DayLoad,
-                        })
-                      }
-                      disabled={!selected}
-                      aria-label={`How busy is ${dayName(date)}?`}
-                    >
-                      {DAY_LOADS.map((load) => (
-                        <option key={load} value={load}>
-                          {DAY_LOAD_LABELS[load]}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )
-              })}
-            </div>
-          </section>
+          <WhichDaysSection dates={dates} prefs={prefs} setPrefs={setPrefs} set={set} />
 
-          <section>
-            <h2 className="section-title">
-              What does it have to fit?
-              <span className="text-sm faint">Leave any of them blank</span>
-            </h2>
-            <div className={styles.fitInputs}>
-              <label className={styles.fitField}>
-                <span className="field-label">Budget for the week</span>
-                <span className={styles.fitInput}>
-                  <span className={styles.prefix}>{settings.currency ?? '$'}</span>
-                  <input
-                    className="input"
-                    type="number"
-                    min={0}
-                    step={5}
-                    inputMode="numeric"
-                    placeholder="no limit"
-                    value={prefs.budget ?? ''}
-                    onChange={(event) =>
-                      set('budget', event.target.value === '' ? undefined : Number(event.target.value))
-                    }
-                  />
-                </span>
-                <span className="field-hint">Estimated from typical shop prices.</span>
-              </label>
-
-              <label className={styles.fitField}>
-                <span className="field-label">Longest night</span>
-                <span className={styles.fitInput}>
-                  <input
-                    className="input"
-                    type="number"
-                    min={0}
-                    step={5}
-                    inputMode="numeric"
-                    placeholder="no limit"
-                    value={prefs.maxMinutesPerMeal ?? ''}
-                    onChange={(event) =>
-                      set(
-                        'maxMinutesPerMeal',
-                        event.target.value === '' ? undefined : Number(event.target.value),
-                      )
-                    }
-                  />
-                  <span className={styles.suffix}>min</span>
-                </span>
-                <span className="field-hint">Hands-on time, not time in the oven.</span>
-              </label>
-
-              <label className={styles.fitField}>
-                <span className="field-label">Protein a day</span>
-                <span className={styles.fitInput}>
-                  <input
-                    className="input"
-                    type="number"
-                    min={0}
-                    step={5}
-                    inputMode="numeric"
-                    placeholder="no goal"
-                    value={prefs.proteinPerDay ?? ''}
-                    onChange={(event) =>
-                      set(
-                        'proteinPerDay',
-                        event.target.value === '' ? undefined : Number(event.target.value),
-                      )
-                    }
-                  />
-                  <span className={styles.suffix}>g</span>
-                </span>
-                <span className="field-hint">Counted per person, per day.</span>
-              </label>
-            </div>
-            <p className="field-hint">
-              These are checked once the week is built, with a way to nudge it
-              cheaper or quicker if it misses.
-            </p>
-          </section>
+          <FitTargetsSection
+            prefs={prefs}
+            currency={settings.currency ?? '$'}
+            set={set}
+          />
 
           <section>
             <h2 className="section-title">What kind of week</h2>

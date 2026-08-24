@@ -201,6 +201,27 @@ function fingerprint(snapshot: SyncSnapshot): string {
   return `${parts.join('|')}|tombstones:${stones.join(',')}`
 }
 
+/** After this many failures in a row, the app says so where it will be seen. */
+export const FAILURES_BEFORE_SAYING = 3
+
+export interface SyncHealth {
+  linked: boolean
+  failing: boolean
+  failures: number
+  lastSyncedAt?: string
+}
+
+export function syncHealth(): SyncHealth {
+  const link = loadHousehold()
+  const failures = link?.consecutiveFailures ?? 0
+  return {
+    linked: Boolean(link),
+    failing: Boolean(link) && failures >= FAILURES_BEFORE_SAYING,
+    failures,
+    lastSyncedAt: link?.lastSyncedAt,
+  }
+}
+
 export type SyncStatus = 'ok' | 'no-link' | 'offline' | 'error'
 
 export interface SyncOutcome {
@@ -257,7 +278,7 @@ export async function syncNow(): Promise<SyncOutcome> {
       // Nothing to say: this phone agrees with what is already up there.
       if (remote && fingerprint(outgoing) === fingerprint(remote)) {
         const applied = await applyLocally(result.writes, result.deletions, result.tombstones)
-        saveHousehold({ ...link, lastSyncedAt: at })
+        saveHousehold({ ...link, lastSyncedAt: at, consecutiveFailures: 0 })
         return { status: 'ok', written: applied.written, deleted: applied.deleted, at }
       }
 
@@ -270,12 +291,15 @@ export async function syncNow(): Promise<SyncOutcome> {
       }
 
       const applied = await applyLocally(result.writes, result.deletions, result.tombstones)
-      saveHousehold({ ...link, lastSyncedAt: at })
+      saveHousehold({ ...link, lastSyncedAt: at, consecutiveFailures: 0 })
       return { status: 'ok', written: applied.written, deleted: applied.deleted, at }
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Sync failed'
     const offline = typeof navigator !== 'undefined' && navigator.onLine === false
+    // Counted rather than announced: one failure is a phone in a lift, and a
+    // run of them is something the app should admit to without interrupting.
+    saveHousehold({ ...link, consecutiveFailures: (link.consecutiveFailures ?? 0) + 1 })
     return {
       status: offline ? 'offline' : 'error',
       written: 0,

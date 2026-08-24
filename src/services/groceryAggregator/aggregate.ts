@@ -200,6 +200,10 @@ export function mergeGroceryLists(
       checked: old.checked,
       haveIt: old.haveIt,
       note: old.note ?? item.note,
+      // The tick is the old one, so its stamp is too: rebuilding the week must
+      // not make this device look like it ticked everything just now, or a
+      // sync would overwrite the other phone's real ticks with these.
+      updatedAt: old.updatedAt,
     }
   })
 

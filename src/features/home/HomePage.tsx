@@ -25,6 +25,7 @@ import { moodQuery } from '@/services/recipeDiscovery'
 import { StarterRecipesButton } from '@/features/recipes/StarterRecipesButton'
 import { mealTitle } from '@/features/planner/mealTitle'
 import { addDays, relativeDayLabel, startOfWeek, todayISO } from '@/utils/date'
+import { SyncNotice } from '@/features/sharing/SyncNotice'
 import styles from './HomePage.module.css'
 
 /** How far ahead "coming up" reaches. A fortnight is a plan, not a preview. */
@@ -144,6 +145,9 @@ export function HomePage() {
           <SettingsIcon size={19} aria-hidden="true" />
         </Link>
       </header>
+
+      {/* Only ever visible when syncing has been failing for a while. */}
+      <SyncNotice />
 
       {libraryEmpty ? (
         <EmptyState

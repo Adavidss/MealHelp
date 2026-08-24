@@ -156,3 +156,73 @@ describe('quiet syncs', () => {
     expect(result.writes).toEqual({})
   })
 })
+
+describe('two people shopping from one list', () => {
+  const list = (updatedAt: string, ticked: Record<string, string>) => ({
+    id: 'gl1',
+    weekStart: '2026-08-24',
+    updatedAt,
+    items: ['milk', 'eggs', 'bread'].map((key) => ({
+      id: `${key}-id`,
+      key,
+      name: key,
+      checked: key in ticked,
+      updatedAt: ticked[key] as string | undefined,
+      quantities: [],
+      category: 'Other',
+      sources: [],
+    })),
+  })
+
+  function merge(local: ReturnType<typeof list>, remote: ReturnType<typeof list>) {
+    const result = mergeSnapshots({
+      local: { groceryLists: [local] },
+      localTombstones: [],
+      remote: snapshot({ groceryLists: [remote] }),
+    })
+    const merged = result.tables.groceryLists[0] as ReturnType<typeof list>
+    return merged.items.filter((item) => item.checked).map((item) => item.key).sort()
+  }
+
+  /**
+   * The bug this exists for: a whole list replacing a whole list meant one
+   * shopper's ticks vanished in front of them, mid-shop.
+   */
+  it('keeps both shoppers ticks', () => {
+    const hers = list('2026-08-24T10:00:05Z', { milk: '2026-08-24T10:00:05Z' })
+    const his = list('2026-08-24T10:00:03Z', { bread: '2026-08-24T10:00:03Z' })
+    expect(merge(hers, his)).toEqual(['bread', 'milk'])
+  })
+
+  it('lets the newer change to one line win, in either direction', () => {
+    // He ticked bread, then she unticked it a moment later: it stays unticked.
+    const hers = list('2026-08-24T10:00:05Z', {})
+    const his = list('2026-08-24T10:00:03Z', { bread: '2026-08-24T10:00:03Z' })
+    hers.items = hers.items.map((item) =>
+      item.key === 'bread' ? { ...item, updatedAt: '2026-08-24T10:00:04Z' } : item,
+    )
+    expect(merge(hers, his)).toEqual([])
+  })
+
+  it('lets a real tick beat a line nobody has touched', () => {
+    const hers = list('2026-08-24T10:00:05Z', {})
+    const his = list('2026-08-24T10:00:03Z', { bread: '2026-08-24T10:00:03Z' })
+    hers.items = hers.items.map((item) => ({ ...item, updatedAt: undefined }))
+    // Her list is newer, but she never touched bread and he ticked it.
+    expect(merge(hers, his)).toEqual(['bread'])
+  })
+
+  /** Which lines exist is still settled by the newer list, so a rebuild works. */
+  it('takes the newer lists own set of lines', () => {
+    const hers = list('2026-08-24T10:00:05Z', {})
+    hers.items = hers.items.filter((item) => item.key !== 'eggs')
+    const his = list('2026-08-24T10:00:03Z', { eggs: '2026-08-24T10:00:03Z' })
+    const result = mergeSnapshots({
+      local: { groceryLists: [hers] },
+      localTombstones: [],
+      remote: snapshot({ groceryLists: [his] }),
+    })
+    const merged = result.tables.groceryLists[0] as typeof hers
+    expect(merged.items.map((item) => item.key)).toEqual(['milk', 'bread'])
+  })
+})

@@ -210,6 +210,10 @@ export function BrowserPage() {
 
   return (
     <div className={styles.screen}>
+      {/* The address bar is the visible title here, the way it is in a real
+          browser — but a screen with no heading at all is a screen somebody
+          navigating by headings cannot find. */}
+      <h1 className="sr-only">Browser</h1>
       <AddressBar
         display={display}
         loading={loading}

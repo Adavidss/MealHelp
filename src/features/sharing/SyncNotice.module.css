@@ -1,0 +1,31 @@
+/* A line, not a banner: it explains itself and gets out of the way. */
+.notice {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0 0 var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--honey-soft);
+  border-radius: var(--radius);
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.notice svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--honey);
+}
+
+.notice span {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+.link {
+  font-weight: 600;
+  color: var(--accent-ink);
+  white-space: nowrap;
+}

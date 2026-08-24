@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
 import styles from './Modal.module.css'
@@ -26,6 +26,13 @@ export function Modal({
   size = 'sheet',
 }: ModalProps) {
   const ref = useRef<HTMLDialogElement>(null)
+  /*
+   * Closed dialogs stay mounted, so a recipe page holds six of these at once.
+   * A hardcoded id gave all six the same one, and every `aria-labelledby`
+   * resolved to whichever came first — the share sheet announcing itself as
+   * the delete confirmation.
+   */
+  const titleId = useId()
 
   useEffect(() => {
     const dialog = ref.current
@@ -60,7 +67,7 @@ export function Modal({
     <dialog
       ref={ref}
       className={`${styles.dialog} ${size === 'dialog' ? styles.centered : styles.sheet}`}
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
       onClick={(event) => {
         // Clicking the backdrop (the dialog element itself) dismisses.
         if (event.target === ref.current) onClose()
@@ -68,7 +75,7 @@ export function Modal({
     >
       <div className={styles.inner}>
         <header className={styles.header}>
-          <h2 id="modal-title" className={styles.title}>
+          <h2 id={titleId} className={styles.title}>
             {title}
           </h2>
           <button
