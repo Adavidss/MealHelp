@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest'
+import { COOKING_METHODS } from '@/models'
+import { MOODS } from './moods'
 import {
   CHARACTERISTICS,
+  METHOD_CHARACTERISTIC_IDS,
   TILE_PALETTES,
   characteristicById,
   countCharacteristics,
@@ -154,5 +157,42 @@ describe('the filter list as a whole', () => {
       cookingMethods: [],
     })
     expect(() => CHARACTERISTICS.map((entry) => entry.matches(bare))).not.toThrow()
+  })
+})
+
+describe('the filter sets that sit on the same screen', () => {
+  /**
+   * The rail and the "more filters" sheet both filter recipes, side by side.
+   * When a characteristic and a cooking method mean the same thing, offering
+   * both is offering the same filter twice — under two names, in the slow
+   * cooker's case, each with its own state.
+   */
+  it('knows which characteristics are really cooking methods', () => {
+    expect([...METHOD_CHARACTERISTIC_IDS].sort()).toEqual([
+      'air-fryer',
+      'instant-pot',
+      'no-cook',
+      'one-pot',
+      'sheet-pan',
+      'slow-cooker',
+    ])
+  })
+
+  it('leaves the sheet only the methods with no chip of their own', () => {
+    const sheet = COOKING_METHODS.filter((method) => !METHOD_CHARACTERISTIC_IDS.has(method))
+    expect(sheet).toEqual(['stovetop', 'oven', 'grill', 'microwave'])
+  })
+
+  /** The merge that started this: same id, same rule, two rails. */
+  it('keeps the moods and the characteristics from overlapping', () => {
+    const moodIds = new Set(MOODS.map((mood) => mood.id))
+    const shownInRail = CHARACTERISTICS.filter((entry) => !moodIds.has(entry.id))
+    expect(shownInRail.some((entry) => moodIds.has(entry.id))).toBe(false)
+    // The three that were dropped, named so a new one cannot creep back in.
+    expect(CHARACTERISTICS.filter((entry) => moodIds.has(entry.id)).map((e) => e.id).sort()).toEqual([
+      'big-batch',
+      'cheap',
+      'leftovers',
+    ])
   })
 })

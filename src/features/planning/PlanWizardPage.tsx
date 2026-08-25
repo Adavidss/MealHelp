@@ -172,13 +172,25 @@ export function PlanWizardPage() {
   const set = <K extends keyof Preferences>(key: K, value: Preferences[K]) =>
     setPrefs((current) => ({ ...current, [key]: value }))
 
+  /**
+   * Insisting on a method you have since turned off would quietly constrain a
+   * week by something nobody can see any more, so the requirement follows the
+   * methods it was made from.
+   */
   const toggleMethod = (list: 'preferredMethods' | 'requiredMethods', method: CookingMethod) =>
-    setPrefs((current) => ({
-      ...current,
-      [list]: current[list].includes(method)
+    setPrefs((current) => {
+      const next = current[list].includes(method)
         ? current[list].filter((m) => m !== method)
-        : [...current[list], method],
-    }))
+        : [...current[list], method]
+      if (list !== 'preferredMethods') return { ...current, [list]: next }
+      return {
+        ...current,
+        preferredMethods: next,
+        // Only while the insistence is switched on, and never on something
+        // that is no longer leaned towards.
+        requiredMethods: current.requiredMethods.length ? next : [],
+      }
+    })
 
   const buildRequest = (
     using: Preferences,
@@ -750,6 +762,17 @@ export function PlanWizardPage() {
           <section>
             <h2 className="section-title">What kind of week</h2>
 
+            {/*
+              One row of methods, not two.
+              "Lean towards" and "Must include at least one" were two chip rows
+              fifteen chips apart with five labels in common — Slow Cooker
+              above, Slow Cooker again below, meaning something different each
+              time. Every preset that touches methods sets both lists to the
+              same thing ("Crock-Pot heavy" is prefer *and* require slow
+              cooker), which is the giveaway: it was one intention split into
+              two controls. So the strength is a follow-up question about the
+              methods already chosen, and nothing is offered twice.
+            */}
             <div className="field">
               <span className="field-label">Lean towards</span>
               <div className="row-tight">
@@ -765,25 +788,24 @@ export function PlanWizardPage() {
                   </button>
                 ))}
               </div>
-            </div>
 
-            <div className="field">
-              <span className="field-label">Must include at least one</span>
-              <div className="row-tight">
-                {(['slow-cooker', 'instant-pot', 'one-pot', 'sheet-pan', 'no-cook'] as CookingMethod[]).map(
-                  (method) => (
-                    <button
-                      key={method}
-                      type="button"
-                      className="chip chip-button"
-                      aria-pressed={prefs.requiredMethods.includes(method)}
-                      onClick={() => toggleMethod('requiredMethods', method)}
-                    >
-                      {COOKING_METHOD_LABELS[method]}
-                    </button>
-                  ),
-                )}
-              </div>
+              {prefs.preferredMethods.length ? (
+                <label className={styles.insist}>
+                  <input
+                    type="checkbox"
+                    checked={prefs.requiredMethods.length > 0}
+                    onChange={(event) =>
+                      set('requiredMethods', event.target.checked ? [...prefs.preferredMethods] : [])
+                    }
+                  />
+                  <span>
+                    Make sure at least one meal uses{' '}
+                    {prefs.preferredMethods.length === 1
+                      ? COOKING_METHOD_LABELS[prefs.preferredMethods[0]].toLowerCase()
+                      : 'one of these'}
+                  </span>
+                </label>
+              ) : null}
             </div>
 
             <div className="field">

@@ -332,6 +332,18 @@ a hairline rather than by a second line. Three chips came out in the merge:
 lists (`bulkScore >= 4` on both sides), so on one row they would have sat side
 by side doing the same thing twice.
 
+Sweeping the rest of the app for the same defect found two more. The **filter
+sheet** offered all ten cooking methods while six of them were already chips on
+the rail outside it — the slow cooker under two different names, "Crock-Pot"
+out there and "Slow Cooker" in here, each with its own state. The sheet now
+offers only the four with no chip of their own, derived from the two lists
+rather than typed out, and a test names the overlap so a new one cannot creep
+back. The **planner** had "Lean towards" and "Must include at least one" as two
+chip rows fifteen chips apart with five labels in common; every preset that
+touches methods sets both lists to the same thing, which is the giveaway that
+it was one intention split in two. The strength is now a follow-up question
+about the methods already chosen.
+
 First recipe at 240px instead of 387px, which is a whole card more of food.
 
 The planner's day cards were 210px wide — too narrow for the photograph and the

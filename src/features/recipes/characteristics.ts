@@ -1,4 +1,4 @@
-import type { Recipe } from '@/models'
+import { COOKING_METHODS, type Recipe } from '@/models'
 import {
   activeMinutes,
   bulkScore,
@@ -169,6 +169,19 @@ export const CHARACTERISTICS: Characteristic[] = [
 ]
 
 const BY_ID = new Map(CHARACTERISTICS.map((entry) => [entry.id, entry]))
+
+/**
+ * Characteristics that are really "which appliance", by the id they share with
+ * the cooking method. The filter sheet uses this to offer only the methods the
+ * chip rail does not already carry — the same filter in two places, under two
+ * different names ("Crock-Pot" here, "Slow Cooker" there), is how somebody ends
+ * up applying it twice and wondering why the count did not move.
+ */
+export const METHOD_CHARACTERISTIC_IDS: ReadonlySet<string> = new Set(
+  CHARACTERISTICS.filter((entry) =>
+    (COOKING_METHODS as readonly string[]).includes(entry.id),
+  ).map((entry) => entry.id),
+)
 
 export function characteristicById(id: string): Characteristic | undefined {
   return BY_ID.get(id)

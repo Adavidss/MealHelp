@@ -30,7 +30,7 @@ import { CollectionsView } from '@/features/collections/CollectionsPage'
 import { WhatCanIMakeView } from './WhatCanIMakePage'
 import { BrowseRow } from './BrowseRow'
 import { buildBrowseSections, sectionTotal } from './browseSections'
-import { filterByCharacteristics } from './characteristics'
+import { METHOD_CHARACTERISTIC_IDS, filterByCharacteristics } from './characteristics'
 import { FilterRail } from './FilterRail'
 import { OnlineIdeas } from '@/features/discover/OnlineIdeas'
 import { SurpriseSheet } from '@/features/discover/SurpriseSheet'
@@ -51,6 +51,11 @@ import styles from './RecipeLibraryPage.module.css'
 
 /** Roughly two phone screens of cards — enough to scroll into, not enough to stall. */
 const PAGE_SIZE = 60
+
+/** The methods with no chip of their own on the rail. */
+const SHEET_METHODS = COOKING_METHODS.filter(
+  (method) => !METHOD_CHARACTERISTIC_IDS.has(method),
+)
 
 export function RecipeLibraryPage() {
   const { settings, update } = useSettings()
@@ -568,10 +573,20 @@ export function RecipeLibraryPage() {
           </label>
         </div>
 
+        {/*
+          Only the methods the rail does not already carry.
+          Six of these — Crock-Pot, Instant Pot, one pot, sheet pan, air fryer,
+          no cooking — are chips on the rail outside, filtering on exactly the
+          same field. Offered in both places they were the same filter twice
+          over, under two names in the slow cooker's case, each with its own
+          state: turn on "Crock-Pot" out there and "Slow Cooker" in here and
+          nothing happens the second time, except the sheet claiming a filter
+          is active.
+        */}
         <div className="field">
           <span className="field-label">How it's cooked</span>
           <div className="row-tight">
-            {COOKING_METHODS.map((method) => (
+            {SHEET_METHODS.map((method) => (
               <button
                 key={method}
                 type="button"
