@@ -149,13 +149,17 @@ export function PlannerPage() {
           >
             <ChevronLeft size={18} aria-hidden="true" />
           </button>
-          <button
-            type="button"
-            className="btn btn-secondary btn-sm"
-            onClick={() => navigate(`/plan/${startOfWeek(today, settings.weekStartsOn)}`)}
-          >
-            This week
-          </button>
+          {/* Only worth a control when it would go somewhere: on this week it
+              was a button that did nothing, taking a row of a phone screen. */}
+          {weekStart === startOfWeek(today, settings.weekStartsOn) ? null : (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => navigate(`/plan/${startOfWeek(today, settings.weekStartsOn)}`)}
+            >
+              This week
+            </button>
+          )}
           <button
             type="button"
             className="btn btn-secondary btn-icon"

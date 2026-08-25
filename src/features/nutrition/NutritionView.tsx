@@ -244,7 +244,10 @@ export function NutritionView() {
 
       <p className={styles.targetsNote}>
         Targets: {Math.round(targets.calories)} kcal · {targets.protein} g protein · {targets.carbs} g carbs ·{' '}
-        {targets.fat} g fat. <Link to="/settings">Change them</Link>.
+        {targets.fat} g fat.{' '}
+        <Link to="/settings" className={styles.changeTargets}>
+          Change them
+        </Link>
       </p>
 
       <LogDialog open={logOpen} date={date} onClose={() => setLogOpen(false)} />

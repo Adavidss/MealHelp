@@ -1,9 +1,5 @@
 import type { Recipe } from '@/models'
-import {
-  activeMinutes,
-  cleanupScore,
-  leftoverScore,
-} from '@/services/recipeMetrics'
+import { cleanupScore, leftoverScore } from '@/services/recipeMetrics'
 
 /**
  * The few words that go on a photograph.
@@ -27,11 +23,6 @@ export interface MealBadge {
 /** Protein per serving at which "High protein" stops being a stretch. */
 const HIGH_PROTEIN_GRAMS = 25
 
-/** Rounded to the nearest five, because "23 min" reads as precision nobody has. */
-function roundedMinutes(minutes: number): number {
-  return Math.max(5, Math.round(minutes / 5) * 5)
-}
-
 interface BadgeRule {
   id: string
   tone: BadgeTone
@@ -41,17 +32,15 @@ interface BadgeRule {
   matches: (recipe: Recipe) => boolean
 }
 
+/*
+ * Time is not in here, and used to be.
+ *
+ * Every card already prints the minutes on the line above the badges, so a
+ * "20 min" badge under "🕐 20 min" said the same thing twice and spent one of
+ * three slots doing it — on a phone, where the card is 165px wide, that is the
+ * difference between knowing a recipe is a slow cooker one and not.
+ */
 const RULES: BadgeRule[] = [
-  {
-    // The single most useful thing to know at a glance, so it leads — and it
-    // says the actual number rather than the word "quick", which every site
-    // uses and nobody believes.
-    id: 'time',
-    tone: 'time',
-    priority: 1,
-    label: (recipe) => `${roundedMinutes(activeMinutes(recipe))} min`,
-    matches: (recipe) => activeMinutes(recipe) > 0 && activeMinutes(recipe) <= 30,
-  },
   {
     id: 'slow-cooker',
     tone: 'method',

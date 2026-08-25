@@ -77,11 +77,6 @@
   list-style: none;
 }
 
-.scaleRow {
-  display: flex;
-  gap: 4px;
-}
-
 .sectionHeading {
   font-size: 0.95rem;
   color: var(--accent-ink);
@@ -222,29 +217,58 @@
   gap: var(--space-2);
 }
 
-/* The servings dial under the ½×–4× chips: the same scaling, said in the
-   units a cook actually thinks in. */
+/*
+ * The only way to scale a recipe now, so it is sized like a control rather
+ * than a footnote: a full-width row on a phone, with the number big enough to
+ * read from where the food is.
+ */
 .servingsDial {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-3);
   flex-wrap: wrap;
-  margin: var(--space-2) 0 var(--space-3);
+  margin: var(--space-2) 0 var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  background: var(--surface-sunk);
+  border-radius: var(--radius);
 }
 
 .servingsLabel {
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: var(--ink-soft);
 }
 
+.servingsControl {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
 .servingsCount {
-  min-width: 2ch;
+  min-width: 2.2ch;
   text-align: center;
-  font-size: 1.2rem;
+  font-size: 1.35rem;
   font-variant-numeric: tabular-nums;
 }
 
+/* At 1× this rides along with the label, so the dial is one row deep. */
 .servingsNote {
   font-size: 0.8rem;
   color: var(--ink-faint);
+}
+
+/* The multiplier, as an explanation you can undo rather than a dial. */
+.servingsReset {
+  flex-basis: 100%;
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--accent-ink);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
 }

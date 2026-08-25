@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useLiveQuery } from 'dexie-react-hooks'
 import {
@@ -46,7 +46,6 @@ import { MealCard } from '@/components/meal/MealCard'
 import { OnlineIdeas } from '@/features/discover/OnlineIdeas'
 import { similarQuery } from '@/services/recipeDiscovery'
 import {
-  SCALE_OPTIONS,
   displayIngredientSections,
   ingredientsAsText,
   scaleLabel,
@@ -66,13 +65,27 @@ export function RecipeDetailPage() {
   const library = useLiveQuery(() => db.recipes.toArray(), [], [])
 
   // Opened again at the scale it was left at — see recipeView.
-  const [scale, setScaleState] = useState(() => rememberedScale(id) ?? 1)
-  const setScale = useCallback(
-    (next: number) => {
-      setScaleState(next)
-      rememberScale(id, next)
+  const [scale, setScale] = useState(() => rememberedScale(id) ?? 1)
+  useEffect(() => {
+    rememberScale(id, scale)
+  }, [id, scale])
+
+  /**
+   * A tap changes the servings by one, counted from the last tap rather than
+   * from the last render. Two quick taps on + used to land on the same number
+   * twice — both read the scale as it was before either of them — which on a
+   * phone is most of the taps.
+   */
+  const stepServings = useCallback(
+    (delta: number) => {
+      setScale((current) => {
+        const base = recipe?.servings
+        if (!base) return current
+        const next = Math.max(1, Math.min(60, Math.round(base * current) + delta))
+        return next / base
+      })
     },
-    [id],
+    [recipe?.servings],
   )
   const [checked, setChecked] = useState<Set<string>>(new Set())
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -316,52 +329,51 @@ export function RecipeDetailPage() {
       <section>
         <div className="section-title">
           <h2>Ingredients</h2>
-          <div className={styles.scaleRow} role="group" aria-label="Scale recipe">
-            {SCALE_OPTIONS.map((option) => (
-              <button
-                key={option}
-                type="button"
-                className="chip chip-button"
-                aria-pressed={scale === option}
-                onClick={() => setScale(option)}
-              >
-                {scaleLabel(option)}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Cooking for five when the recipe says four is not a multiplier
-            anybody wants to work out, so the servings themselves are a dial —
-            and it shows what that came to in ×, since that is the number the
-            ingredient lines were multiplied by. */}
+        {/*
+          One control, in the units a cook thinks in.
+          There used to be a row of multipliers beside this — ½× 1× 1½× 2× 3× 4×
+          — which asked people to do the arithmetic the app is for. Nobody
+          cooks "×1.5"; they cook for six. The multiplier is still what the
+          amounts are scaled by, so it is shown once the number moves, as an
+          explanation rather than a control.
+        */}
         {recipe.servings ? (
           <div className={styles.servingsDial}>
             <span className={styles.servingsLabel}>Cooking for</span>
-            <button
-              type="button"
-              className="btn btn-secondary btn-icon"
-              aria-label="One fewer serving"
-              disabled={(scaledServings ?? 0) <= 1}
-              onClick={() => setScale(Math.max(1, Math.round(recipe.servings! * scale) - 1) / recipe.servings!)}
-            >
-              <Minus size={16} aria-hidden="true" />
-            </button>
-            <strong className={styles.servingsCount}>{scaledServings}</strong>
-            <button
-              type="button"
-              className="btn btn-secondary btn-icon"
-              aria-label="One more serving"
-              disabled={(scaledServings ?? 0) >= 60}
-              onClick={() => setScale((Math.round(recipe.servings! * scale) + 1) / recipe.servings!)}
-            >
-              <Plus size={16} aria-hidden="true" />
-            </button>
-            <span className={styles.servingsNote}>
-              {scale === 1
-                ? `as written`
-                : `${scaleLabel(Math.round(scale * 10) / 10)} · as written it makes ${recipe.servings}`}
-            </span>
+            <div className={styles.servingsControl}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-icon"
+                aria-label="One fewer serving"
+                disabled={(scaledServings ?? 0) <= 1}
+                onClick={() => stepServings(-1)}
+              >
+                <Minus size={18} aria-hidden="true" />
+              </button>
+              <strong className={styles.servingsCount}>{scaledServings}</strong>
+              <button
+                type="button"
+                className="btn btn-secondary btn-icon"
+                aria-label="One more serving"
+                disabled={(scaledServings ?? 0) >= 60}
+                onClick={() => stepServings(1)}
+              >
+                <Plus size={18} aria-hidden="true" />
+              </button>
+            </div>
+            {scale === 1 ? (
+              <span className={styles.servingsNote}>as written</span>
+            ) : (
+              <button
+                type="button"
+                className={styles.servingsReset}
+                onClick={() => setScale(1)}
+              >
+                {scaleLabel(Math.round(scale * 10) / 10)} · back to {recipe.servings}
+              </button>
+            )}
           </div>
         ) : null}
 

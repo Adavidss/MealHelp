@@ -106,13 +106,28 @@
   overflow: hidden;
 }
 
+/*
+ * Two facts, each on one line.
+ *
+ * Two cards fit across a phone, which leaves about 165px for this row — and
+ * both halves were breaking mid-phrase, so "15 min" read as "15" above "min"
+ * and the price broke after the dollars. Wrapping between the facts instead
+ * of inside them costs a line only when it has to.
+ */
 .meta {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  flex-wrap: wrap;
+  column-gap: var(--space-2);
+  row-gap: 2px;
   margin: 0;
   font-size: 0.8rem;
   color: var(--ink-soft);
+}
+
+.metaItem,
+.cost {
+  white-space: nowrap;
 }
 
 .metaItem {
@@ -180,8 +195,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  /* Planning a meal and favouriting one are the two things done most from a
+     card, and they were the smallest targets on the screen. */
+  width: 40px;
+  height: 40px;
   border: 0;
   border-radius: var(--radius-pill);
   background: rgb(28 20 14 / 55%);
@@ -196,7 +213,7 @@
 
 /* Stacked when a card carries both. */
 .actionSecond {
-  top: calc(var(--space-2) + 40px);
+  top: calc(var(--space-2) + 46px);
 }
 
 .favoriteOn {

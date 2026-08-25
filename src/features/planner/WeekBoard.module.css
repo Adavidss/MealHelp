@@ -32,16 +32,31 @@
   display: none;
 }
 
+/*
+ * One day at a time, with the next one showing.
+ *
+ * 210px was a compromise that served nobody on a phone: too narrow for the
+ * photograph and the meal under it, and wide enough that two days sat
+ * side by side with the second one sliced in half. A day now takes most of
+ * the screen — the slice of the next is the thing that says "swipe" — and
+ * stops growing once there is room for a real grid.
+ */
 .day {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   flex: 0 0 auto;
-  width: 210px;
+  width: min(84vw, 300px);
   scroll-snap-align: start;
   padding: var(--space-2);
   border-radius: var(--radius-lg);
   border: 1px solid transparent;
+}
+
+@media (min-width: 600px) {
+  .day {
+    width: 240px;
+  }
 }
 
 .isToday {

@@ -211,6 +211,17 @@
   flex-direction: column;
 }
 
+/*
+ * The meal's name is a link to the recipe, and it was 24px of text in the
+ * middle of a row — findable with a mouse, a coin toss with a thumb.
+ */
+.itemText a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  font-weight: 600;
+}
+
 .itemText small {
   color: var(--ink-faint);
   font-size: 0.76rem;
@@ -307,4 +318,13 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+/* A real target rather than two words of prose at the end of a sentence. */
+.changeTargets {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 var(--space-2);
+  font-weight: 600;
 }

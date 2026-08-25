@@ -76,25 +76,20 @@
   display: none;
 }
 
-.resultsBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-  margin: var(--space-2) 0 var(--space-3);
-  min-height: 32px;
+/* Said only when it is not obvious — an unfiltered library says it in the tab. */
+.resultCount {
+  margin: 0 0 var(--space-2);
+  font-size: 0.8rem;
+  color: var(--ink-faint);
 }
 
 .sortLabel {
-  flex: none;
+  display: block;
 }
 
 .sort {
-  width: auto;
-  min-height: 36px;
-  padding: 4px var(--space-3);
-  border-radius: var(--radius-pill);
-  font-size: 0.85rem;
+  width: 100%;
+  min-height: 44px;
 }
 
 /*

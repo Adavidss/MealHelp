@@ -4,14 +4,27 @@ import { MOODS, applyMood, moodById, pantryCoverage } from './moods'
 import { ingredientsFrom, makeRecipe } from '@/test/factories'
 
 describe('mealBadges', () => {
-  it('leads with the real number of minutes, not the word "quick"', () => {
-    const recipe = makeRecipe({ activeTimeMinutes: 22, cookingMethods: ['stovetop'] })
-    expect(mealBadges(recipe)[0]).toMatchObject({ tone: 'time', label: '20 min' })
+  /**
+   * The card prints the minutes on the line above these, so a "20 min" badge
+   * under "🕐 20 min" spent one of three slots saying it twice.
+   */
+  it('leaves the time to the line that already says it', () => {
+    const quick = makeRecipe({ activeTimeMinutes: 22, cookingMethods: ['stovetop'] })
+    const slow = makeRecipe({ activeTimeMinutes: 75, cookingMethods: ['stovetop'] })
+    expect(mealBadges(quick).some((badge) => badge.tone === 'time')).toBe(false)
+    expect(mealBadges(slow).some((badge) => badge.tone === 'time')).toBe(false)
   })
 
-  it('says nothing about time when a recipe is not quick', () => {
-    const recipe = makeRecipe({ activeTimeMinutes: 75, cookingMethods: ['stovetop'] })
-    expect(mealBadges(recipe).some((badge) => badge.tone === 'time')).toBe(false)
+  it('spends the freed slot on something the card does not already say', () => {
+    const recipe = makeRecipe({
+      activeTimeMinutes: 20,
+      cookingMethods: ['slow-cooker'],
+      leftoverScore: 5,
+      freezerFriendly: true,
+    })
+    const labels = mealBadges(recipe).map((badge) => badge.label)
+    expect(labels).toContain('Slow cooker')
+    expect(labels).toContain('Great leftovers')
   })
 
   /**

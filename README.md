@@ -188,19 +188,22 @@ offers one pick with its reasons: *Add*, *Another*, or *Choose myself*.
   cooking methods, and a compact list view when you would rather scan names.
 - **What a recipe costs** — on the card, per serving, so two recipes can be
   compared at a glance; and on its own page, under the ingredients: about
-  $19.70, $3.29 a serving, with every line priced. It follows the ½×–4× scale,
-  so doubling the batch doubles the total and leaves the per-serving figure
-  alone. Costed as the *amount used* — two tablespoons of oil are two
+  $19.70, $3.29 a serving, with every line priced. It follows the servings
+  dial, so cooking for twelve doubles the total and leaves the per-serving
+  figure alone. Costed as the *amount used* — two tablespoons of oil are two
   tablespoons of a bottle, not a bottle — which is the same rule the week's
   shop uses, so a recipe and the list it lands on can never tell different
   stories. Things you said you always have are counted separately, because
   "what will this cost me" is not the same question as "what does this
   contain". Tap any line to use your price instead, and it is remembered.
 - **One standard recipe view** — once a recipe is in MealHelp you should never
-  need the original page again. Scaling — ½× to 4×, or set the servings
-  themselves for the times you are cooking for five and the recipe says four —
-  and it stays scaled when you come back to it. Counted things stay countable:
-  three times one onion is *3 onions*, not 3.17 onion. Ingredient checkboxes,
+  need the original page again. Scaling is a servings dial — **cooking for 8**,
+  not ×1.5, because nobody stands in a kitchen thinking in multipliers — and it
+  stays scaled when you come back to it. The multiplier is still what the
+  amounts are scaled by, so it is named once the number moves ("1.3× · back to
+  6"), as an explanation you can undo rather than a control. Counted things
+  stay countable: three times one onion is *3 onions*, not 3.17 onion.
+  Ingredient checkboxes,
   numbered directions, notes, equipment, and a link back to the source. And
   everything you would want to *do* with a recipe is a tap away: start cooking,
   add it to a day, **add its ingredients to the grocery list** (pick the
@@ -307,6 +310,34 @@ lands in the right place.
 
 Plus the full-screen views: a recipe, cooking mode, the plan wizard, the
 refrigerator sheet and the printable recipe.
+
+### On a phone
+
+The app is built for the phone that is on the counter, so the layout is tuned
+for it rather than adapted to it. Two things are watched: how much of the
+screen the controls take before the food starts, and whether anything you tap
+is smaller than a thumb.
+
+The library used to spend 371 of a phone's 812 pixels on controls before the
+first recipe — a title row, tabs, a search row, two chip rails and a bar
+carrying a count and a sort menu. The count moved next to the search and only
+appears when something is filtered, sort moved into the filter sheet where the
+rarely-touched controls live, and the header's buttons lost their labels on
+narrow screens so they sit on the title's row. First recipe at 272px instead of
+387px, which is a whole card more of food.
+
+The planner's day cards were 210px wide — too narrow for the photograph and the
+meal under it, and wide enough that two days sat side by side with the second
+sliced in half. A day now takes 84% of the screen, so the slice of the next one
+is the thing that says "swipe".
+
+Cards printed the time twice: once beside a clock and again as a badge under
+it. The badge went, and the freed slot goes to something the card does not
+already say — "Slow cooker", "Great leftovers".
+
+Every control on Home, Recipes, Plan, Grocery and Nutrition is now at least
+40px tall. The exceptions are links inside sentences (a photo credit, a source
+name), which are text rather than controls.
 
 ### Searching
 

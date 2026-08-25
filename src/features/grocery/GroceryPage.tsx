@@ -182,7 +182,7 @@ export function GroceryPage() {
             aria-label="Surprise me — a meal from what you are already buying"
           >
             <Dices size={17} aria-hidden="true" />
-            Meal idea
+            <span className="hide-narrow">Meal idea</span>
           </button>
           <button
             type="button"

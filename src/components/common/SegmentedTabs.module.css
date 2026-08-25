@@ -24,7 +24,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 34px;
+  /* A phone's most-tapped control should not be the smallest one. */
+  min-height: 40px;
   padding: 0 14px;
   border: 0;
   border-radius: var(--radius-pill);

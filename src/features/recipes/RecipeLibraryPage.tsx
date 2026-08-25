@@ -316,13 +316,19 @@ export function RecipeLibraryPage() {
             className="btn btn-secondary btn-sm"
             onClick={() => setSurprising(true)}
             disabled={results.length === 0}
+            aria-label="Surprise me"
           >
             <Dices size={16} aria-hidden="true" />
-            Surprise me
+            <span className="hide-narrow">Surprise me</span>
           </button>
-          <button type="button" className="btn btn-primary btn-sm" onClick={() => setAddOpen(true)}>
+          <button
+            type="button"
+            className="btn btn-primary btn-sm"
+            onClick={() => setAddOpen(true)}
+            aria-label="Add a recipe"
+          >
             <Plus size={16} aria-hidden="true" />
-            Add
+            <span className="hide-narrow">Add</span>
           </button>
         </div>
       </header>
@@ -365,6 +371,17 @@ export function RecipeLibraryPage() {
             </button>
           </div>
 
+          {/*
+            The count sits with the search rather than on a bar of its own: on
+            a phone that bar cost 46px of a screen where the controls already
+            took up nearly half of it before a single recipe appeared.
+          */}
+          {results.length !== recipes.length ? (
+            <p className={styles.resultCount}>
+              {results.length} of {recipes.length} recipes
+            </p>
+          ) : null}
+
           <MoodChips
             value={mood}
             onChange={setMood}
@@ -379,27 +396,6 @@ export function RecipeLibraryPage() {
             compact
           />
 
-          <div className={styles.resultsBar}>
-            <p className="text-sm muted">
-              {results.length === recipes.length
-                ? `${recipes.length} recipe${recipes.length === 1 ? '' : 's'}`
-                : `${results.length} of ${recipes.length}`}
-            </p>
-            <label className={styles.sortLabel}>
-              <span className="sr-only">Sort by</span>
-              <select
-                className={`select ${styles.sort}`}
-                value={sort}
-                onChange={(event) => setSort(event.target.value as RecipeSort)}
-              >
-                {RECIPE_SORTS.map((option) => (
-                  <option key={option} value={option}>
-                    {RECIPE_SORT_LABELS[option]}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
 
           {results.length === 0 ? (
             <EmptyState
@@ -559,6 +555,24 @@ export function RecipeLibraryPage() {
           </>
         }
       >
+        <div className="field">
+          <span className="field-label">Order</span>
+          <label className={styles.sortLabel}>
+            <span className="sr-only">Sort by</span>
+            <select
+              className={`select ${styles.sort}`}
+              value={sort}
+              onChange={(event) => setSort(event.target.value as RecipeSort)}
+            >
+              {RECIPE_SORTS.map((option) => (
+                <option key={option} value={option}>
+                  {RECIPE_SORT_LABELS[option]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
         <div className="field">
           <span className="field-label">How it's cooked</span>
           <div className="row-tight">
