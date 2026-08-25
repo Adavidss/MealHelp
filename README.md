@@ -323,8 +323,16 @@ first recipe — a title row, tabs, a search row, two chip rails and a bar
 carrying a count and a sort menu. The count moved next to the search and only
 appears when something is filtered, sort moved into the filter sheet where the
 rarely-touched controls live, and the header's buttons lost their labels on
-narrow screens so they sit on the title's row. First recipe at 272px instead of
-387px, which is a whole card more of food.
+narrow screens so they sit on the title's row.
+
+The two chip rails became one. They asked different questions — what do I feel
+like, and what am I cooking it in — so they are still two groups, separated by
+a hairline rather than by a second line. Three chips came out in the merge:
+"Big batch", "Cheap" and "Good for leftovers" were defined identically in both
+lists (`bulkScore >= 4` on both sides), so on one row they would have sat side
+by side doing the same thing twice.
+
+First recipe at 240px instead of 387px, which is a whole card more of food.
 
 The planner's day cards were 210px wide — too narrow for the photograph and the
 meal under it, and wide enough that two days sat side by side with the second

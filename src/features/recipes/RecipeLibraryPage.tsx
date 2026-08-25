@@ -30,9 +30,8 @@ import { CollectionsView } from '@/features/collections/CollectionsPage'
 import { WhatCanIMakeView } from './WhatCanIMakePage'
 import { BrowseRow } from './BrowseRow'
 import { buildBrowseSections, sectionTotal } from './browseSections'
-import { CharacteristicFilters } from './CharacteristicFilters'
 import { filterByCharacteristics } from './characteristics'
-import { MoodChips } from './MoodChips'
+import { FilterRail } from './FilterRail'
 import { OnlineIdeas } from '@/features/discover/OnlineIdeas'
 import { SurpriseSheet } from '@/features/discover/SurpriseSheet'
 import { similarQuery } from '@/services/recipeDiscovery'
@@ -382,18 +381,14 @@ export function RecipeLibraryPage() {
             </p>
           ) : null}
 
-          <MoodChips
-            value={mood}
-            onChange={setMood}
-            recipes={searched}
+          <FilterRail
+            mood={mood}
+            onMoodChange={setMood}
+            characteristics={characteristics}
+            onCharacteristicsChange={setCharacteristics}
+            moodRecipes={searched}
+            characteristicRecipes={inMood}
             pantryKeys={pantryKeys}
-          />
-
-          <CharacteristicFilters
-            recipes={inMood}
-            selected={characteristics}
-            onChange={setCharacteristics}
-            compact
           />
 
 

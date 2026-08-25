@@ -1,0 +1,90 @@
+/*
+ * One line, always — on a desktop too.
+ *
+ * Wrapping it pushes the photographs below the fold on a phone, which is the
+ * one thing a browsing screen cannot afford. Letting it wrap on a wide screen
+ * was tried and was worse: twenty-four chips became five rows and 280px of
+ * filters above the food, where the phone spends 56px. A sideways rail is
+ * already how the shelves below it work.
+ */
+.rail {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: var(--space-1) 0 var(--space-3);
+  /* Bleed to the page edges so the row reads as scrollable. */
+  margin-inline: calc(var(--space-4) * -1);
+  padding-inline: var(--space-4);
+  scroll-snap-type: x proximity;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+
+/*
+ * The two halves keep their own grouping for anything reading the page aloud,
+ * and flow as one continuous line for anyone looking at it.
+ */
+.group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
+/* Two ideas, one row: a hairline instead of a heading. */
+.divider {
+  flex: none;
+  width: 1px;
+  height: 24px;
+  background: var(--line-strong);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 40px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  scroll-snap-align: start;
+}
+
+.chip:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+
+.chip[aria-pressed='true'] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.chip[aria-pressed='true'] .count {
+  color: rgb(255 255 255 / 80%);
+}
