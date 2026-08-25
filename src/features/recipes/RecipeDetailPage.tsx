@@ -561,17 +561,8 @@ export function RecipeDetailPage() {
             <Printer size={17} aria-hidden="true" />
             Print this recipe
           </Link>
-          <button
-            type="button"
-            className="btn btn-secondary btn-block"
-            onClick={() => {
-              setMoreOpen(false)
-              setShareOpen(true)
-            }}
-          >
-            <Share2 size={17} aria-hidden="true" />
-            Share
-          </button>
+          {/* Sharing has its own button in the toolbar above, under the same
+              icon. An overflow menu is for what the toolbar could not fit. */}
           {recipe.sourceUrl ? (
             <button
               type="button"

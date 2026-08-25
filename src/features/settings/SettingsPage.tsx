@@ -393,7 +393,7 @@ export function SettingsPage() {
           backed up unless you export it.
         </p>
 
-        <StoragePanel onExport={() => void downloadBackup()} />
+        <StoragePanel />
 
         <div className={styles.dataActions}>
           <button

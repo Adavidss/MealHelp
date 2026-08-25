@@ -371,29 +371,14 @@ export function DatabasesView() {
 
       {mode === 'search' ? (
         <section className={styles.panel}>
-          <form
-            className={styles.addRow}
-            onSubmit={(event) => {
-              event.preventDefault()
-              if (query.trim()) void searchText()
-            }}
-          >
-            <input
-              className="input"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="curry, pasta bake, tacos…"
-              aria-label="Search for recipes"
-            />
-            <button
-              type="submit"
-              className="btn btn-primary btn-icon"
-              aria-label="Search"
-              disabled={busy || !query.trim()}
-            >
-              <Search size={19} aria-hidden="true" />
-            </button>
-          </form>
+          {/*
+            The search box lives in the toolbar above, and used to live here as
+            well — the same `query`, the same `searchText()`, the same
+            placeholder, one above the other, so typing in one made the other
+            look ignored. What was worth keeping is the note underneath, which
+            says where these results come from and where to go for the rest of
+            the web.
+          */}
           <p className="field-hint">
             These sources are curated and free. For the whole web — blogs, magazines,
             everything —{' '}

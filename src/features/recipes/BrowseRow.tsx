@@ -38,7 +38,14 @@ export function BrowseRow({
           </h2>
           <p className={styles.blurb}>{section.blurb}</p>
         </div>
-        <button type="button" className={styles.seeAll} onClick={onSeeAll}>
+        {/* Three shelves mean three of these, and "See all" read aloud three
+            times says nothing about which shelf it opens. */}
+        <button
+          type="button"
+          className={styles.seeAll}
+          onClick={onSeeAll}
+          aria-label={`See all ${section.title.toLowerCase()}`}
+        >
           {hasMore ? `All ${total}` : 'See all'}
           <ChevronRight size={15} aria-hidden="true" />
         </button>

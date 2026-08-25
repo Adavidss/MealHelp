@@ -18,7 +18,13 @@ import styles from './StoragePanel.module.css'
  * asked, and whether there is a backup is something only this device knows.
  * Both are stated plainly, including when the answer is no.
  */
-export function StoragePanel({ onExport }: { onExport?: () => void }) {
+/*
+ * No export button of its own. The panel answers "am I covered?" and the
+ * answer's action — Export backup — is the button immediately under it; two
+ * buttons an inch apart calling the same function is a choice nobody wanted
+ * to be given.
+ */
+export function StoragePanel() {
   const { toast } = useToast()
   const [status, setStatus] = useState<StorageStatus>()
   const [asking, setAsking] = useState(false)
@@ -102,11 +108,6 @@ export function StoragePanel({ onExport }: { onExport?: () => void }) {
             ? ' A backup is the only thing that survives a lost phone.'
             : ''}
         </span>
-        {(days == null || days >= 30) && onExport ? (
-          <button type="button" className="btn btn-secondary btn-sm" onClick={onExport}>
-            Export one now
-          </button>
-        ) : null}
       </p>
 
       {status?.usage != null ? (
